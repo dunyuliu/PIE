@@ -126,8 +126,6 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     # calculate melting temperature at ICB
     
     P1=P*ys[0,-1]
-    #Tmicb = getmelt_anzellini(chiSicb,P1,param,0)/T
-    # Use the new getCoreLiquidus function.
     Tmicb = getCoreLiquidus(chi_li_icb,chi_Si_icb,P1,param,0)/T
     # boundary values for FOC integration: 
     # continuity of P, g, and T=Tm
@@ -138,6 +136,8 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     h=(rcmb-ricb)/(nc-1)   
     rc,yc,rhof,chi_li = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,chi_li_icb,
                                   scale,param)
+    
+    #print('libcore',chi_li)
     # Calculate moments of inertia:
     # First build polynomials of density
     rhos = np.empty(ns)
@@ -184,8 +184,12 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     CMR2try=2*bigIo #C/MR^2 
 
     # calculate initial sulfur
+    #polychis=np.polyfit(rc,chi_li,3)
+    #polychisr2=np.convolve(polychis,[1,0,0])
+    #chi_liin = 3/(rcmb**3)*(np.polyval(np.polyint(polychisr2),rcmb)\
+    #        -np.polyval(np.polyint(polychisr2),ricb))
     chisrc2=chi_li*rc**2
-    chi_li_in = 3/(rcmb**3)*simpsonDat(rc,chisrc2)
+    chi_liin = 3/(rcmb**3)*simpsonDat(rc,chisrc2)
     
     # snow state
     isnow=0  # snow index: default is no snow
@@ -225,7 +229,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
         
     # adiabatic temp gradient at CMB
     gradTa=T/a*(yc[nc-1,3]-yc[nc-2,3])/(rc[nc-1]-rc[nc-2])
-    fout=[P*ys[0,-1],T*yc[nc-1,2],isnow,isnowcmb,chi_li_in,gradTa]
+    fout=[P*ys[0,-1],T*yc[nc-1,2],isnow,isnowcmb,chi_liin,gradTa]
 
     # include the (1+xi) factor on Cm/C
     CmCtry = CmCtry*(1+xi)
@@ -392,34 +396,34 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
     # Outer loop for all steps:  j = time step index;  k = equation number index
     # Note use of transpose on definition of yold, and in formula for y(j,:) 
     
-    res = getchi_li_grun(y0[2],y0[0],chi_li_icb,scale,param)
+    res = getchi_ligrun(y0[2],y0[0],chi_li_icb,scale,param)
     chi_li[0],rhof[0] = res[0:2]
 
     for j in range(1,nt): 
         rold = r[j-1]        
         yold = y[j-1,:]
-        chi_li_old=chi_li[j-1]       #  Temp variables
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(yold[2],yold[0],chi_liold,scale,param)
+        chi_liold=chi_li[j-1]       #  Temp variables
+        chi_litemp,rhoftemp,grun,KS=getchi_ligrun(yold[2],yold[0],chi_liold,scale,param)
         k1 = eval(diffeq + '(rold,yold,ricb,rcmb,rhoftemp,grun,KS,scale)') #  Slopes at the start
         k1 = np.array(k1)
         ytemp = yold + h2*k1
         
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_liold,scale,param)
+        chi_litemp,rhoftemp,grun,KS=getchi_ligrun(ytemp[2],ytemp[0],chi_liold,scale,param)
         k2 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') # 1st slope at midpoint
         k2 = np.array(k2)
         
         ytemp = yold + h2*k2
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_liold,scale,param)
+        chi_litemp,rhoftemp,grun,KS=getchi_ligrun(ytemp[2],ytemp[0],chi_liold,scale,param)
         k3 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') #  2nd slope at midpoint
         k3 = np.array(k3)
         
         ytemp = yold + h*k3
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_liold,scale,param)
+        chi_litemp,rhoftemp,grun,KS=getchi_ligrun(ytemp[2],ytemp[0],chi_liold,scale,param)
         k4 = eval(diffeq + '(rold+h,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)')  #  Slope at endpoint
         k4 = np.array(k4)
         
         y[j,:] = ( yold + h6*(k1+k4) + h3*(k2+k3) )  #  Advance all equations
-        res = getchi_li_grun(y[j,2],y[j,0],chi_li_old,scale,param)
+        res = getchi_ligrun(y[j,2],y[j,0],chi_liold,scale,param)
         chi_li[j],rhof[j] = res[0:2]
 
     return r,y,rhof,chi_li
@@ -621,7 +625,7 @@ def getCoreLiquidus(el1,el2,P,param,To):
         return Tm-To
 
 
-def getchi_li_grun(yT,yP,chi_li_old,scale,param):
+def getchi_ligrun(yT,yP,chi_liold,scale,param):
     # scales
     P=scale['P']
     T=scale['T']  
@@ -631,18 +635,18 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
     # get dimensional P and T
     T1=T*yT
     P1=P*yP
-    # chi_li_old
-    Tm=getCoreLiquidus(chi_li_old, chi_Si_icb, P1,param,0)
+    # chi_liold
+    Tm=getCoreLiquidus(chi_liold, chi_Si_icb, P1,param,0)
 
     if T1>Tm: # if adiabat temperature larger than Liquidus
         # get chi_li on basis of previous radius         
-        chi_li=chi_li_old
+        chi_li=chi_liold
     else:
         # get chi_li that matches melting
-        chi_li_eut=0.11+0.187*np.exp(-0.065*P1*1e-9)
-        sol = scipy.optimize.root(getCoreLiquidus, chi_li_old,
+        chi_lieut=0.11+0.187*np.exp(-0.065*P1*1e-9)
+        sol = scipy.optimize.root(getCoreLiquidus, chi_liold,
                                   tol=1e-6, args=(chi_Si_icb, P1, param, T1))          
-        chi_li = min(sol.x[0],chi_li_eut)    
+        chi_li = min(sol.x[0],chi_lieut)    
 
     # Updated Equation of State from Rivoldini
     if el == 'S': 

@@ -23,7 +23,7 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
     THIS IS SIMILAR TO projects/mercury_interiormodels/shoot_mercmodel_snow.m
     except that we do not use ode45 solver.  Instead, solved by 4th order RK
     using an adaptation of odeRK4sysv (NMM).  This allows the freedom to also
-    advance chiS as a variable of the system.
+    advance chi_li as a variable of the system.
 
     Shoots to find one solution from a set of initial conditions 
     specified in the vector v
@@ -42,6 +42,8 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
          yy(:,4) = adiabatic temperature vs radius (non-dimensional)
          yy(:,5) = density vs radius (non-dimensional)
          yy(:,6) = chi_li vs radius (non-dimensional)
+         # if param['li_el'] == 'S' or 'S+Si', chi_li is chi_li;
+         # if param['li_el'] == 'Si', chi_li is ChiSi;
          fout(1) = P at icb (dimensional)
          fout(2) = T at cmb (dimensional)
          fout(3) = Cm/C
@@ -50,7 +52,7 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
          fout(6) = k2
          fout(7) = isnow  (0,1,2 = no, layer, deep snow)
          fout(8) = isnowcmb  (0,1 = snow at CMB (no,yes))
-         fout(9) = chiSin (initial sulfur content in core)
+         fout(9) = chi_li_in (initial sulfur content in core)
          fout(10)= gradTa (adiabatic temp gradient at CMB)
 
      shoot from set of conditions at r=small
@@ -97,10 +99,10 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
     elif param['li_el'] == 'S+Si':
         chi_icb = {'Si':chi_Si_icb, 'S':v[4]}
     rho = eos.eosInnerCore(chi_icb,P1/1E+9,T1,param)[1]
-    #rho = eos.solidFccFe(P1/1E+9,T1,param)[1] old. Replaced with the above code.
-    
+  
     #boundary values at r0 for integration
     gr0=4*np.pi*G*rho*(r0*a)/(3*ga)
+    # initial P, gr0, T to integrate from core to inner core boundary.    
     y0 = [v[0], gr0, T1/T]
 
     #Shoot In solid inner core 
@@ -127,10 +129,8 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
     # Shoot In Fluid core
     nc=51
     h=(rcmb-ricb)/(nc-1)
-    
     rc,yc,rhof,chi_li = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,chi_li_icb,
                                   scale,param)
-
     # Calculate moments of inertia:
     # First build polynomials of density
     rhos = np.empty(ns)
@@ -158,10 +158,6 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
     #CMR2try=2*bigIo #C/MR^2 
 
     # calculate initial sulfur
-    #polychis=np.polyfit(rc,chiS,3)
-    #polychisr2=np.convolve(polychis,[1,0,0])
-    #chiSin = 3/(rcmb**3)*(np.polyval(np.polyint(polychisr2),rcmb)\
-    #        -np.polyval(np.polyint(polychisr2),ricb))
     chisrc2=chi_li*rc**2
     chi_li_in = 3/(rcmb**3)*simpsonDat(rc,chisrc2)
     
@@ -330,7 +326,7 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
     
      odeRK4_snow: ode solver for our system of equations  
      modified from NMM, odeRK4sysv.  Customization is such that it is possible
-     to track changes of chiS vs radius as well as integration of other
+     to track changes of chi_li vs radius as well as integration of other
      variables.
     
     
@@ -343,13 +339,13 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
                 ricb,rcmb = icb,cmb radius
                 h       = stepsize for advancing the independent variable
                 y0      = vector of the dependent variable values at icb
-                chiSicb = chiS at icb
+                chi_li_icb = chiS at icb
     
      Output:    r = vector of independent variable values:  r(j) = ricb + j*h
                 y = matrix of dependent variables values, one column for each
                     state variable.  Each row is from a different time step.
                 rhof = density at each radius
-                chiS = Sulfur concentartion at each radius
+                chi_li = Sulfur concentartion at each radius
     """
 
     r = np.arange(ricb,rcmb+h/2,h)#  Column vector of elements with spacing h

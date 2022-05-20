@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Change logs:
--03/17/2022: Move CvC, debye3, cheval, Eth, gammaC, thetaC to misc.py.
--02/03/2022: Modified by dliu to include Fe-Si-S.
-
 Created on Tue Sep  3 13:23:27 2019
 @author: gregor
-Modified by dliu since 03/31/2022.dliu.
+Modified by dliu since 03/31/2022.
 """
 
 import numpy as np
@@ -20,7 +16,8 @@ from scipy.constants import G
 from scipy.constants import R as RGas
 from globalvar import *
 
-def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
+def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
+                    mantle_mass_fix,param,scale):
     
     """ 
     THIS IS SIMILAR TO projects/mercury_interiormodels/shoot_mercmodel_snow.m
@@ -31,8 +28,8 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     Shoots to find one solution from a set of initial conditions 
     specified in the vector v
 
-    Here, the 5 unknowns are 
-    1) P(r=0) 2) T(r=0) 3) rcmb  4) rhom 5) chi_li_icb
+    Here, the 4 unknowns are 
+    1) P(r=0) 2) T(r=0) 3) rcmb 4) rm 5) chiSicb 6) hcr
 
     The roots of the system are specified by 3 conditions:
         matching P, g at cmb, as well as the melting T at ICB.
@@ -60,39 +57,34 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
 
      shoot from set of conditions at r=small
      """
-    # Mercury parameters
-    M=param['GM']/G
-    rm = param['rm']
-    rhomean = 3*M/(4*np.pi*rm**3)
-
     # scales
     a=scale['a']
     ga=scale['ga']
     P=scale['P']
-    T=scale['T']
-
+    T=scale['T']    
+    
+    # Mercury parameters
+    M = param['GM']/G
+    rm = a*v[3]#param['rm']
+    rhomean = 3*M/(4*np.pi*rm**3)
+    
     # limits of integration
-    r0=0.0001/a
+    r0=0.001 #original code is like this.
+    #r0=0.001/a
     rcmb=v[2]
-    rhom=v[3]*rhomean
+    hcr=v[5]*26e+3
 
     # calculate Pcmb, gcmb
-    rc=a*rcmb
-    rhd=rh*a
-    Pcmb,gcmb=getPgcmb_crust(rhom,rc,rhocr,rhd,param,scale)
+    rhd=(rm-hcr) # radius of crust-mantle boundary
+    rcr=a*rcmb
+    Pcmb,gcmb=getPgcmb_crust(rhom,rcr,rhocr,rhd,rm,M,param,scale)
     Pcmb=Pcmb/P
     gcmb=gcmb/ga
-    CmC=param['CmC']
-    CMR2=param['CMR2']
 
     # get gruneisan, bulk and density for P,T at r0 
     P1=P*v[0]
-    T1=T*v[1]
-    # if param['li_el'] == 'S', chi_li_icb = S
-    # if param['li_el'] == 'Si', chi_li_icb = Si
-    # if param['li_el'] == 'S+Si', chi_li_icb = S
-    chi_li_icb=v[4] # retrieve chi_li_icb, whose initial is 0.05.
-    
+    T1=v[1]*T
+
     # 20220302. Replace the following lines with the new function eosInnerCore.
     #if param['li_el'] =='S':
     #    rho = eos.solidFccFe(P1/1E+9,T1,param)[1]
@@ -107,11 +99,11 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     elif param['li_el'] == 'S+Si':
         chi_icb = {'Si':chi_Si_icb, 'S':v[4]}
     rho = eos.eosInnerCore(chi_icb,P1/1E+9,T1,param)[1]
-
-    #boundary values at r0 for in://csegweb.cgd.ucar.edu/experiments/public/?ref=navtegration
+    #rho = eos.solidFccFe(P1/1E+9,T1,param)[1] old. Replaced with the above code.
+    
+    #boundary values at r0 for integration
     gr0=4*np.pi*G*rho*(r0*a)/(3*ga)
-    # initial P, gr0, T to integrate from core to inner core boundary.
-    y0 = [v[0], gr0, v[1]]
+    y0 = [v[0], gr0, T1/T]
 
     #Shoot In solid inner core 
     sol = scipy.integrate.solve_ivp(lambda t,y: rhs_PTrhog_solid_snow(chi_icb, t,y,ricb,scale,param),
@@ -124,33 +116,32 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     ns=len(rs)
     
     # calculate melting temperature at ICB
-    
+    chi_li_icb=v[4]
     P1=P*ys[0,-1]
     #Tmicb = getmelt_anzellini(chiSicb,P1,param,0)/T
     # Use the new getCoreLiquidus function.
     Tmicb = getCoreLiquidus(chi_li_icb,chi_Si_icb,P1,param,0)/T
+
     # boundary values for FOC integration: 
     # continuity of P, g, and T=Tm
     yicb = [ys[0,-1],ys[1,-1],Tmicb,Tmicb]
 
     # Shoot In Fluid core
     nc=51
-    h=(rcmb-ricb)/(nc-1)   
+    h=(rcmb-ricb)/(nc-1)
+    
     rc,yc,rhof,chi_li = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,chi_li_icb,
                                   scale,param)
+
     # Calculate moments of inertia:
     # First build polynomials of density
     rhos = np.empty(ns)
-    # 20220302. Replace the following lines with the new function eosInnerCore.
     #if param['li_el'] == 'S':
     #    for i in range(0,ns):
     #        rhos[i]=eos.solidFccFe(P*ys[0,i]/1E+9,T*ys[2,i],param)[1]/rhomean
     #elif param['li_el'] == 'Si':
     #    for i in range(0,ns):
-    #        rhos[i]=eos.solidFccFeSi(chi_li[0],P*ys[0,i]/1E+9,T*ys[2,i],param)[1]/rhomean
-    #elif param['li_el'] == 'S+Si':
-    #    for i in range(0,ns):
-    #        rhos[i]=eos.solidFccFeSi(chi_Si_icb, P*ys[0,i]/1E+9, T*ys[2,i], param)[1]/rhomean
+    #        rhos[i]=eos.solidFccFeSi(chiS[0],P*ys[0,i]/1E+9,T*ys[2,i],param)[1]/rhomean
     if param['li_el'] == 'Si':
         chi_icb = {'Si':chi_li[0], 'S':0}
     elif param['li_el'] == 'S':
@@ -161,29 +152,18 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     for i in range(0,ns):
         rhos[i]=eos.eosInnerCore(chi_icb,P*ys[0,i]/1E+9, T*ys[2,i], param)[1]/rhomean
         
-    sols=np.polyfit(rs,rhos,3)
-
-    for i in range(0,nc):
-        rhof[i]=rhof[i]/rhomean
-
-    solf=np.polyfit(rc,rhof,3)
-    
-    # ... then multiply by r4 and integrate
-    rhor4=np.convolve(sols,[1,0,0,0,0])
-    bigIo=np.polyval(np.polyint(rhor4),ricb)
-    rhor4=np.convolve(solf,[1,0,0,0,0])
-    bigIo=bigIo + np.polyval(np.polyint(rhor4),rcmb)\
-          -np.polyval(np.polyint(rhor4),ricb)
-
-
-    bigCm = 0.2*rhocr*(1-rh**5)/rhomean + 0.2*rhom*(rh**5-rcmb**5)/rhomean
-    bigIo = bigIo + bigCm   # To get dimensional moment of inertia, * 8pi/3*rhomean*a^5
+    #bigCm = 0.2*rhocr*(1-rh**5)/rhomean + 0.2*rhom*(rh**5-rcmb**5)/rhomean
+    #bigIo = bigIo + bigCm   # To get dimensional moment of inertia, * 8pi/3*rhomean*a^5
     #CmC=bigCm/bigIo # Cm/C 
     #CMR2=2*bigIo # C/MR^2 
-    CmCtry=bigCm/bigIo #Cm/C 
-    CMR2try=2*bigIo #C/MR^2 
+    #CmCtry=bigCm/bigIo #Cm/C 
+    #CMR2try=2*bigIo #C/MR^2 
 
     # calculate initial sulfur
+    #polychis=np.polyfit(rc,chiS,3)
+    #polychisr2=np.convolve(polychis,[1,0,0])
+    #chiSin = 3/(rcmb**3)*(np.polyval(np.polyint(polychisr2),rcmb)\
+    #        -np.polyval(np.polyint(polychisr2),ricb))
     chisrc2=chi_li*rc**2
     chi_li_in = 3/(rcmb**3)*simpsonDat(rc,chisrc2)
     
@@ -218,36 +198,37 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     #rhor2=np.convolve(sols,[1,0,0])
  
     # Calculate k2 and xi
-    rhoml=rhom/rhomean
+    #rhoml=rhom/rhomean
 
-    k2,xi=getk2(ricb,rcmb,rhoml,sols,solf,param,scale)
-
+    #k2,xi=getk2(ricb,rcmb,rhoml,rm,sols,solf,param,scale)
         
     # adiabatic temp gradient at CMB
     gradTa=T/a*(yc[nc-1,3]-yc[nc-2,3])/(rc[nc-1]-rc[nc-2])
     fout=[P*ys[0,-1],T*yc[nc-1,2],isnow,isnowcmb,chi_li_in,gradTa]
 
+    r=np.concatenate((rs,rc))
+    rho = np.concatenate((rhos*rhomean,rhof))
     # include the (1+xi) factor on Cm/C
-    CmCtry = CmCtry*(1+xi)
-    
+    #CmCtry = CmCtry*(1+xi)
+    core_mass = get_mass_core(r*a,rho)
     # function to minimize (roots)
     f=[yc[-1,0]-Pcmb,  # match P at cmb
        yc[-1,1]-gcmb,  # match g at cmb
        ys[2,-1]-Tmicb, # match Tm at icb
-       CmCtry-CmC,
-       CMR2try-CMR2]
+       (core_mass-core_mass_fix)/M,
+       (mantle_mass_fix-get_mass_mantle(rcr,rm-hcr,rhom))/mantle_mass_fix,
+       chi_li_infix-chi_li_in] # the last two lines are different from the presentDay model.
 
-    # concatenate solution
-    r=np.concatenate((rs,rc))
+    # concatenate solution    
+
     ytemp=np.vstack((ys,ys[2]))
     y = np.hstack((ytemp,np.transpose(yc)))
-    rho = np.concatenate((rhos,rhof))
     chi = np.concatenate((np.zeros(ns),chi_li))
     if param['li_el']=='Si': 
-        chi[0:ns] = chi_li[0]
-    yy=np.vstack((y[0],y[1],y[2],y[3],rho,chi))
+        chi[0:ns] = chi_li[0]    
+    yy=np.vstack((y[0],y[1],y[2],y[3],rho/rhomean,chi))
     
-    return f,r,yy,fout
+    return f,r,yy,fout,ricb*a,rhomean,rm,hcr
 
 def J_mercmodel(v,args):
     """
@@ -261,14 +242,15 @@ def J_mercmodel(v,args):
     """
 
     #initialize
-    ricb,rhocr,rh,param,scale = args
+    ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,param,scale = args
     n=len(v)
     f = np.zeros(n) # f must be defined as a column vector
     f2 = np.zeros(n) # f must be defined as a column vector
     J = np.zeros((n,n))  
     
     # compute the function f, 
-    f=shoot_mercmodel(v,ricb,rhocr,rh,param,scale)[0]
+    f=shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,
+                      param,scale)[0]
 
     eps=1.e-6
     for j in range(n):
@@ -278,12 +260,15 @@ def J_mercmodel(v,args):
             h=eps
         v[j]=temp+h
         h=v[j]-temp
-        f2=shoot_mercmodel(v,ricb,rhocr,rh,param,scale)[0]
+        f2=shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass,
+                           mantle_mass,param,scale)[0]
         v[j]=temp
         for i in range(n):
             J[i,j]=(f2[i]-f[i])/h
 
     return J,f
+
+
 
 def mynewtonSys(Jfun,x0,varargin,
                 xtol=5e-5,ftol=5e-5,maxit=15,verbose=False):
@@ -321,6 +306,7 @@ def mynewtonSys(Jfun,x0,varargin,
     if verbose:
         print('\nNewton iterations\n  k     norm(f)      norm(dx)    time(s)\n')
 
+    if Jfun == 'J_mercmodel_nosic': x0.pop(1)
     x = x0
     k = 0        #  Initial guess and current number of iterations
     
@@ -334,11 +320,10 @@ def mynewtonSys(Jfun,x0,varargin,
       if verbose:     
           end = time.time()
           print(k,np.linalg.norm(f),np.linalg.norm(dx),end-start)
-      if (np.linalg.norm(f) < feps) or (np.linalg.norm(dx) < xeps):  
+      if (np.linalg.norm(f) < feps) or (np.linalg.norm(dx) < xeps):
           return x
 
     print('Solution not found within tolerance after %d iterations\n',k)
-    return None
 
 
 
@@ -347,7 +332,7 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
     
      odeRK4_snow: ode solver for our system of equations  
      modified from NMM, odeRK4sysv.  Customization is such that it is possible
-     to track changes of chi_li vs radius as well as integration of other
+     to track changes of chiS vs radius as well as integration of other
      variables.
     
     
@@ -360,13 +345,13 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
                 ricb,rcmb = icb,cmb radius
                 h       = stepsize for advancing the independent variable
                 y0      = vector of the dependent variable values at icb
-                chi_li_icb = chi_li('S'/'S+Si') or chi_lii('Si') at icb
+                chiSicb = chiS at icb
     
      Output:    r = vector of independent variable values:  r(j) = ricb + j*h
                 y = matrix of dependent variables values, one column for each
                     state variable.  Each row is from a different time step.
                 rhof = density at each radius
-                chi_li = Sulfur concentartion at each radius
+                chiS = Sulfur concentartion at each radius
     """
 
     r = np.arange(ricb,rcmb+h/2,h)#  Column vector of elements with spacing h
@@ -399,22 +384,22 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
         rold = r[j-1]        
         yold = y[j-1,:]
         chi_li_old=chi_li[j-1]       #  Temp variables
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(yold[2],yold[0],chi_liold,scale,param)
+        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(yold[2],yold[0],chi_li_old,scale,param)
         k1 = eval(diffeq + '(rold,yold,ricb,rcmb,rhoftemp,grun,KS,scale)') #  Slopes at the start
         k1 = np.array(k1)
         ytemp = yold + h2*k1
         
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_liold,scale,param)
+        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
         k2 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') # 1st slope at midpoint
         k2 = np.array(k2)
         
         ytemp = yold + h2*k2
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_liold,scale,param)
+        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
         k3 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') #  2nd slope at midpoint
         k3 = np.array(k3)
         
         ytemp = yold + h*k3
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_liold,scale,param)
+        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
         k4 = eval(diffeq + '(rold+h,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)')  #  Slope at endpoint
         k4 = np.array(k4)
         
@@ -450,23 +435,22 @@ def rhs_PTrhog_solid_snow(chi_icb, r,y,ricb,scale,param):
     rho = out[1]
     grun = out[6]
     KS = out[4]*1e+9
-    # dydr: derivative of y to dr.
     dydr = [-(a*ga/P)*rho*y[1],
             (a/ga)*4*np.pi*G*rho-2*y[1]/r,
             -(a*ga)*grun*rho*y[1]*y[2]/KS]
     
     return dydr
 
-def getPgcmb_crust(rhom,rc,rhocr,rh,param,scale):
+def getPgcmb_crust(rhom,rc,rhocr,rh,rm,M,param,scale):
     """
     determines the Pressure and grav acc at cmb for a given choice of 
     mantle density (rhom), cmb radius (rcmb)
     crustal density (rhocr), crust-mantle boundary radius (rh)
     """
     # Mercury parameters
-    GM=param['GM']
-    M=GM/G
-    rm = param['rm']
+    #GM=param['GM']
+    #M=GM/G
+    #rm = param['rm']
 
     # scales
     a=scale['a']
@@ -619,46 +603,157 @@ def getCoreLiquidus(el1,el2,P,param,To):
         Tm15 = 1478 *(P1/10+1)**(1/3)        
         Tm =(el1/0.15)*Tm15+(1-el1/0.15)*TmFe
         return Tm-To
+    
+def getmelt_anzellini(chis,P,param,To):
+    """
+    Determines melting temperature of FeS mixture as a function 
+    of chis and P.  
+    Here, the melting point of pure Fe is determined according to Anzellini,
+    Science 2013
+    
+    From Eq 2 of Anzellini et al 2013
+    but reformulated as a 3rd order polynomial
+    """
+
+    el = param['li_el']
+    
+    if el == 'S':
+        P1=P*1e-9;  
+        # parametrization for Anzellini
+        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
+        
+        if P1 < 14:
+            Te0=1265.4
+            b1=-11.15
+            Pe0=3
+        elif P1 < 21:   
+            Te0=1142.7
+            b1=29
+            Pe0=14
+        else:    
+            Te0=1345.72
+            b1=12.9975
+            Pe0=21
+            
+        Te=Te0+b1*(P1-Pe0)
+        chiSeut=0.11+0.187*np.exp(-0.065*P1)
+        
+        Tm = TmFe -(TmFe - Te)*chis/chiSeut
+        
+        return Tm-To
+    
+    else:
+        #a = 10
+        #c = 3
+        #P=P*1e-9
+        #T0 = 1678 - 1000*chis
+        #Tm = T0*(P/a+1)**(1/c)
+        #return Tm-To   
+
+        # Simon Glatzel Fit to Anzellini 
+        #a = 22.19
+        #c = 2.38
+        #P=P*1e-9
+        #T0 = 1822 - 1000*chis
+        #Tm = T0*(P/a+1)**(1/c)
+        #return Tm-To   
+        
+        P1=P*1e-9;  
+        # parametrization for Anzellini
+        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
+        Tm15 = 1478 *(P1/10+1)**(1/3)        
+        Tm =(chis/0.15)*Tm15+(1-chis/0.15)*TmFe
+        return Tm-To
+
+
+def getmelt_anzellini_mix(el1, el2, P,To):
+    """
+    Determines melting temperature of FeS mixture as a function 
+    of chis and P.  
+    Here, the melting point of pure Fe is determined according to Anzellini,
+    Science 2013
+    
+    From Eq 2 of Anzellini et al 2013
+    but reformulated as a 3rd order polynomial
+    """
+
+    chis1 = el1/(1-el2)
+    chis2 = el2/(1-el1)
+    w1 = el1/(el1+el2)
+    w2 = el2/(el1+el2)
+    
+    print(el1,chis1,el2,chis2)
+    P1=P*1e-9 
+    # parametrization for Anzellini
+    TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
+    
+    if P1 < 14:
+        Te0=1265.4
+        b1=-11.15
+        Pe0=3
+    elif P1 < 21:   
+        Te0=1142.7
+        b1=29
+        Pe0=14
+    else:    
+        Te0=1345.72
+        b1=12.9975
+        Pe0=21
+        
+    Te=Te0+b1*(P1-Pe0)
+    chiSeut=0.11+0.187*np.exp(-0.065*P1)
+    
+    Tm1 = TmFe -(TmFe - Te)*chis1/chiSeut
+
+    
+    # parametrization for Anzellini
+    TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
+    Tm15 = 1478 *(P1/10+1)**(1/3)        
+    Tm2 =(chis2/0.15)*Tm15+(1-chis2/0.15)*TmFe
+    return (w1*Tm1+w2*Tm2)
 
 
 def getchi_li_grun(yT,yP,chi_li_old,scale,param):
     # scales
     P=scale['P']
     T=scale['T']  
-    el = param['li_el']
+    el = param['li_el']  
     
     chitmp = np.zeros(2)
     # get dimensional P and T
     T1=T*yT
     P1=P*yP
-    # chi_li_old
+    # chiSold
+    #Tm=getmelt_anzellini(chiSold,P1,param,0)
     Tm=getCoreLiquidus(chi_li_old, chi_Si_icb, P1,param,0)
 
     if T1>Tm: # if adiabat temperature larger than Liquidus
-        # get chi_li on basis of previous radius         
+        # get chiS on basis of previous radius         
         chi_li=chi_li_old
     else:
-        # get chi_li that matches melting
+        # get chiS that matches melting
         chi_li_eut=0.11+0.187*np.exp(-0.065*P1*1e-9)
-        sol = scipy.optimize.root(getCoreLiquidus, chi_li_old,
-                                  tol=1e-6, args=(chi_Si_icb, P1, param, T1))          
-        chi_li = min(sol.x[0],chi_li_eut)    
+        sol = scipy.optimize.root(getCoreLiquidus, chi_li_old, 
+                                  tol=1e-6, args=(chi_Si_icb, P1, param, T1))  
+        chi_li = min(sol.x[0],chi_li_eut)
+    
 
     # Updated Equation of State from Rivoldini
     if el == 'S': 
         out = eos.liquidNonIdalFeS(chi_li,P1/1E+9,T1,param)
     elif el == 'Si':
         out = eos.liquidNonIdalFeSi(chi_li,P1/1E+9,T1,param)
-	# added by DL on 02/15/2022.
+    # added by DL on 02/15/2022.
     elif el == 'S+Si':
         chitmp[0] = chi_li
         chitmp[1] = chi_Si_icb
         out = eos.liquidNonIdalFeSSi(chitmp,P1/1E+9,T1,param)
     else:
-        print('WARNING: invalid light element')
+        print('WARNING: invalid light element')    
     rho = out[1]
     KS = out[4]*1E+9
     grun = out[6]
+    
     return chi_li,rho,grun,KS
 
 def rhs_fluid_snow(r,y,ricb,rcmb,rho,grun,KS,scale):
@@ -684,9 +779,8 @@ def rhs_fluid_snow(r,y,ricb,rcmb,rho,grun,KS,scale):
     ga=scale['ga']
     P=scale['P']
 
-    # Size of thermally stratifued layer
-    # Default rst=ricb + (rcmb-ricb)/2
-    rst = ricb + (rcmb-ricb)/2
+
+    rst=ricb + (rcmb-ricb)/2
 
     if r<rst: 
         dydr = [ -(a*ga/P)*rho*y[1],
@@ -700,7 +794,7 @@ def rhs_fluid_snow(r,y,ricb,rcmb,rho,grun,KS,scale):
                 -(a*ga)*grun*rho*y[1]*y[2]/KS]
         
     return dydr
-	
+
 def simpsonDat(x,f):
     """
     simpsonDat  Integration by Composite Simpson's rule
@@ -718,6 +812,153 @@ def simpsonDat(x,f):
     h=x[1]-x[0]
     I = (h/3)*(f[0]+4*np.sum(f[1::2]) + 2*np.sum((f[2::2])[0:-1]) + f[-1])
     return I
+
+def CvC(theta_T):
+    # heat capacity at constant volume, T and theta in K
+    f=3*RGas*(4*debye3(theta_T)-theta_T*3/(np.exp(theta_T)-1))
+    return f
+
+
+def debye3(x, maxdeg=7): # truncated to save computation time
+    """
+    %DEBYE3 ThirdF order Debye function.
+    %   Y = DEBYE3(X) returns the third order Debye function, evaluated at X.
+    %   X is a scalar.  For positive X, this is defined as
+    %
+    %      (3/x^3) * integral from 0 to x of (t^3/(exp(t)-1)) dt
+    
+    %   Based on the FORTRAN implementation of this function available in the
+    %   MISCFUN Package written by Alan MacLead, available as TOMS Algorithm 757
+    %   in ACM Transactions of Mathematical Software (1996), 22(3):288-301.
+    """
+
+    adeb3=[2.70773706832744094526,
+           0.34006813521109175100,
+           -0.1294515018444086863e-1,
+           0.79637553801738164e-3,
+           -0.5463600095908238e-4,
+           0.392430195988049e-5,
+           -0.28940328235386e-6,
+           0.2173176139625e-7,
+           -0.165420999498e-8,
+           0.12727961892e-9,
+           -0.987963459e-11,
+           0.77250740e-12,
+           -0.6077972e-13,
+           0.480759e-14,
+           -0.38204e-15,
+           0.3048e-16,
+           -0.244e-17,
+           0.20e-18,
+           -0.2e-19]
+
+    if x < 0: 
+        print('error in debye3: negative input value')
+        return 0
+    elif (x < 3.e-8): 
+        print('low input value in debye3: check input value')
+        D3 = ((x - 7.5 ) * x + 20.0)/20.0
+    elif x <= 4:
+        # routine only accurate within these limits
+        # but should be OK for typical x values in our
+        # models
+
+        t = ((x**2/8)-0.5)-0.5
+        D3 = cheval(adeb3[0:maxdeg],t)-0.375*x
+    else:
+        print('error in debye3: input value should be smaller than 4');
+        return 0
+
+    return D3
+
+def cheval(a, t):
+    """
+    CHEVAL evaluates a Chebyshev series.
+    modified by MD for Matlab 
+    
+      Discussion:
+    
+        This function evaluates a Chebyshev series, using the
+        Clenshaw method with Reinsch modification, as analysed
+        in the paper by Oliver.
+    
+      Author:
+    
+        Allan McLeod,
+        Department of Mathematics and Statistics,
+        Paisley University, High Street, Paisley, Scotland, PA12BE
+        macl_ms0@paisley.ac.uk
+    
+      Reference:
+    
+        Allan McLeod,
+        Algorithm 757, MISCFUN: A software package to compute uncommon
+          special functions,
+        ACM Transactions on Mathematical Software,
+        Volume 22, Number 3, September 1996, pages 288-301.
+    
+        J Oliver,
+        An error analysis of the modified Clenshaw method for
+        evaluating Chebyshev and Fourier series,
+        Journal of the IMA,
+        Volume 20, 1977, pages 379-391.
+    
+      Parameters:
+    
+        Input, A(1:N), the coefficients of the Chebyshev series.
+    
+        Input,  T, the value at which the series is
+        to be evaluated.
+    
+        Output, CHEV, the value of the Chebyshev series at T.
+    
+    """
+    n=len(a)-1
+    u1 = 0.0
+    #  T <= -0.6, Reinsch modification.
+    # -0.6 < T < 0.6, Standard Clenshaw method.
+    #  T > 0.6 Reinsch
+    if t <= -0.6 or t>=0.6:
+        d1 = 0.0
+        tt = (t+0.5) + 0.5
+        tt = tt+tt
+        for i in range(n,-1,-1):
+            d2 = d1
+            u2 = u1
+            d1 = tt * u2 + a[i] - d2
+            u1 = d1 - u2
+        chev = 0.5*( d1-d2 )
+
+
+    else:
+        u0 = 0.0
+        tt = t + t
+        for i in range(n,-1,-1):
+            u2 = u1
+            u1 = u0
+            u0 = tt * u1 + a[i] - u2
+
+        chev = 0.5*( u0 - u2 ) 
+
+    return chev
+
+def Eth(T,theta):
+    #internal thermal energy (without not relevant term linear in theta),
+    # T and theta in K
+    RGas=8.3144621
+    f=3.*RGas*(3*theta/8 + T*debye3(theta/T))
+    
+    return f
+
+def gammaC(eta,gamma0,q0):
+    # Grueneisen parameter
+    # eta=V0/V
+    return gamma0*eta**(-q0)
+
+def thetaC(eta,theta0,gamma0,q0):
+    # Debye temperature, eta=V0/V
+    return theta0*np.exp((gamma0-gammaC(eta,gamma0,q0))/q0)
+
 
 def rhs_Pgz(r, y, rho, scale):
     """
@@ -743,7 +984,7 @@ def rhs_Pgz(r, y, rho, scale):
 
 #### The k2 stuff ####
     
-def getk2(rs,rf,rhoml,rhos,rhof,param,scale):
+def getk2(rs,rf,rhoml,rhos,rhof,rm,param,scale):
     """
     %
     % Calculates k2, xi = [(Bs-As) - (Bs'-As')]/ (Bmf -Amf)
@@ -753,7 +994,7 @@ def getk2(rs,rf,rhoml,rhos,rhof,param,scale):
     """
     # Mercury parameters
     M=param['GM']/G
-    rm = param['rm']
+    #rm = param['rm']
     rhomean = 3*M/(4*np.pi*rm**3)
     c22=param['c22']
 
@@ -946,7 +1187,6 @@ def getpotvsr(nr,bigGnd,rnd,rhond,gnd):
     rhs[2*nr-2]=1.0
 
     A = csc_matrix(A)
-    #print(A)
     b = inv(A)*rhs
 
     # solution
@@ -970,7 +1210,10 @@ def get_mass_core(r,rho):
     for i in range(1,len(r)):
         ssum = ssum + rho[i]*(r[i]**3-r[i-1]**3)
     return ssum
-    
+
+def get_mass_mantle(rcmb,rmantle,rhom):
+    return rhom*(rmantle**3-rcmb**3)
+
 def get_moi(r,rho,rho_mean):   
     ssum = rho[0]/rho_mean*r[0]**5/r[-1]**5
     for i in range(1,len(r)):
@@ -983,3 +1226,199 @@ def get_ccc(r,rho,rho_mean):
     for i in range(1,len(r)-2):
         ssum = ssum + rho[i]/rho_mean*(r[i]**5/r[-1]**5-r[i-1]**5/r[-1]**5)
     return 2/5*ssum
+
+# Moved to the end.
+def shoot_mercmodel_nosic(v,Tctrplus,rhocr,rhom,chi_li_infix,core_mass_fix,
+                    mantle_mass_fix,param,scale):   
+    """ 
+    THIS IS SIMILAR TO projects/mercury_interiormodels/shoot_mercmodel_snow.m
+    except that we do not use ode45 solver.  Instead, solved by 4th order RK
+    using an adaptation of odeRK4sysv (NMM).  This allows the freedom to also
+    advance chiS as a variable of the system.
+
+    Shoots to find one solution from a set of initial conditions 
+    specified in the vector v
+
+    Here, the 5 unknowns are 
+    1) P(r=0) 2) rcmb 3) rm 4) chiSctr 5) hcr
+
+    The roots of the system are specified by 2 conditions:
+        matching P, g at cmb.
+        The success is measured in the 2-element vector f
+
+    output: r = radial points of integration (non-dimensional)
+         yy(:,1) = pressure vs radius (non-dimensional)
+         yy(:,2) = g vs radius (non-dimensional)
+         yy(:,3) = temperature vs radius (non-dimensional)
+         yy(:,4) = adiabatic temperature vs radius (non-dimensional)
+         yy(:,5) = density vs radius (non-dimensional)
+         yy(:,6) = chiS vs radius (non-dimensional)
+         fout(1) = P at icb (dimensional)
+         fout(2) = T at cmb (dimensional)
+         fout(3) = Cm/C
+         fout(4) = C/MR^2
+         fout(5) = xi
+         fout(6) = k2
+         fout(7) = isnow  (0,1,2 = no, layer, deep snow)
+         fout(8) = isnowcmb  (0,1 = snow at CMB (no,yes))
+         fout(9) = chi_li_in (initial light (sulfur/silicon) content in core)
+         fout(10)= gradTa (adiabatic temp gradient at CMB)
+
+     shoot from set of conditions at r=small
+     """
+
+    # scales
+    a=scale['a']
+    ga=scale['ga']
+    P=scale['P']
+    T=scale['T']
+    
+    # Mercury parameters
+    M = param['GM']/G
+    rm = a*v[2]
+    rhomean = 3*M/(4*np.pi*rm**3)
+
+    # limits of integration
+    r0=0.001
+    rcmb=v[1]
+    hcr=v[4]*26e+3
+    
+    # calculate Pcmb, gcmb
+    rhd=(rm-hcr) # radius of crust-mantle boundary
+    rcr=a*rcmb
+    Pcmb,gcmb=getPgcmb_crust(rhom,rcr,rhocr,rhd,rm,M,param,scale)
+    Pcmb=Pcmb/P
+    gcmb=gcmb/ga
+
+    # get gruneisan, bulk and density for P,T at r0 
+    P1=P*v[0]
+    chi_li_ctr=v[3]
+    Tmctr = getmelt_anzellini(chi_li_ctr,P1,param,0)     
+    # Temperature at center is Tmelt + Tcplus
+    T1=(Tmctr+Tctrplus)
+    
+    # get density for P,T at center
+    rho = eos.liquidNonIdalFeS(chi_li_ctr,P1/1E+9,T1,param)[1]
+    
+    # boundary values at r0 for integration
+    gr0=4*np.pi*G*rho*(r0*a)/(3*ga)
+    y0 = [v[0], gr0, T1/T, T1/T]
+
+    # Shoot In Fluid core
+    nc=101
+    h=(rcmb-r0)/(nc-1)
+    rc,yc,rhof,chi_li = odeRK4_snow('rhs_fluid_snow',r0,rcmb,h,y0,chi_li_ctr,
+                                  scale,param)
+
+    # Calculate moments of inertia:
+    # First build polynomials of density
+    for i in range(0,nc):
+        rhof[i]=rhof[i]/rhomean
+
+    #solf=np.polyfit(rc,rhof,3)
+    
+    # ... then multiply by r4 and integrate
+    #rhor4=np.convolve(solf,[1,0,0,0,0])
+    #bigIo=np.polyval(np.polyint(rhor4),rcmb)
+
+    #bigCm = 0.2*rhocr*(1-rh**5)/rhomean + 0.2*rhom*(rh**5-rcmb**5)/rhomean
+    #bigIo = bigIo + bigCm   # To get dimensional moment of inertia, * 8pi/3*rhomean*a^5
+    #CmC=bigCm/bigIo # Cm/C 
+    #CMR2=2*bigIo # C/MR^2 
+ 
+    # calculate initial sulfur
+    chisrc2=chi_li*rc**2
+    chi_li_in = 3/(rcmb**3)*simpsonDat(rc,chisrc2)
+
+    rlow=rcmb*a
+    for i in range(nc):
+        if chi_li[i]>chi_li_ctr:
+            slope=(chi_li[i+1]-chi_li[i])/(rc[i+1]-rc[i])
+            rlow=(rc[i]+(chi_li_ctr-chi_li[i])/slope)
+            rlow=a*rlow
+            break
+    
+    # snow state
+    isnow=0  # snow index: default is no snow
+    
+    if ((chi_li[-1]-chi_li_ctr) > 1e-10):
+        isnow=1  
+  
+    isnowcmb=0;  # snow at cmb index: default no
+    if isnow==1 or isnow==2:
+        i=-1
+        # get dimensional P and T
+        T1=T*yc[i,2]
+        P1=P*yc[i,0]
+        Tm = getCoreLiquidus(chi_li[i],chi_Si_icb, P1,param,0) # get Tliquidus
+
+        if abs(T1-Tm)<1e-6:  #if adiabat temperature = Liquidus
+            isnowcmb=1
+    
+    # Calculate k2_h and xi_h
+  
+    # avg inner core, outer core densities
+    #rhor2=np.convolve(sols,[1,0,0])
+ 
+    # Calculate k2 and xi
+    #rhoml=rhom/rhomean
+
+    #k2,xi=getk2(ricb,rcmb,rhoml,rm,sols,solf,param,scale)
+
+        
+    # adiabatic temp gradient at CMB
+    gradTa=T/a*(yc[nc-1,3]-yc[nc-2,3])/(rc[nc-1]-rc[nc-2])
+    fout=[rlow,T*yc[-1,2],isnow,isnowcmb,chi_li_in,gradTa]
+    # include the (1+xi) factor on Cm/C
+    #CmCtry = CmCtry*(1+xi)
+    core_mass = get_mass_core(rc*a,rhof*rhomean)
+    # function to minimize (roots)
+    f=[yc[-1,0]-Pcmb,  # match P at cmb
+       yc[-1,1]-gcmb,  # match g at cmb
+       (core_mass-core_mass_fix)/M,
+       (mantle_mass_fix-get_mass_mantle(rcr,rm-hcr,rhom))/mantle_mass_fix,
+       chi_li_in-chi_li_infix]
+
+    # concatenate solution
+    r=np.array(rc)
+    yy=np.vstack((yc[:,0], yc[:,1], yc[:,2], yc[:,3], rhof, chi_li))    
+    
+    return f,r,yy,fout,0,rhomean,rm,hcr
+
+def J_mercmodel_nosic(v,args):
+    """
+      computes the Jacobian and function evaluation for our 
+      interior model system
+    
+     input vinit = variable vinit (5 element vector)
+    
+     output f = function evaluation (5 function)
+            J = Jacobian matrix of derivatives
+    """
+
+    #initialize
+    ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,param,scale = args
+    n=len(v)
+    f = np.zeros(n) # f must be defined as a column vector
+    f2 = np.zeros(n) # f must be defined as a column vector
+    J = np.zeros((n,n))  
+    
+    # compute the function f, 
+    f=shoot_mercmodel_nosic(v,ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,
+                      param,scale)[0]
+
+    eps=1.e-6
+    for j in range(n):
+        temp=v[j]
+        h=eps*abs(temp)
+        if (h==0):
+            h=eps
+        v[j]=temp+h
+        h=v[j]-temp
+        f2=shoot_mercmodel_nosic(v,ricb,rhocr,rhom,chi_li_infix,core_mass,
+                           mantle_mass,param,scale)[0]
+        v[j]=temp
+        for i in range(n):
+            J[i,j]=(f2[i]-f[i])/h
+
+    return J,f
