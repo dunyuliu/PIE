@@ -18,7 +18,7 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv
 from scipy.constants import G
 from scipy.constants import R as RGas
-import globalvar 
+from globalvar import *
 
 def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     

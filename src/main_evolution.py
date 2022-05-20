@@ -17,13 +17,13 @@ Modifed by dliu since 03/25/2022.
 """
 import numpy as np
 import libCore_evolution as lc
-import visualization as vis
+import visualization_evolution as vis
 import coreEos as eos
 from scipy.constants import G
 import glob
 import os
 import pandas as pd
-import globalvar
+from globalvar import *
 
 fccFe=eos.eosAndersonGrueneisen(M0=MFe,p0=1.e-5,T0=298,V0=6.82,
                             alpha0=7.e-5,KT0=163.4,KTP0=5.38,

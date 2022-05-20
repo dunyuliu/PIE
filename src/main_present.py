@@ -23,14 +23,14 @@ presentDay.py is the main code that calls
 """
 import numpy as np
 import libCore_present as lc
-import visualization as vis
+import visualization_present as vis
 import matplotlib.pyplot as plt
 import coreEos as eos
 from scipy.constants import G
 import pandas as pd
 import matplotlib.patches as mpatches
 import matplotlib
-import glob,os
+import glob,os,sys
 from globalvar import *
 
 fccFe=eos.eosAndersonGrueneisen(M0=MFe,p0=1.e-5,T0=298,V0=6.82,
@@ -214,7 +214,11 @@ for param in model_cases:
         
         # SAVE DATA
         #root = '/Users/gregor/Projects/Evolution of Mercury/models/paper/'+param['name']+'/'
-        root = './'+param['name']+'/'
+        root = './present_'+param['name']+'/'
+        if os.path.isdir(root):
+            print(root)
+        else:
+            os.makedirs(root)
         out = pd.Series(r)
         out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='r')   
         out = pd.Series(rho1)

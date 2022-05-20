@@ -9,7 +9,7 @@ Created on Fri Oct 11 14:52:43 2019
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import libCore as lc
+import libCore_evolution as lc
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
