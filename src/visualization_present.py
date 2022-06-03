@@ -166,11 +166,11 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     #plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     #plt.savefig('/Users/gregor/Projects/Evolution of Mercury/plots/paper/'+param['name']+'/plot'+"{:02d}".format(img)+'.pdf',
     #            bbox_inches="tight")
-    if os.path.isdir(outputpath):
-        print(outputpath)
+    if os.path.isdir(present_figure_path):
+        print(present_figure_path)
     else:
-        os.mkdir(outputpath)
-    plt.savefig(outputpath + '/Figure_'+str(img)+'.pdf',
+        os.mkdir(present_figure_path)
+    plt.savefig(present_figure_path + '/Figure_'+str(img)+'.pdf',
                 bbox_inches="tight") # PAPER PLOT
     plt.show()
     

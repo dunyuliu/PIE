@@ -14,7 +14,7 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
 from PIL import Image
-import globalvar
+from globalvar import *
 
 #im = Image.open('volcano.png')
 #height = im.size[1]

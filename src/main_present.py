@@ -129,7 +129,7 @@ for param in model_cases:
     v0=[0.8,1.0,0.8,0.7,0.05] # initial guesses
     
     # Parameterize by inner core radius
-    rs=np.arange(1e1, 2e6, 50e3)    # value for C/MR2=0.346
+    rs=np.arange(1e1, 2e6, dr)    # value for C/MR2=0.346
     #rs=np.array([1180e3])
     ricb=rs/scale['a']  #non-dimensional
     
@@ -234,7 +234,7 @@ for param in model_cases:
         out = pd.Series(chi_li)
         out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='chi_li')
     
-        """
+        #"""
         df = pd.DataFrame({'rhom': [rhom], 'mass': [mass], 'moi': [moi], 'cmc': [cmc],
                            'Picb': [Picb], 'Tcmb': [Tcmb], 'isnow': [isnow],
                            'isnowcmb': [isnowcmb], 'chi_liin': [chi_liin], 
@@ -242,7 +242,7 @@ for param in model_cases:
                            'chi_lieutcmb': [chi_lieutcmb], 'ricb':rs[k], 'rcmb':[rcmb],
                            'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb]})
         df.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='misc', mode='a')
-        """
+        #"""
         
         #cmb_radius_moi[moi_index] = rcmb
         print('--------------------------')
