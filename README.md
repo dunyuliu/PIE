@@ -19,6 +19,8 @@ Then, run the following command
 python main_evolution.py
 ```
 
+Figures and datasets will be generated under the paths specified in the src/globalvar.py.
+
 ## Code 
 
 ## Copyright and distribution
