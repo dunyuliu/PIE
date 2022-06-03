@@ -214,7 +214,7 @@ for param in model_cases:
         
         # SAVE DATA
         #root = '/Users/gregor/Projects/Evolution of Mercury/models/paper/'+param['name']+'/'
-        root = './present_'+param['name']+'/'
+        root = './Results/present_data_output_'+param['name']+'/'
         if os.path.isdir(root):
             print(root)
         else:
