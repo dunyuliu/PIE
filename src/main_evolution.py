@@ -111,7 +111,7 @@ for model in pday_models:
     Gyr = 0
 
     # create folder for output data. If not exist, create one and run the models.
-    directory = path_to_output + str(round(ricb0/1000,1))
+    directory = evolution_figure_path + str(round(ricb0/1000,1))
     print(directory, os.path.exists(directory))
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -225,12 +225,12 @@ for model in pday_models:
                 if abs(T1[i]-Tm)<1e-8:
                     zones[i]=1  
                     
-            if os.path.isdir(outputpath):
-                print(outputpath)
+            if os.path.isdir(evolution_data_path):
+                print(evolution_data_path)
             else:
-                os.mkdir(outputpath)
+                os.mkdir(evolution_data_path)
                 
-            name = outputpath + str(round(ricb0/1000,1))+'_{:03d}'.format(k)+'.txt'
+            name = evolution_data_path + str(round(ricb0/1000,1))+'_{:03d}'.format(k)+'.txt'
             output = np.dstack((r/1e3,rho1,P1/1e9,T1,chi_li,zones))[0]
             np.savetxt(name,output,fmt='%.3f %.3f %.3f %.3f %.3f %i',
                 header = 'Time: '+str(round(Gyr,2))+' Gyr \n Radius [km] # Density [kg/m3] # Pressure [GPa] # Temperature [K] # Light Element Content [wt.%] # Snow Zone')        
