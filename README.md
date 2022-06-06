@@ -27,6 +27,6 @@ Figures and datasets will be generated under the paths specified in the src/glob
 
 All the material in this repository is open-source and distributed under the GNU General Public License v3.0. For detials, see ``LICENSE``. (Will change it after our discussion)
 
-Contributors: Steinbruegge, Liu.
+Contributors: Steinbruegge, Rivoldini, Liu.
 
 If you have any questions and comments, feel free to reach out to XXX. 
