@@ -8,15 +8,11 @@ Compared to its predecesor present day model ([GitHub repo](https://github.com/g
 Si is currently assumed to be a constant, which can be adjusted in src/globalvar.py.
 
 ## How to run the code?
+Before running the code, in globalvar.py, set model_mode to be 'e'/'p' for evolution or present_day models.
 
-To run the present day model, use the following command
+Then, to run the code, use the following command
 ```
-python main_present.py
-```
-To run the evolution model, first the corresponding present day model needs to be run to generate datasets as input for the evolution model.
-Then, run the following command
-```
-python main_evolution.py
+python main.py
 ```
 
 Figures and datasets will be generated under the paths specified in the src/globalvar.py.
