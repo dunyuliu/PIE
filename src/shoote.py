@@ -15,8 +15,10 @@ from scipy.sparse.linalg import inv
 from scipy.constants import G
 from scipy.constants import R as RGas
 from globalvar import *
+from libCore import *
+from solver import *
 
-def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
+def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_in_fix,core_mass_fix,
                     mantle_mass_fix,param,scale):
     
     """ 
@@ -211,7 +213,7 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
        ys[2,-1]-Tmicb, # match Tm at icb
        (core_mass-core_mass_fix)/M,
        (mantle_mass_fix-get_mass_mantle(rcr,rm-hcr,rhom))/mantle_mass_fix,
-       chi_li_infix-chi_li_in] # the last two lines are different from the presentDay model.
+       chi_li_in_fix-chi_li_in] # the last two lines are different from the presentDay model.
 
     # concatenate solution    
 
@@ -223,46 +225,6 @@ def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass_fix,
     yy=np.vstack((y[0],y[1],y[2],y[3],rho/rhomean,chi))
     
     return f,r,yy,fout,ricb*a,rhomean,rm,hcr
-
-def J_mercmodel(v,args):
-    """
-      computes the Jacobian and function evaluation for our 
-      interior model system
-    
-     input vinit = variable vinit (5 element vector)
-    
-     output f = function evaluation (5 function)
-            J = Jacobian matrix of derivatives
-    """
-
-    #initialize
-    ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,param,scale = args
-    n=len(v)
-    f = np.zeros(n) # f must be defined as a column vector
-    f2 = np.zeros(n) # f must be defined as a column vector
-    J = np.zeros((n,n))  
-    
-    # compute the function f, 
-    f=shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,
-                      param,scale)[0]
-
-    eps=1.e-6
-    for j in range(n):
-        temp=v[j]
-        h=eps*abs(temp)
-        if (h==0):
-            h=eps
-        v[j]=temp+h
-        h=v[j]-temp
-        f2=shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_infix,core_mass,
-                           mantle_mass,param,scale)[0]
-        v[j]=temp
-        for i in range(n):
-            J[i,j]=(f2[i]-f[i])/h
-
-    return J,f
-
-
 
 def mynewtonSys(Jfun,x0,varargin,
                 xtol=5e-5,ftol=5e-5,maxit=15,verbose=False):
@@ -317,123 +279,47 @@ def mynewtonSys(Jfun,x0,varargin,
       if (np.linalg.norm(f) < feps) or (np.linalg.norm(dx) < xeps):
           return x
 
-    print('Solution not found within tolerance after %d iterations\n',k)
-
-
-
-def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
+    print('Solution not found within tolerance after_',k,'_iterations\n')
+    print('Exiting the code')
+    sys.exit()
+	
+def J_mercmodel(v,args):
     """
+      computes the Jacobian and function evaluation for our 
+      interior model system
     
-     odeRK4_snow: ode solver for our system of equations  
-     modified from NMM, odeRK4sysv.  Customization is such that it is possible
-     to track changes of chi_li vs radius as well as integration of other
-     variables.
+     input vinit = variable vinit (5 element vector)
     
-    
-     odeRK4sysv  Fourth order Runge-Kutta method for systems of first order ODEs
-                 Vectorized version with pass-through parameters.
-    
-     Input:     diffeq = (string) name of the m-file that evaluates the right
-                          hand side of the ODE system written in standard
-                          form.
-                ricb,rcmb = icb,cmb radius
-                h       = stepsize for advancing the independent variable
-                y0      = vector of the dependent variable values at icb
-                chi_li_icb = chiS at icb
-    
-     Output:    r = vector of independent variable values:  r(j) = ricb + j*h
-                y = matrix of dependent variables values, one column for each
-                    state variable.  Each row is from a different time step.
-                rhof = density at each radius
-                chi_li = Sulfur concentartion at each radius
+     output f = function evaluation (5 function)
+            J = Jacobian matrix of derivatives
     """
 
-    r = np.arange(ricb,rcmb+h/2,h)#  Column vector of elements with spacing h
-    nt = len(r)                             #  number of steps (+1 for the initial conditions)
-    neq = len(y0)                           #  number of equations simultaneously advanced
-    y = np.zeros((nt,neq))                  #  Preallocate y for speed
-    y[0,:] = y0                             #  Assign IC. y0(:) is column, y0(:)' is row vector
-    rhof=np.zeros(nt)
-    chi_li=np.zeros(nt)
+    #initialize
+    ricb,rhocr,rhom,chi_li_in_fix,core_mass,mantle_mass,param,scale = args
+    n=len(v)
+    f = np.zeros(n) # f must be defined as a column vector
+    f2 = np.zeros(n) # f must be defined as a column vector
+    J = np.zeros((n,n))  
     
-    #  Avoid repeated evaluation of constants    
-    h2 = h/2
-    h3 = h/3
-    h6 = h/6   
-    k1 = np.zeros(neq)
-    k2 = k1
-    # Preallocate memory for the Runge-Kutta
-    k3 = k1  
-    k4 = k1
-    # coefficients and a temporary vector
-    ytemp = k1  
-    
-    # Outer loop for all steps:  j = time step index;  k = equation number index
-    # Note use of transpose on definition of yold, and in formula for y(j,:) 
-    
-    res = getchi_li_grun(y0[2],y0[0],chi_li_icb,scale,param)
-    chi_li[0],rhof[0] = res[0:2]
+    # compute the function f, 
+    f=shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_in_fix,core_mass,mantle_mass,
+                      param,scale)[0]
 
-    for j in range(1,nt): 
-        rold = r[j-1]        
-        yold = y[j-1,:]
-        chi_li_old=chi_li[j-1]       #  Temp variables
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(yold[2],yold[0],chi_li_old,scale,param)
-        k1 = eval(diffeq + '(rold,yold,ricb,rcmb,rhoftemp,grun,KS,scale)') #  Slopes at the start
-        k1 = np.array(k1)
-        ytemp = yold + h2*k1
-        
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
-        k2 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') # 1st slope at midpoint
-        k2 = np.array(k2)
-        
-        ytemp = yold + h2*k2
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
-        k3 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') #  2nd slope at midpoint
-        k3 = np.array(k3)
-        
-        ytemp = yold + h*k3
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
-        k4 = eval(diffeq + '(rold+h,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)')  #  Slope at endpoint
-        k4 = np.array(k4)
-        
-        y[j,:] = ( yold + h6*(k1+k4) + h3*(k2+k3) )  #  Advance all equations
-        res = getchi_li_grun(y[j,2],y[j,0],chi_li_old,scale,param)
-        chi_li[j],rhof[j] = res[0:2]
+    eps=1.e-6
+    for j in range(n):
+        temp=v[j]
+        h=eps*abs(temp)
+        if (h==0):
+            h=eps
+        v[j]=temp+h
+        h=v[j]-temp
+        f2=shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_in_fix,core_mass,
+                           mantle_mass,param,scale)[0]
+        v[j]=temp
+        for i in range(n):
+            J[i,j]=(f2[i]-f[i])/h
 
-    return r,y,rhof,chi_li
-    
-def rhs_PTrhog_solid_snow(chi_icb, r,y,ricb,scale,param):
-    """
-    rhs_PTrhog  Right-hand sides of coupled ODEs for interior model equations
-
-    Input:    r      = radius, the independent variable 
-              y      = vector (length 3) of dependent variables
-              ricb   = ICB radius
-
-    Output:   dydr = column vector of dy(i)/dr values
-    """
-
-    # scales
-    a=scale['a']
-    ga=scale['ga']
-    P=scale['P']
-    T=scale['T']
-    
-    # get dimensional P and T
-    T1=T*y[2]
-    P1=P*y[0]
-
-    #out = eos.solidFccFe(P1/1E+9,T1,param)
-    out = eos.eosInnerCore(chi_icb,P1/1E+9,T1,param)
-    rho = out[1]
-    grun = out[6]
-    KS = out[4]*1e+9
-    dydr = [-(a*ga/P)*rho*y[1],
-            (a/ga)*4*np.pi*G*rho-2*y[1]/r,
-            -(a*ga)*grun*rho*y[1]*y[2]/KS]
-    
-    return dydr
+    return J,f
 
 def getPgcmb_crust(rhom,rc,rhocr,rh,rm,M,param,scale):
     """
@@ -473,238 +359,6 @@ def getPgcmb_crust(rhom,rc,rhocr,rh,rm,M,param,scale):
     Pcmb=P*sol.y[0,-1] # dimensional
 
     return Pcmb,gcmb
-
-def getCoreLiquidus(el1,el2,P,param,To):
-    # What's To? Since To is mostly zero, the return for 'S'/'Si' is simply Tm.
-    # The function simply calculates the melting temperature given P and wt% of light elements.
-    
-    """
-    Determines melting temperature of FeS mixture as a function 
-    of chis and P.  
-    Here, the melting point of pure Fe is determined according to Anzellini,
-    Science 2013
-    
-    From Eq 2 of Anzellini et al 2013
-    but reformulated as a 3rd order polynomial
-    """
-    
-    # el1, el2 are wt% of S and Si if el='S+Si'.
-    # el1 is wt% of S/Si if el='S'/'Si'
-    
-    el = param['li_el']
-    
-    if el == 'S':
-        P1=P*1e-9  
-        # parametrization for Anzellini
-        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-        
-        if P1 < 14:
-            Te0=1265.4
-            b1=-11.15
-            Pe0=3
-        elif P1 < 21:   
-            Te0=1142.7
-            b1=29
-            Pe0=14
-        else:    
-            Te0=1345.72
-            b1=12.9975
-            Pe0=21
-            
-        Te=Te0+b1*(P1-Pe0)
-        chi_lieut=0.11+0.187*np.exp(-0.065*P1)
-        
-        Tm = TmFe -(TmFe - Te)*el1/chi_lieut
-        
-        return Tm-To
-    
-    elif el == 'S+Si':
-        ## Why do the following two lines?
-        ##chis1 = el1/(1-el2)
-        ##chis2 = el2/(1-el1)
-
-        #w1 = el1/(el1+el2)
-        #w2 = el2/(el1+el2)
-    
-        #P1=P*1e-9 
-        ## parametrization for Anzellini
-        #TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-    
-        #if P1 < 14:
-        #    Te0=1265.4
-        #    b1=-11.15
-        #    Pe0=3
-        #elif P1 < 21:   
-        #    Te0=1142.7
-        #    b1=29
-        #    Pe0=14
-        #else:
-        #    Te0=1345.72
-        #    b1=12.9975
-        #    Pe0=21
-        
-        #Te=Te0+b1*(P1-Pe0)
-        #chi_lieut=0.11+0.187*np.exp(-0.065*P1)
-        
-        ##Tm1 = TmFe -(TmFe - Te)*chis1/chi_lieut
-        #Tm1 = TmFe - (TmFe - Te)*el1/chi_lieut
-        ## parametrization for Anzellini
-        #TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-        #Tm15 = 1478 *(P1/10+1)**(1/3)        
-        ##Tm2 =(chis2/0.15)*Tm15+(1-chis2/0.15)*TmFe
-        #Tm2 = (el2/0.15)*Tm15+(1-el2/0.15)*TmFe
-
-        #return (w1*Tm1+w2*Tm2)-To
-        
-        # New modifications according to Attilio's 20220222 email.
-        # The function simply calculates the melting temperature given P and wt% of light elements.
-        # xS and xSi are weight fractions of S and Si
-        # P is pressure in Pa
-        
-        xS = el1
-        xSi = el2
-        P1=P*1e-9  
-        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076   # Fe liquidus Anzellini et al. 2013
-        # eutectic melting T of Fe-S from Dumberry et al 2015
-        if P1 < 14:
-            Te0=1265.4
-            b1=-11.15
-            Pe0=3
-        elif P1 < 21:   
-            Te0=1142.7
-            b1=29
-            Pe0=14
-        else:    
-            Te0=1345.72
-            b1=12.9975
-            Pe0=21
-
-        TSEut=Te0+b1*(P1-Pe0) # eutectic melting T of Fe-S from Dumberry et al 2015
-        xSEut=0.11+0.187*np.exp(-0.065*P1)  # eutectic S fraction from Dumberry et al 2015
-
-        #TSiEut=1538*(1.+0.040551*p)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
-        TSiEut=1538*(1.+0.040551*P1)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
-        xSiEut=0.12 # assumed constant for p range of Mercury, Edmund et al 2022
-        Tm=TmFe-(TmFe-TSiEut)*xSi/xSiEut
-        Tm=Tm-(Tm-TSEut)*xS/xSEut
-
-        return Tm-To
-
-    else:
-        P1=P*1e-9;  
-        # parametrization for Anzellini
-        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-        Tm15 = 1478 *(P1/10+1)**(1/3)        
-        Tm =(el1/0.15)*Tm15+(1-el1/0.15)*TmFe
-        return Tm-To
-    
-def getmelt_anzellini(chis,P,param,To):
-    """
-    Determines melting temperature of FeS mixture as a function 
-    of chis and P.  
-    Here, the melting point of pure Fe is determined according to Anzellini,
-    Science 2013
-    
-    From Eq 2 of Anzellini et al 2013
-    but reformulated as a 3rd order polynomial
-    """
-
-    el = param['li_el']
-    
-    if el == 'S':
-        P1=P*1e-9;  
-        # parametrization for Anzellini
-        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-        
-        if P1 < 14:
-            Te0=1265.4
-            b1=-11.15
-            Pe0=3
-        elif P1 < 21:   
-            Te0=1142.7
-            b1=29
-            Pe0=14
-        else:    
-            Te0=1345.72
-            b1=12.9975
-            Pe0=21
-            
-        Te=Te0+b1*(P1-Pe0)
-        chiSeut=0.11+0.187*np.exp(-0.065*P1)
-        
-        Tm = TmFe -(TmFe - Te)*chis/chiSeut
-        
-        return Tm-To
-    
-    else:
-        #a = 10
-        #c = 3
-        #P=P*1e-9
-        #T0 = 1678 - 1000*chis
-        #Tm = T0*(P/a+1)**(1/c)
-        #return Tm-To   
-
-        # Simon Glatzel Fit to Anzellini 
-        #a = 22.19
-        #c = 2.38
-        #P=P*1e-9
-        #T0 = 1822 - 1000*chis
-        #Tm = T0*(P/a+1)**(1/c)
-        #return Tm-To   
-        
-        P1=P*1e-9;  
-        # parametrization for Anzellini
-        TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-        Tm15 = 1478 *(P1/10+1)**(1/3)        
-        Tm =(chis/0.15)*Tm15+(1-chis/0.15)*TmFe
-        return Tm-To
-
-
-def getmelt_anzellini_mix(el1, el2, P,To):
-    """
-    Determines melting temperature of FeS mixture as a function 
-    of chis and P.  
-    Here, the melting point of pure Fe is determined according to Anzellini,
-    Science 2013
-    
-    From Eq 2 of Anzellini et al 2013
-    but reformulated as a 3rd order polynomial
-    """
-
-    chis1 = el1/(1-el2)
-    chis2 = el2/(1-el1)
-    w1 = el1/(el1+el2)
-    w2 = el2/(el1+el2)
-    
-    print(el1,chis1,el2,chis2)
-    P1=P*1e-9 
-    # parametrization for Anzellini
-    TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-    
-    if P1 < 14:
-        Te0=1265.4
-        b1=-11.15
-        Pe0=3
-    elif P1 < 21:   
-        Te0=1142.7
-        b1=29
-        Pe0=14
-    else:    
-        Te0=1345.72
-        b1=12.9975
-        Pe0=21
-        
-    Te=Te0+b1*(P1-Pe0)
-    chiSeut=0.11+0.187*np.exp(-0.065*P1)
-    
-    Tm1 = TmFe -(TmFe - Te)*chis1/chiSeut
-
-    
-    # parametrization for Anzellini
-    TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076
-    Tm15 = 1478 *(P1/10+1)**(1/3)        
-    Tm2 =(chis2/0.15)*Tm15+(1-chis2/0.15)*TmFe
-    return (w1*Tm1+w2*Tm2)
 
 
 def getchi_li_grun(yT,yP,chi_li_old,scale,param):
@@ -750,62 +404,7 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
     
     return chi_li,rho,grun,KS
 
-def rhs_fluid_snow(r,y,ricb,rcmb,rho,grun,KS,scale):
-    """
-    # Right-hand sides of coupled ODEs for interior model equations
-    # This version includes a stratified layer at CMB
-    # Here, we also track the adiabatic Temperature
-    # THIS VERSION to be used with odeRK4_snow.m
-    
-    # Input:    r      = radius, the independent variable 
-    #           y      = vector (length 4) of dependent variables
-    #           ricb   = ICB radius
-    #           rcmb   = CMB radius
-    #           rho    = density
-    #           grun   = gruneisan
-    #           KS     = adiabatic bulk modulus
-    #
-    # Output:   dydr = column vector of dy(i)/dr values
-    """
-    
-    # scales
-    a=scale['a']
-    ga=scale['ga']
-    P=scale['P']
 
-
-    rst=ricb + (rcmb-ricb)/2
-
-    if r<rst: 
-        dydr = [ -(a*ga/P)*rho*y[1],
-                (a/ga)*4*np.pi*G*rho-2*y[1]/r,
-                -(a*ga)*grun*rho*y[1]*y[2]/KS,
-                -(a*ga)*grun*rho*y[1]*y[2]/KS]
-    else:
-        dydr = [-(a*ga/P)*rho*y[1],
-                (a/ga)*4*np.pi*G*rho-2*y[1]/r,
-                -(a*ga)*grun*rho*y[1]*y[2]*(1 -0.95*(r-rst)/(rcmb-rst))/KS,
-                -(a*ga)*grun*rho*y[1]*y[2]/KS]
-        
-    return dydr
-
-def simpsonDat(x,f):
-    """
-    simpsonDat  Integration by Composite Simpson's rule
-                adapted from nmm package, here for a function f evaluated at
-                equally spaced points x
-
-    Synopsis:  I = simpson(fun,a,b,npanel)
-
-    Input:     x = equally spaced points (number of points n must be odd)
-               f = integrand at these x points
-    Output:    I = approximate value of the integral from x(1) to x(n) of f(x)*dx
-    
-    """
-
-    h=x[1]-x[0]
-    I = (h/3)*(f[0]+4*np.sum(f[1::2]) + 2*np.sum((f[2::2])[0:-1]) + f[-1])
-    return I
 
 def CvC(theta_T):
     # heat capacity at constant volume, T and theta in K
@@ -954,26 +553,6 @@ def thetaC(eta,theta0,gamma0,q0):
     return theta0*np.exp((gamma0-gammaC(eta,gamma0,q0))/q0)
 
 
-def rhs_Pgz(r, y, rho, scale):
-    """
-    rhs_Pgz  Right-hand sides of coupled ODEs for hydrostatic pressure
-
-
-    Input:    z      = depth, the independent variable 
-              y      = vector (length 2) of dependent variables
-              rho    = density (=constant)
-
-    Output:   dydr = column vector of dy(i)/dz values
-    """
-    # scales
-    a=scale['a']
-    ga=scale['ga']
-    P=scale['P']
-
-    dydr = [-(a*ga/P)*rho*y[1],
-            (a/ga)*4*np.pi*G*rho-2*y[1]/r]
-    
-    return dydr
 
 
 #### The k2 stuff ####
@@ -1072,157 +651,14 @@ def getk2(rs,rf,rhoml,rhos,rhof,rm,param,scale):
 
     return k2,xi
 
-def getpotvsr(nr,bigGnd,rnd,rhond,gnd):
-    # This function calculates the total potential vs radius in core
-
-    l=2 # %spherical harmonic degree
-
-    # build matrix A (sparse) element by element
-    # specifying row, column and numerical value of all non-zero
-
-    ndim=2*nr-1
-    k=0
-  
-    row = np.zeros(3191, dtype=int)
-    col = np.zeros(3191, dtype=int)
-    s = np.zeros(3191)
-    
-    kk=0
-    row[kk]=k
-    col[kk]=k
-    s[kk]=rnd[0]**(2*l+1)
-  
-    kk=kk+1
-    row[kk]=k
-    col[kk]=k+1
-    s[kk]=-1
-    
-    kk=kk+1
-    row[kk]=k
-    col[kk]=k+2
-    s[kk]=-rnd[0]**(2*l+1)
-
-    alpha = 4.0*np.pi*bigGnd*rnd[0]*(rhond[0]-rhond[1])/gnd[0]
-
-    kk=kk+1
-    row[kk]=k+1
-    col[kk]=k
-    s[kk]=(l - alpha)*rnd[0]**(2*l+1)
-
-    kk=kk+1
-    row[kk]=k+1
-    col[kk]=k+1
-    s[kk]=l+1
-
-    kk=kk+1
-    row[kk]=k+1
-    col[kk]=k+2
-    s[kk]=-l*rnd[0]**(2*l+1)
-
-    for j in range(1,nr-1):
-    
-        k=2*(j+1)-2
-        
-        kk=kk+1
-        row[kk]=k
-        col[kk]=k
-        s[kk]=rnd[j]**(2*l+1)
-
-        kk=kk+1
-        row[kk]=k
-        col[kk]=k-1
-        s[kk]=1
-
-        kk=kk+1
-        row[kk]=k
-        col[kk]=k+1
-        s[kk]=-1
-    
-        kk=kk+1
-        row[kk]=k
-        col[kk]=k+2
-        s[kk]=-rnd[j]**(2*l+1)
-        
-        alpha = 4.0*np.pi*bigGnd*rnd[j]*(rhond[j]-rhond[j+1])/gnd[j]
-
-        kk=kk+1
-        row[kk]=k+1
-        col[kk]=k-1
-        s[kk]=-(l+1 + alpha)
-    
-        kk=kk+1
-        row[kk]=k+1
-        col[kk]=k
-        s[kk]=(l - alpha)*rnd[j]**(2*l+1)
-    
-        kk=kk+1
-        row[kk]=k+1
-        col[kk]=k+1
-        s[kk]=l+1
-    
-        kk=kk+1
-        row[kk]=k+1
-        col[kk]=k+2
-        s[kk]=-l*rnd[j]**(2*l+1)
-
-    k=2*nr-2
-    kk=kk+1
-    row[kk]=k
-    col[kk]=k
-    s[kk]=rnd[nr-1]**l
-
-    # build sparse matrix A
-    A=np.zeros([ndim, ndim])
-    A[row,col] = s
-
-    #A = np.array(row,col,s,ndim,ndim)
-
-    rhs=np.zeros(2*nr-1)
-    rhs[2*nr-2]=1.0
-
-    A = csc_matrix(A)
-    b = inv(A)*rhs
-
-    # solution
-    pot = np.empty(nr)
-    pot[0]=b[0]*rnd[0]**l
-    
-    for k in range(1,nr):
-        kk=2*(k+1)-2
-        pot[k]=b[kk]*rnd[k]**l + b[kk-1]*rnd[k]**(-l-1)
-
-    return pot
-
-def get_mass_norm(r,rho,rho_mean):
-    ssum = rho[0]/rho_mean*r[0]**3/r[-1]**3
-    for i in range(1,len(r)):
-        ssum = ssum + rho[i]/rho_mean*(r[i]**3/r[-1]**3-r[i-1]**3/r[-1]**3)
-    return ssum
-
-def get_mass_core(r,rho):
-    ssum = rho[0]*r[0]**3/r[-1]**3
-    for i in range(1,len(r)):
-        ssum = ssum + rho[i]*(r[i]**3-r[i-1]**3)
-    return ssum
 
 def get_mass_mantle(rcmb,rmantle,rhom):
     return rhom*(rmantle**3-rcmb**3)
 
-def get_moi(r,rho,rho_mean):   
-    ssum = rho[0]/rho_mean*r[0]**5/r[-1]**5
-    for i in range(1,len(r)):
-        ssum = ssum + rho[i]/rho_mean*(r[i]**5/r[-1]**5-r[i-1]**5/r[-1]**5)
 
-    return 2/5*ssum
-
-def get_ccc(r,rho,rho_mean):
-    ssum = rho[0]/rho_mean*r[0]**5/r[-1]**5
-    for i in range(1,len(r)-2):
-        ssum = ssum + rho[i]/rho_mean*(r[i]**5/r[-1]**5-r[i-1]**5/r[-1]**5)
-    return 2/5*ssum
 
 # Moved to the end.
-def shoot_mercmodel_nosic(v,Tctrplus,rhocr,rhom,chi_li_infix,core_mass_fix,
+def shoot_mercmodel_nosic(v,Tctrplus,rhocr,rhom,chi_li_in_fix,core_mass_fix,
                     mantle_mass_fix,param,scale):   
     """ 
     THIS IS SIMILAR TO projects/mercury_interiormodels/shoot_mercmodel_snow.m
@@ -1287,7 +723,9 @@ def shoot_mercmodel_nosic(v,Tctrplus,rhocr,rhom,chi_li_infix,core_mass_fix,
     # get gruneisan, bulk and density for P,T at r0 
     P1=P*v[0]
     chi_li_ctr=v[3]
-    Tmctr = getmelt_anzellini(chi_li_ctr,P1,param,0)     
+    #??Should I use the new getCoreLiquidus? 
+    Tmctr = getmelt_anzellini(chi_li_ctr,P1,param,0) 
+    #Tmctr = getCoreLiquidus(chi_li_ctr,chi_Si_icb,P1,param,0)/T    
     # Temperature at center is Tmelt + Tcplus
     T1=(Tmctr+Tctrplus)
     
@@ -1371,7 +809,7 @@ def shoot_mercmodel_nosic(v,Tctrplus,rhocr,rhom,chi_li_infix,core_mass_fix,
        yc[-1,1]-gcmb,  # match g at cmb
        (core_mass-core_mass_fix)/M,
        (mantle_mass_fix-get_mass_mantle(rcr,rm-hcr,rhom))/mantle_mass_fix,
-       chi_li_in-chi_li_infix]
+       chi_li_in-chi_li_in_fix]
 
     # concatenate solution
     r=np.array(rc)
@@ -1391,14 +829,14 @@ def J_mercmodel_nosic(v,args):
     """
 
     #initialize
-    ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,param,scale = args
+    ricb,rhocr,rhom,chi_li_in_fix,core_mass,mantle_mass,param,scale = args
     n=len(v)
     f = np.zeros(n) # f must be defined as a column vector
     f2 = np.zeros(n) # f must be defined as a column vector
     J = np.zeros((n,n))  
     
     # compute the function f, 
-    f=shoot_mercmodel_nosic(v,ricb,rhocr,rhom,chi_li_infix,core_mass,mantle_mass,
+    f=shoot_mercmodel_nosic(v,ricb,rhocr,rhom,chi_li_in_fix,core_mass,mantle_mass,
                       param,scale)[0]
 
     eps=1.e-6
@@ -1409,7 +847,7 @@ def J_mercmodel_nosic(v,args):
             h=eps
         v[j]=temp+h
         h=v[j]-temp
-        f2=shoot_mercmodel_nosic(v,ricb,rhocr,rhom,chi_li_infix,core_mass,
+        f2=shoot_mercmodel_nosic(v,ricb,rhocr,rhom,chi_li_in_fix,core_mass,
                            mantle_mass,param,scale)[0]
         v[j]=temp
         for i in range(n):

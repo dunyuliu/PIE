@@ -9,7 +9,7 @@ Created on Fri Oct 11 14:52:43 2019
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import libCore_present as lc
+import shootp as lc
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
@@ -56,7 +56,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     # Temperature profiles
     ax[0,0].plot(r/1000,np.array(Tms),label='Tmelt',lw=3,color='blue')
     ax[0,0].plot(r/1000,np.array(T),label='Tcore',lw=3,color='red')
-    ax[0,0].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[0,0].set_xlim(0,2600)
     ax[0,0].set_ylim((1200,2700))  
     #ax[0,0].set_ylim((1800,2200))  # PAPER PLOT
     ax[0,0].set_ylabel('Temperature [K]')
@@ -66,7 +66,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     
     # T-Tm profile
     ax[1,0].plot(r/1000,T-np.array(Tms),lw=3,color='black')
-    ax[1,0].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[1,0].set_xlim(0,2600)
     ax[1,0].set_ylim((0,500)) 
     ax[1,0].set_xlabel('Radius [km]')
     ax[1,0].set_ylabel('Tcore-Tmelt [K]')
@@ -75,7 +75,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     
     # Density profile
     ax[0,1].plot(r/1000,np.array(rho)/1000,lw=3,color='black')
-    ax[0,1].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[0,1].set_xlim(0,2600)
     ax[0,1].set_ylim((4,9))  
     #ax[0,1].set_ylim((6.5,8)) # PAPER PLOT
     #ax[0,1].set_yticks([6.5,7.0,7.5,8.0])
@@ -85,7 +85,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
 
     # Pressure profile
     ax[1,1].plot(r/1000,np.array(P/1E+9),lw=3,color='black')
-    ax[1,1].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[1,1].set_xlim(0,2600)
     ax[1,1].set_ylim((0,80))  
     #ax[1,1].set_ylim((0,30)) # PAPER PLOT
     ax[1,1].set_ylabel('Pressure [GPa]')
@@ -94,7 +94,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     
     # Sulfur Concentration
     ax[0,2].plot(r/1000,chi_li*100,lw=3,color='black')
-    ax[0,2].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[0,2].set_xlim(0,2600)
     ax[0,2].set_ylim((0,25))   
     #ax[0,2].set_ylim((5.0,5.8))  # PAPER PLOT
     #ax[0,2].set_yticks([2.4,2.5,2.6])
@@ -157,7 +157,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     ax[1,2]=plt.gca()
     ax[1,2].axis('scaled')
     ax[1,2].axis('off')
-
+    
     colors = ["lightyellow", "black", "sandybrown", "salmon", "silver", ]
     texts = ["Iron Snow", "Crust", "Mantle", "Outer Core", "Inner Core"]
     patches = [ mpatches.Patch(color=colors[i], label="{:s}".format(texts[i]) ) for i in range(len(texts)) ]
@@ -166,13 +166,13 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     #plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     #plt.savefig('/Users/gregor/Projects/Evolution of Mercury/plots/paper/'+param['name']+'/plot'+"{:02d}".format(img)+'.pdf',
     #            bbox_inches="tight")
-    if os.path.isdir(present_figure_path):
-        print(present_figure_path)
-    else:
+    if not os.path.exists(present_figure_path):
+        #print(present_figure_path)
+    #else:
         os.mkdir(present_figure_path)
     plt.savefig(present_figure_path + '/Figure_'+str(img)+'.pdf',
                 bbox_inches="tight") # PAPER PLOT
-    plt.show()
+    #plt.show()
     
  
     """

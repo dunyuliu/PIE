@@ -1,7 +1,8 @@
 # Global parameters for both the present_day and evolution model.
 
 # Main adjustables.
-chi_Si_icb = 0.05 # Si % wt. Used in the 'S+Si' two light element scenario.
+model_mode = 'p' # 'e'/'p', that will switch between evolution/present_day models.
+chi_Si_icb = 0.02 # Si % wt. Used in the 'S+Si' two light element scenario.
 dr = 50e3 # radius increment in meters for the present_day model.
 
 # Paths for the present day model.
@@ -20,3 +21,8 @@ evolution_data_path = evolution_output_path + '_data/' # Path to data by the evo
 MFeS = (55.845+32.065)
 MFeSi = (55.845+28.08)
 MFe = 55.845
+
+# For Newton solver
+xtol=1.e-6 # tol
+ftol=1.e-6
+maxit=6 # maximum number of iterations

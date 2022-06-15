@@ -9,7 +9,7 @@ Created on Fri Oct 11 14:52:43 2019
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import libCore_evolution as lc
+import shoote as lc
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
@@ -60,7 +60,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_li_in,moi,cmc,mass,Gyr,img,director
     # Temperature profiles
     ax[0,0].plot(r/1000,np.array(Tms),label='Tmelt',lw=3,color='blue')
     ax[0,0].plot(r/1000,np.array(T),label='Tcore',lw=3,color='red')
-    ax[0,0].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[0,0].set_xlim((0,2700))
     ax[0,0].set_ylim((1200,2700))  
     ax[0,0].set_ylabel('Temperature [K]')
     ax[0,0].set_xlabel('Radius [km]')
@@ -69,7 +69,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_li_in,moi,cmc,mass,Gyr,img,director
     
     # T-Tm profile
     ax[1,0].plot(r/1000,T-np.array(Tms),lw=3,color='black')
-    ax[1,0].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[1,0].set_xlim((0,2700))
     ax[1,0].set_ylim((0,150)) 
     ax[1,0].set_xlabel('Radius [km]')
     ax[1,0].set_ylabel('Tcore-Tmelt [K]')
@@ -78,7 +78,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_li_in,moi,cmc,mass,Gyr,img,director
     
     # Density profile
     ax[0,1].plot(r/1000,np.array(rho)/1000,lw=3,color='black')
-    ax[0,1].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[0,1].set_xlim((0,2700))
     ax[0,1].set_ylim((4,9))  
     ax[0,1].set_ylabel('Density [g/cm$^3$]')
     ax[0,1].set_xlabel('Radius [km]')
@@ -86,7 +86,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_li_in,moi,cmc,mass,Gyr,img,director
 
     # Pressure profile
     ax[1,1].plot(r/1000,np.array(P/1E+9),lw=3,color='black')
-    ax[1,1].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[1,1].set_xlim((0,2700))
     ax[1,1].set_ylim((0,50))  
     ax[1,1].set_ylabel('Pressure [GPa]')
     ax[1,1].set_xlabel('Radius [km]')
@@ -94,7 +94,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_li_in,moi,cmc,mass,Gyr,img,director
     
     # Sulfur Concentration
     ax[0,2].plot(r/1000,chi_li*100,lw=3,color='black')
-    ax[0,2].set_xlim((ri/1000-ice,r[-1]/1000))
+    ax[0,2].set_xlim((0,2700))
     ax[0,2].set_ylim((0,25))   
     if param['li_el']=='S': ax[0,2].set_ylabel('Sulfur Concentration [wt.%]')  
     elif param['li_el']=='Si': ax[0,2].set_ylabel('Silicon Concentration [wt.%]')
@@ -161,7 +161,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_li_in,moi,cmc,mass,Gyr,img,director
     #plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     #plt.tight_layout()
     plt.savefig(directory+"/{:03d}".format(img)+'.pdf', bbox_inches="tight")
-    plt.show()
+    #plt.show()
 
 import re
 

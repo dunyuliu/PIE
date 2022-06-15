@@ -51,6 +51,7 @@ Updated FeSi EoS for solid FeSi and changed partion coefficient.
 
 import numpy as np
 from scipy.interpolate import CubicSpline
+from scipy.interpolate import interp2d
 from scipy import integrate
 from scipy import optimize
 
@@ -342,3 +343,50 @@ def eosInnerCore(chi,p,T,param):
     # 20220302. The function is to calculate inner core density given Si and S wt%.
     fcc = solidFccFeSi(chi['Si'],p,T,param) # for chi['Si'] == 0, this will be the same as solidFccFe.
     return fcc
+
+# Added by Tilio. 20220614. 
+def liquidusFeSSi(xS,xSi,P): # xS and xSi in wt and P in Pa, returns liquidus temperature in K
+    P1=P*1e-9  
+    TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076   # Fe liquidus Anzellini et al. 2013
+    # eutectic melting T of Fe-S from Dumberry et al 2015
+    if P1 < 14:
+        Te0=1265.4
+        b1=-11.15
+        Pe0=3
+    elif P1 < 21:   
+        Te0=1142.7
+        b1=29
+        Pe0=14
+    else:    
+        Te0=1345.72
+        b1=12.9975
+        Pe0=21
+
+    TSEut=Te0+b1*(P1-Pe0) # eutectic melting T of Fe-S from Dumberry et al 2015
+    xSEut=0.11+0.187*np.exp(-0.065*P1)  # eutectic S fraction from Dumberry et al 2015
+    TSiEut=1538*(1.+0.040551*P1)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
+    xSiEut=0.12 # assumed constant for p range of Mercury, Edmund et al 2022
+    deltaTSi=(TmFe-TSiEut)*xSi/xSiEut
+    deltaTS=(TmFe-TSEut)*xS/xSEut
+    Tm=TmFe-deltaTS-deltaTSi
+
+    return Tm
+    
+class meltingDataFromFile:
+    def __init__(self,filename):
+        f = open(filename, "r")
+        f.readline()
+        f.readline()
+        xMin, xMax, nbrXNodes, pMin, pMax, nbrPNodes=map(int,f.readline().split())
+        T=np.zeros((nbrXNodes,nbrPNodes))
+        p=np.linspace(pMin,pMax,nbrPNodes)
+        x=np.linspace(xMin,xMax,nbrXNodes)/100
+        for i in range(nbrXNodes):
+            for j in range(nbrPNodes):
+                xx, px, Tx=f.readline().split()
+                T[i,j]=Tx
+        self.TF=interp2d(p,x,T,kind='cubic')
+    
+    def __call__(self,x,p):
+        return self.TF(p,x)[0]
+            
