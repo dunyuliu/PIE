@@ -20,7 +20,18 @@ def TmFeSSi(xS,xSi,p):
     xSiEut=0.12 # assumed constant for p range of Mercury, Edmund et al 2022
     deltaTSi=(TmFe-TSiEut)*xSi/xSiEut
     return TmFe-deltaTS-deltaTSi
-	
+
+def reorder_el(v,chi_Si_constant,param):
+    # input v and chi_Si_constant, which are the inverted wt and constant wt from chi_Si_icb.
+    el = param['li_el']
+    if el == 'S':
+        tmp = {'Si':0, 'S':v}
+    elif el == 'Si':
+        tmp = {'Si':v, 'S':0}
+    elif el == 'S+Si':
+        tmp = {'Si':chi_Si_icb, 'S':v}
+    return tmp
+
 def getCoreLiquidus(el1,el2,P,param,To):
 	# getCoreLuquidus calculates the melting temperature of the core
 	# 	given the wt% of light elements and pressure. 
@@ -35,7 +46,8 @@ def getCoreLiquidus(el1,el2,P,param,To):
     # What's To? Since To is mostly zero, the return for 'S'/'Si' is simply Tm.
     # The function simply calculates the melting temperature given P and wt% of light elements.
     
-    # el1 and el2 are wt% of S and Si, respectively. 
+    # el1 and el2 are wt% of S and Si, respectively.
+	
     el = param['li_el']
     if el == 'S':
         xS = el1
@@ -52,7 +64,7 @@ def getCoreLiquidus(el1,el2,P,param,To):
     return Tm-To
 
 def getchi_li_grun(yT,yP,chi_li_old,scale,param):
-# AR:what does this do?
+    # The function solves the eos of the outer core. 
     # scales
     P=scale['P']
     T=scale['T']  
@@ -63,35 +75,25 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
     T1=T*yT
     P1=P*yP
     # chi_li_old
-    #AR: how does the line below know about  chi_Si_icb??
-    Tm=getCoreLiquidus(chi_li_old, chi_Si_icb, P1,param,0)
+    chi_icb = reorder_el(chi_li_old, chi_Si_icb, param)
+    Tm=getCoreLiquidus(chi_icb['S'], chi_icb['Si'], P1,param,0)
 
     if T1>Tm: # if adiabat temperature larger than Liquidus
         # get chi_li on basis of previous radius         
         chi_li=chi_li_old
     else:
-        # get chi_li that matches melting
-        chi_li_eut=0.11+0.187*np.exp(-0.065*P1*1e-9) #AR this braket is only of for Fe-S should be differen for Fe-Si and Fe-S-Si
-        # AR better use a lambda function for gerCoreLiquidus like: lambda x: getCoreLiquidus(x,xSi,P1) for Fe-S and Fe-S-Si and lambda x: getCoreLiquidus(xS,x,P1)
-        sol = scipy.optimize.root(getCoreLiquidus, chi_li_old,
-                                  tol=1e-6, args=(chi_Si_icb, P1, param, T1))          
-        chi_li = min(sol.x[0],chi_li_eut)    
+        # get chi_li that matches melting T.
+        if el == 'S' or el == 'S+Si':
+            chi_li_eut=0.11+0.187*np.exp(-0.065*P1*1e-9) # Good for Fe-S.
+            sol = scipy.optimize.root(lambda x: getCoreLiquidus(x, chi_icb['Si'], P1, param, T1), chi_icb['S'], tol=1e-6) 
+        elif el == 'Si':
+            # ATTENTION! the eq above for chi_li_eut is not good for Fe-Si or Fe-S-Si.
+            chi_li_eut=0.12 # Set as constant, the same as in function TmFeSSi.
+            sol = scipy.optimize.root(lambda x: getCoreLiquidus(chi_icb['S'], x, P1, param, T1), chi_icb['Si'], tol=1e-6) 
 
-    # Updated Equation of State from Rivoldini
-#AR
-    # should only be this line and remove chitmp
-    #out = eos.liquidNonIdalFeSSi([chi_li, chi_Si_icb],P1/1E+9,T1,param)
-    if el == 'S': 
-        out = eos.liquidNonIdalFeS(chi_li,P1/1E+9,T1,param)
-    elif el == 'Si':
-        out = eos.liquidNonIdalFeSi(chi_li,P1/1E+9,T1,param)
-	# added by DL on 02/15/2022.
-    elif el == 'S+Si':
-        chitmp[0] = chi_li
-        chitmp[1] = chi_Si_icb
-        out = eos.liquidNonIdalFeSSi(chitmp,P1/1E+9,T1,param)
-    else:
-        print('WARNING: invalid light element')#AR: stop code if this occurs
+        chi_li = min(sol.x[0],chi_li_eut)    
+    chi_icb = reorder_el(chi_li, chi_Si_icb, param)
+    out = eos.liquidNonIdalFeSSi([chi_icb['S'], chi_icb['Si']],P1/1E+9,T1,param)
     rho = out[1]
     KS = out[4]*1E+9
     grun = out[6]

@@ -40,12 +40,18 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     mantle = plt.Circle((0, 0), radius=rh/1E+3, color='sandybrown')
     outer_core = plt.Circle((0, 0), radius=r[-1]/1E+3, color='salmon')
     inner_core = plt.Circle((0, 0), radius=ri/1E+3, color='silver')
-    
+        
     # identify snow zones
     zones=[]
     Tms=[]
     for i in range(len(r)):
-        Tm = lc.getCoreLiquidus(chi_li[i], chi_Si_icb, P[i],param,0)
+        if param['li_el'] == 'Si':
+            chi_icb = {'Si':chi_li[i], 'S':0}
+        elif param['li_el'] == 'S':
+            chi_icb = {'Si':0, 'S':chi_li[i]}
+        elif param['li_el'] == 'S+Si':
+            chi_icb = {'Si':chi_Si_icb, 'S':chi_li[i]}
+        Tm = lc.getCoreLiquidus(chi_icb['S'], chi_icb['Si'], P[i],param,0)
         Tms.append(Tm)
         if abs(T[i]-Tm)<1e-8:
             zones.append(i)
@@ -166,9 +172,9 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     #plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     #plt.savefig('/Users/gregor/Projects/Evolution of Mercury/plots/paper/'+param['name']+'/plot'+"{:02d}".format(img)+'.pdf',
     #            bbox_inches="tight")
+    if not os.path.exists(model_path):
+        os.mkdir(model_path)
     if not os.path.exists(present_figure_path):
-        #print(present_figure_path)
-    #else:
         os.mkdir(present_figure_path)
     plt.savefig(present_figure_path + '/Figure_'+str(img)+'.pdf',
                 bbox_inches="tight") # PAPER PLOT

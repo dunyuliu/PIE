@@ -2,10 +2,11 @@ import numpy as np
 import shoote as lc
 import glob,os,sys
 from globalvar import *
-import visualization_evolution as vis
+import TEST_visualization_evolution as vis
 import pandas as pd
+import csv # for adding data to csv -- added 6/28/2022
 
-def drivere(param, model, init):
+def drivere(param, model, init, pdicr): # pdicr == present day inner core radius -- added 6/29/2022 for the for loop in main.py for the csv files/figures
 
     scale = param['scale']
     rhomean_s = param['rhomean']
@@ -107,6 +108,20 @@ def drivere(param, model, init):
         #print('rhom:',rhom[k])
         vis.plot_isnow(ricb,r,rhd,rm,T1,P1,chi_li,rho1,
                 chi_li_in,moi,cmc,1,Gyr,k,directory,param)
+
+        # write in row of csv file that includes radii on snow zones and cmb temperature to plot -- added 6/27/2022
+        row = [chi_Si_icb, ricb/1E+3, Tcmb]
+        print("chi_Si_icb", chi_Si_icb)
+        print("ricb", ricb/1E+3)
+        print("Tcmb", Tcmb)
+        for radius in vis.radii_list:
+            row.append(radius)
+        print("row", row)
+        csv_radii_cmbtemp = open(radii_vs_cmbtemp_path + csv_radii_vs_cmbtemp_filename + '_' + str(pdicr) + '.csv', 'a')
+        if row[3] != 0.0:
+            writer = csv.writer(csv_radii_cmbtemp)
+            writer.writerow(row)
+        csv_radii_cmbtemp.close()
         
         #print('rs:',rs[k]/1000)
         #print('isnow:',fout[2])

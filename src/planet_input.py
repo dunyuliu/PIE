@@ -66,15 +66,38 @@ def planet(mod_type, mod_name, mod_li_el):
             h['li_el'] = 'S+Si'
             h['name'] = 'margot/Fe-S-Si'
         elif mod_name == 'margot' and mod_li_el == 'S':
-            h['CMR2'] = 0.346-0.014/20
+            h = model_generic.copy()
+            h['CMR2'] = 0.346
             h['CmC'] =  0.431# 0.148/margot_fesi['CMR2']
             h['li_el'] = 'S'
             h['name'] = 'margot/Fe-S'
         elif mod_name == 'margot' and mod_li_el == 'Si':
-            h['CMR2'] = 0.346-0.014/20
-            h['CmC'] =  0.148/h['CMR2']
+            h = model_generic.copy()
+            #h['CMR2'] = 0.346
+            #h['CmC'] =  0.148/h['CMR2']
+            h['CMR2'] = 0.346 - 0.014/5 # 0.346+-0.014, Steinbruge et al. (2021)
+            h['CmC'] =  0.431 # 0.426+-0.025, Steinbruge et al. (2021)
             h['li_el'] = 'Si'
             h['name'] = 'margot/Fe-Si'
+        elif mod_name == 'genova' and mod_li_el == 'S+Si':
+            h = model_generic.copy()
+            h['CMR2'] = 0.333
+            h['CmC'] = 0.148/h['CMR2']
+            h['li_el'] = 'S+Si'
+            h['name'] = 'genova/Fe-S-Si'
+        elif mod_name == 'genova' and mod_li_el == 'S':
+            h = model_generic.copy()
+            h['CMR2'] = 0.333
+            h['CmC'] = 0.148/h['CMR2']
+            h['li_el'] = 'S'
+            h['name'] = 'genova/Fe-S'
+        elif mod_name == 'genova' and mod_li_el == 'Si':
+            h = model_generic.copy()
+            h['CMR2'] = 0.333
+            h['CmC'] = 0.148/h['CMR2']
+            h['li_el'] = 'Si'
+            h['name'] = 'genova/Fe-Si'
+            
     elif mod_type == 'e':
         h = model_generic.copy()
         h['CMR2'] = 0.346

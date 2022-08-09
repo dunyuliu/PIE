@@ -100,12 +100,13 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     #    rho = eos.solidFccFeSi(chi_li_icb, P1/1E+9, T1, param)[1]
     #elif param['li_el'] == 'S+Si':
     #    rho = eos.solidFccFeSi(chi_Si_icb, P1/1E+9, T1, param)[1]
-    if param['li_el'] == 'Si':
-        chi_icb = {'Si':v[4], 'S':0}
-    elif param['li_el'] == 'S':
-        chi_icb = {'Si':0, 'S':v[4]}
-    elif param['li_el'] == 'S+Si':
-        chi_icb = {'Si':chi_Si_icb, 'S':v[4]}
+    #if param['li_el'] == 'Si':
+    #    chi_icb = {'Si':v[4], 'S':0}
+    #elif param['li_el'] == 'S':
+    #    chi_icb = {'Si':0, 'S':v[4]}
+    #elif param['li_el'] == 'S+Si':
+    #    chi_icb = {'Si':chi_Si_icb, 'S':v[4]}
+    chi_icb = reorder_el(v[4],chi_Si_icb,param)
     rho = eos.eosInnerCore(chi_icb,P1/1E+9,T1,param)[1]
 
     #boundary values at r0 for in://csegweb.cgd.ucar.edu/experiments/public/?ref=navtegration
@@ -132,7 +133,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     P1=P*ys[0,-1]
 
     # Use the new getCoreLiquidus function.
-    Tmicb = getCoreLiquidus(chi_li_icb,chi_Si_icb,P1,param,0)/T
+    Tmicb = getCoreLiquidus(chi_icb['S'],chi_icb['Si'],P1,param,0)/T # changed first two variables from chi_li_icb and chi_Si_icb
     # boundary values for FOC integration: 
     # continuity of P, g, and T=Tm
     yicb = [ys[0,-1],ys[1,-1],Tmicb,Tmicb]
@@ -154,15 +155,15 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     #    for i in range(0,ns):
     #        rhos[i]=eos.solidFccFeSi(chi_li[0],P*ys[0,i]/1E+9,T*ys[2,i],param)[1]/rhomean
     #elif param['li_el'] == 'S+Si':
-    #    for i in range(0,ns):
+     #    for i in range(0,ns):
     #        rhos[i]=eos.solidFccFeSi(chi_Si_icb, P*ys[0,i]/1E+9, T*ys[2,i], param)[1]/rhomean
-    if param['li_el'] == 'Si':
-        chi_icb = {'Si':chi_li[0], 'S':0}
-    elif param['li_el'] == 'S':
-        chi_icb = {'Si':0, 'S':chi_li[0]}
-    elif param['li_el'] == 'S+Si':
-        chi_icb = {'Si':chi_Si_icb, 'S':chi_li[0]}
-        
+    #if param['li_el'] == 'Si':
+    #    chi_icb = {'Si':chi_li[0], 'S':0}
+    #elif param['li_el'] == 'S':
+    #    chi_icb = {'Si':0, 'S':chi_li[0]}
+    #elif param['li_el'] == 'S+Si':
+    #    chi_icb = {'Si':chi_Si_icb, 'S':chi_li[0]}
+    chi_icb = reorder_el(chi_li[0],chi_Si_icb, param)    
     for i in range(0,ns):
         rhos[i]=eos.eosInnerCore(chi_icb,P*ys[0,i]/1E+9, T*ys[2,i], param)[1]/rhomean
         
@@ -194,25 +195,44 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     
     # snow state
     isnow=0  # snow index: default is no snow
-    
+
+         
     if ((chi_li[-1]-chi_li_icb) > 1e-10):
         isnow=1
         # get dimensional P and T at second point in FOC
         i=0
         T1=T*yc[i,2]
         P1=P*yc[i,0]
-        Tm=getCoreLiquidus(chi_li[i], chi_Si_icb, P1,param,0)  # get Tliquidus
+
+        # establish S and Si concentrations -- added 7/15/2022
+        #if param['li_el'] == 'Si':
+        #    chi_icb = {'Si':chi_li[i], 'S':0}
+        #elif param['li_el'] == 'S':
+        #    chi_icb = {'Si':0, 'S':chi_li[i]}
+        #elif param['li_el'] == 'S+Si':
+        #    chi_icb = {'Si':chi_Si_icb, 'S':chi_li[i]}
+        chi_icb = reorder_el(chi_li[i],chi_Si_icb, param)             
+        Tm=getCoreLiquidus(chi_icb['S'], chi_icb['Si'], P1,param,0)  # get Tliquidus
 
         if abs(T1-Tm)<1e-8: # if adiabat temperature = Liquidus 
             isnow=2    
-  
+        
     isnowcmb=0;  # snow at cmb index: default no
     if isnow==1 or isnow==2:
         i=-1
+
+        # establish S and Si concentrations -- added 7/15/2022
+        #if param['li_el'] == 'Si':
+        #    chi_icb = {'Si':chi_li[i], 'S':0}
+        #elif param['li_el'] == 'S':
+        #    chi_icb = {'Si':0, 'S':chi_li[i]}
+        #elif param['li_el'] == 'S+Si':
+        #    chi_icb = {'Si':chi_Si_icb, 'S':chi_li[i]}
+        chi_icb = reorder_el(chi_li[i],chi_Si_icb,param)
         # get dimensional P and T
         T1=T*yc[i,2]
         P1=P*yc[i,0]
-        Tm=getCoreLiquidus(chi_li[i],chi_Si_icb, P1,param,0)  # get Tliquidus
+        Tm=getCoreLiquidus(chi_icb['S'],chi_icb['Si'], P1,param,0)  # get Tliquidus
 
         if abs(T1-Tm)<1e-6:  #if adiabat temperature = Liquidus
             isnowcmb=1

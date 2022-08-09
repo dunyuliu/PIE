@@ -4,6 +4,8 @@ import glob,os,sys
 from globalvar import *
 import visualization_present as vis
 import pandas as pd
+import csv # added 6/30/2022
+
 def driverp(param, rs):
     # Initiate
     
@@ -28,7 +30,7 @@ def driverp(param, rs):
         # The Newton method calls J_mercmodel, which calculates the Jacobian and f of the system given initial v0 guesses.
         # J_mercmodel calls shoot_mercmodel to build J and f. 
         
-        v = lc.mynewtonSys('J_mercmodel',v0,[ricb[k],rhocr,rh,param,scale],xtol=xtol, ftol=ftol, maxit=maxit, verbose=False)
+        v = lc.mynewtonSys('J_mercmodel',v0,[ricb[k],rhocr,rh,param,scale],xtol=xtol, ftol=ftol, maxit=maxit, verbose=True)
     
         if v is None: continue #break
 		# Set initial guess for next as previous solution.
@@ -106,8 +108,10 @@ def driverp(param, rs):
       
         
         # SAVE DATA
+        if not os.path.isdir(model_path): # added 7/12/2022 when needing to specify li combination and geodetic constraints
+            os.mkdir(model_path)
         root = present_data_path
-        if not os.path.exists(root):
+        if not os.path.isdir(root):
             #print(present_figure_path)
         #else:
             os.mkdir(root)
@@ -127,13 +131,20 @@ def driverp(param, rs):
         out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='chi_li')
     
         #"""
-        df = pd.DataFrame({'rhom': [rhom], 'mass': [mass], 'moi': [moi], 'cmc': [cmc],
+        # column for chi_Si_icb added 6/30/2022
+        df = pd.DataFrame({'chi_Si_icb': [chi_Si_icb], 'rhom': [rhom], 'mass': [mass], 'moi': [moi], 'cmc': [cmc],
                            'Picb': [Picb], 'Tcmb': [Tcmb], 'isnow': [isnow],
                            'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 
                            'Pcmb': [Pcmb], 'chi_li_eut_icb': [chi_li_eut_icb],
                            'chi_li_eut_cmb': [chi_li_eut_cmb], 'ricb':rs[k], 'rcmb':[rcmb],
                            'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb]})
-        df.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='misc', mode='a')
+        # append dataframe to csv containing present day model data for contour plot -- added 6/30/2022
+        presentday_data = open(csvfiles_path + presentday_data_filename, 'a')
+        writer = csv.writer(presentday_data)
+        writer.writerow(df.iloc[0,:])
+        presentday_data.close()
+        
+        df.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='misc', mode='a') 
         #"""
         
         #cmb_radius_moi[moi_index] = rcmb
