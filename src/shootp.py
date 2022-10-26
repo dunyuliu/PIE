@@ -112,9 +112,9 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     rs        = sol.t # I think the discretization of rs is automatically determined from solve_ivp.
     ys        = sol.y
     ns        = len(rs)
-    print('rs', rs)
-    print('ys', ys)
-    print('ns', ns)
+    #print('rs', rs)
+    #print('ys', ys)
+    #print('ns', ns)
 
     # calculate melting temperature at ICB
     P1        = P*ys[0,-1] # pressure at ICB, ys[0,last dim].
@@ -122,7 +122,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     # boundary values for FOC integration: 
     # continuity of P, g, and T=Tm
     yicb      = [ys[0,-1],ys[1,-1],Tmicb,Tmicb]
-    print('Finish solving the solid inner core ... ...')
+    #print('Finish solving the solid inner core ... ...')
 
     # Shoot In Fluid core
     nc        = 51 # discretize the liquid core into nc grids. 
@@ -269,6 +269,9 @@ def mynewtonSys(Jfun,x0,varargin,
       start = time.time()
       k = k + 1
       J,f = eval(Jfun)(x,varargin)   #   Returns Jacobian matrix and f vector
+      if np.linalg.det(J) == 0:
+        print('Zero Determinant of J. Exit ... ...')
+        sys.exit()
       dx = np.dot(np.linalg.inv(J),f)
       x = x - dx
       if verbose:     

@@ -31,10 +31,11 @@ def driverp(param, rs):
         # The Newton method calls J_mercmodel, which calculates the Jacobian and f of the system given initial v0 guesses.
         # J_mercmodel calls shoot_mercmodel to build J and f. 
         
-        v             = lc.mynewtonSys('J_mercmodel',v0,[ricb[k],rhocr,rh,param,scale],xtol=xtol, ftol=ftol, maxit=maxit, verbose=True)
+        v             = lc.mynewtonSys('J_mercmodel', v0, [ricb[k],rhocr,rh,param,scale], xtol=xtol, ftol=ftol, maxit=maxit, verbose=False)
     
-        if v is None: continue #break
-		# Set initial guess for next as previous solution.
+        if v is None: break
+	
+	# Set initial guess for next as previous solution.
         v0=v 
       
         # final solution

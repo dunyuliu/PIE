@@ -1,16 +1,19 @@
+#! /usr/bin/env python3
+
+import sys
 # Global parameters for both the present_day and evolution model.
 
 # Main adjustables.
 #model_mode = 'e' # 'e'/'p', that will switch between evolution/present_day models.
-code_mode        = input("code_mode (e, p, or plot) = ") # allows user to input the type of model (present or evolution OR make contour plots) in terminal -- added 6/23/2022
-CMR2             = 'margot' # 'margot' or 'genova'
+code_mode        = sys.argv[1] #input("code_mode (e, p, or plot) = ") # allows user to input the type of model (present or evolution OR make contour plots) in terminal -- added 6/23/2022
+CMR2             = sys.argv[2] #'margot' # 'margot' or 'genova'
 #CMR2             = 'genova'
-light_element    = 'S+Si' # light element combination ('S', 'Si', 'S+Si') -- added 7/12/2022
-liquidus_eq    = 'Steinbruegge' # Steinbruegge for Steinbruegge2020 or Edmund for Edmund2022.
+light_element    = sys.argv[3] #'S+Si' # light element combination ('S', 'Si', 'S+Si') -- added 7/12/2022
+liquidus_eq      = sys.argv[4] #'Steinbruegge' # Steinbruegge for Steinbruegge2020 or Edmund for Edmund2022.
 #liquidus_eq    = 'Edmund'
 
 if light_element == 'S+Si' and code_mode!='plot':
-    chi_Si_icb   = float(input("chi_Si_icb = ")) # allows user to input chi_Si_icb value in terminal -- added 6/16/2022
+    chi_Si_icb   = float(sys.argv[5]) #float(input("chi_Si_icb = ")) # allows user to input chi_Si_icb value in terminal -- added 6/16/2022
 else:
     chi_Si_icb   = 0.0
 
@@ -37,7 +40,7 @@ contour_plotting_path       = model_path #'./contour_plotting_' + CMR2 + '_' + l
 csvfiles_path               = contour_plotting_path + 'csvfiles'
 presentday_data_filename    = '/present_day_' + CMR2 + '_' + str(chi_Si_icb) + '.csv'
 compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
-contourplot_file            = contour_plotting_path + '/plot_' + CMR2 + '_'
+contourplot_file            = 'plot_' + CMR2 + '_' + light_element + '_' + liquidus_eq
 presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb']
 contourcond                 = 'isnow'
 

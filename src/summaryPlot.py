@@ -23,12 +23,13 @@ compiled_csv.close()
 
 # Start 2D matrix of contour variable
 icr_inc        = 40 # number of inner core radius increments fom 0 to X km 
-contour_matrix = np.empty((12,icr_inc)) # change from 15 to 12 wt % Si values (to account for Si going up to only 12 wt %), number of inner core radius increments
+contour_matrix = np.empty((15,icr_inc)) # change from 15 to 12 wt % Si values (to account for Si going up to only 12 wt %), number of inner core radius increments
 row_index      = 0
 
 for csvfile in os.listdir(csvfiles_path):
-    if row_index < 12: # to only include data where wt % Si goes up to 12
+    if row_index < 15: # to only include data where wt % Si goes up to 12
         df_individual   = pd.read_csv(csvfiles_path + '/' + csvfile)
+        print(df_individual)
         # Also extract data of contour variable to make into 2D matrix
         row             = list(df_individual[contourcond])
         if len(row) != icr_inc:
@@ -69,7 +70,7 @@ ylabel    = 'Inner Core Radius [km]'
 #ylabel = 'wt % S inner core avg'
 contour_axis  = np.array(df_compiled[contourcond])
 sample    = contour_axis[0]
-contour_scale = int(np.log10(sample)) # get scale of contour axis values
+#contour_scale = int(np.log10(sample)) # get scale of contour axis values
 
 # Now plot
 if contourcond == 'isnow' or contourdond == 'isnowcmb':
@@ -95,14 +96,14 @@ plt.savefig(contourplot_file + contourcond + '_yaxis = ' + ylabel + '.tiff', dpi
 # Make plot of actual grid contour + lines
 plt.clf()
 plt.figure(1, figsize=(10,10))
-xticks = np.linspace(1, 12, 12) # change from np.linspace(1, 15, 15) to account for Si going up to only 12 wt %
-yticks = np.linspace(0, 1750, icr_inc)
+xticks   = np.linspace(1, 15, 15) # change from np.linspace(1, 15, 15) to account for Si going up to only 12 wt %
+yticks   = np.linspace(0, 1750, icr_inc)
 #minc, maxc = np.min(contour_axis), np.max(contour_axis)
-X,Y = np.meshgrid(xticks, yticks)
-Z = np.transpose(contour_matrix)
+X,Y      = np.meshgrid(xticks, yticks)
+Z        = np.transpose(contour_matrix)
 contouraxiscopy = np.sort(contour_axis.copy())
-levels = np.linspace(contouraxiscopy[0], contouraxiscopy[-1], 50)
-cm = plt.cm.get_cmap(cmap)
+levels   = np.linspace(contouraxiscopy[0], contouraxiscopy[-1], 50)
+cm       = plt.cm.get_cmap(cmap)
 #cp = plt.contour(xticks, yticks, Z, levels, colors='black', linestyles='dashed', linewidths=1)
 #plt.clabel(cp, inline=1, fontsize=10)
 if contourcond == 'isnow' or contourcond == 'isnowcmb':  # snow zone condition doesn't need contour scale adjusted
@@ -131,7 +132,7 @@ index = 0
 for i in range(0,3):
     for j in range(0,2):
         c = np.array(df_compiled[conds[index]])
-        cscale = int(np.log10(c[0]))
+        # cscale = int(np.log10(c[0]))
         if index     == 0: 
             minc, maxc = 900, 2300
         elif index == 1:
@@ -158,6 +159,6 @@ for i in range(0,3):
         index += 1
 
 # save subplot figure
-plt.savefig(contourplot_file + 'subplots' + '_yaxis = ' + ylabel + '.png', dpi=300)
+plt.savefig(contourplot_file + '.png', dpi=600)
 
 sys.exit()  

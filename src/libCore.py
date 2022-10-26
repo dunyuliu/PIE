@@ -4,6 +4,7 @@ import numpy as np
 import time
 import scipy
 import coreEos as eos
+import sys
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv
 from scipy.constants import G
@@ -12,21 +13,22 @@ from globalvar import *
 from planet_input import *
 
 # Added by Tilio. 20220614.
-TmFeS=eos.meltingDataFromFile("TmFeSmelt.dat")
+TmFeS     = eos.meltingDataFromFile("TmFeSmelt.dat")
+
 def TmFeSSi(xS,xSi,p):
-    p1=p*1e-9 
-    TmFe= 495.4969600595926*(22.19 + p1)**0.42016806722689076   # Fe liquidus Anzellini et al. 2013
-    deltaTS=TmFeS(0,p1)-TmFeS(xS,p1)
-    TSiEut=1538*(1.+0.040551*p1)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
-    xSiEut=max_Si_Edmund2022 # assumed constant for p range of Mercury, Edmund et al 2022
-    deltaTSi=(TmFe-TSiEut)*xSi/xSiEut
+    p1      = p*1e-9 
+    TmFe    = 495.4969600595926*(22.19 + p1)**0.42016806722689076   # Fe liquidus Anzellini et al. 2013
+    deltaTS = TmFeS(0,p1)-TmFeS(xS,p1)
+    TSiEut  = 1538*(1.+0.040551*p1)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
+    xSiEut  = max_Si_Edmund2022 # assumed constant for p range of Mercury, Edmund et al 2022
+    deltaTSi= (TmFe-TSiEut)*xSi/xSiEut
     return TmFe-deltaTS-deltaTSi
 
 def TmFeSSi_Steinbruegge2020(xS,xSi,P):
     # Fe-FeS-FeSi melting temperature
     # xS and xSi in wt and P in Pa, returns liquidus temperature in K.
-    P1    = P*1e-9  
-    TmFe  = 495.4969600595926*(22.19+P1)**0.42016806722689076   # Fe melting T from Anzellini et al. (2013), 
+    P1      = P*1e-9  
+    TmFe    = 495.4969600595926*(22.19+P1)**0.42016806722689076   # Fe melting T from Anzellini et al. (2013), 
     # also in Dumberry and Rivoldini (2015) eq 29.
 
     # coefficients to calculate the eutectic melting T for FeS from Dumberry and Rivoldini (2015) eq 27.
@@ -43,12 +45,12 @@ def TmFeSSi_Steinbruegge2020(xS,xSi,P):
         b1  = 12.9975
         Pe0 = 21
 
-    TSEut  = Te0+b1*(P1-Pe0) # eutectic melting Te(P) of FeS from Dumberry and Rivoldini (2015) eq 27.
-    xSEut  = 0.11+0.187*np.exp(-0.065*P1)  # eutectic S fraction xi_e(P) from Dumberry and Rivoldini (2015) eq 28.
+    TSEut   = Te0+b1*(P1-Pe0) # eutectic melting Te(P) of FeS from Dumberry and Rivoldini (2015) eq 27.
+    xSEut   = 0.11+0.187*np.exp(-0.065*P1)  # eutectic S fraction xi_e(P) from Dumberry and Rivoldini (2015) eq 28.
 
     #TSiEut=1538*(1.+0.040551*P1)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
-    Tm15   = 1478 *(P1/10+1)**(1/3) # parameterization for Anzellini; used in Steinbruegge et al. (2020).
-    xSiEut = max_Si_Steinbruegge2020
+    Tm15    = 1478 *(P1/10+1)**(1/3) # parameterization for Anzellini; used in Steinbruegge et al. (2020).
+    xSiEut  = max_Si_Steinbruegge2020
 
     deltaTSi = (TmFe-Tm15)*xSi/xSiEut
     deltaTS  = (TmFe-TSEut)*xS/xSEut # the delta term in eq 26 of DR2015.
@@ -56,7 +58,7 @@ def TmFeSSi_Steinbruegge2020(xS,xSi,P):
 
 def reorder_el(v,chi_Si_constant,param):
     # input v and chi_Si_constant, which are the inverted wt and constant wt from chi_Si_icb.
-    el = param['li_el']
+    el      = param['li_el']
     if el == 'S':
         tmp = {'Si':0, 'S':v}
     elif el == 'Si':
@@ -83,13 +85,13 @@ def getCoreLiquidus(el1,el2,P,param,To):
 	
     el = param['li_el']
     if el == 'S':
-        xS = el1
+        xS  = el1
         xSi = 0
     elif el == 'Si':
-        xS = 0
+        xS  = 0
         xSi = el2
     elif el == 'S+Si':
-        xS = el1
+        xS  = el1
         xSi = el2
 		
     #Tm=eos.liquidusFeSSi(xS,xSi,P)
@@ -99,13 +101,13 @@ def getCoreLiquidus(el1,el2,P,param,To):
 def getchi_li_grun(yT,yP,chi_li_old,scale,param):
     # The function solves the eos of the outer core. 
     # scales
-    P      = scale['P']
-    T      = scale['T']  
-    el     = param['li_el']
+    P       = scale['P']
+    T       = scale['T']  
+    el      = param['li_el']
     
     # get dimensional P and T
-    T1     = T*yT
-    P1     = P*yP
+    T1      = T*yT
+    P1      = P*yP
 
     # chi_li_old, inverted light element xi from the smaller radii on the integration path.
     chi_icb = reorder_el(chi_li_old, chi_Si_icb, param)
@@ -122,6 +124,12 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
         if el == 'S' or el == 'S+Si':
             chi_li_eut  = 0.11+0.187*np.exp(-0.065*P1*1e-9) # The maximum light element concentration allowed. This equation is good for Fe-FeS based on eq 28 in DR2015.
             sol         = scipy.optimize.root(lambda x: getCoreLiquidus(x, chi_icb['Si'], P1, param, T1), chi_icb['S'], tol=1e-6) 
+            if liquidus_eq == 'Steinbruegge' and chi_Si_icb > max_Si_Steinbruegge2020:
+                print('Exceeding allowed maximum Si%wt of 15% with Steinbruegge2020 value, break the code ... ...')
+                sys.exit()
+            elif liquidus_eq == 'Edmund' and chi_Si_icb > max_Si_Edmund2022:
+                print('Exceeding allowed maximum Si%wt of 12% with Edmund2022 value, break the code ... ...')
+                sys.exit()
         elif el == 'Si':
             # ATTENTION! the eq above for chi_li_eut is not good for Fe-Si or Fe-S-Si.
             if liquidus_eq == 'Steinbruegge':
@@ -129,9 +137,12 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
             elif liquidus_eq == 'Edmund':
                 chi_li_eut  = max_Si_Edmund2022
             sol         = scipy.optimize.root(lambda x: getCoreLiquidus(chi_icb['S'], x, P1, param, T1), chi_icb['Si'], tol=1e-6) 
-            
+        
+        if sol.x[0] < 0:
+            print('No negative %wt of S is allowed. Set to zero.')
+            sol.x[0] = 0
         chi_li = min(sol.x[0],chi_li_eut)    
-        print(chi_li, chi_li_eut)
+        #print(chi_li, chi_li_eut)
     chi_icb = reorder_el(chi_li, chi_Si_icb, param)
     out     = eos.liquidNonIdalFeSSi([chi_icb['S'], chi_icb['Si']],P1/1E+9,T1,param)
     #print(out,chi_li_old)

@@ -142,14 +142,13 @@ if code_mode == 'p':
         os.mkdir(csvfiles_path)
     # append columns to csv file for present day data
     presentday_data = open(csvfiles_path + presentday_data_filename, 'w')
-    writer = csv.writer(presentday_data)
+    writer          = csv.writer(presentday_data)
+
     writer.writerow(presentday_columns)
     presentday_data.close()
     
     rs=np.arange(1e1, 2e6, dr)    # value for C/MR2=0.346
-
-    print('ricb\trcmb\trcmb\tx\tTcmb\trhoM\tMOI')
-	#resGenova = driver(mercuryGenova, ricb)
+    #resGenova = driver(mercuryGenova, ricb)
     res = driverp(param, rs)
 
     print('Finish simulating model' + param['name'] + '...')    

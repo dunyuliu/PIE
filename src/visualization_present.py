@@ -180,6 +180,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     plt.savefig(present_figure_path + '/Figure_'+str(img)+'.pdf',
                 bbox_inches="tight") # PAPER PLOT
     #plt.show()
+    plt.close()
     
  
     """
