@@ -104,12 +104,13 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     ax[0,2].set_ylim((0,25))   
     #ax[0,2].set_ylim((5.0,5.8))  # PAPER PLOT
     #ax[0,2].set_yticks([2.4,2.5,2.6])
-    if param['li_el']=='S': ax[0,2].set_ylabel('Sulfur Concentration [wt.%]')  
-    elif param['li_el']=='Si': ax[0,2].set_ylabel('Silicon Concentration [wt.%]')
+    if param['li_el']  =='S':    ax[0,2].set_ylabel('Sulfur Concentration [wt.%]')  
+    elif param['li_el']=='Si':   ax[0,2].set_ylabel('Silicon Concentration [wt.%]')
     elif param['li_el']=='S+Si': ax[0,2].set_ylabel('Sulfur Concentration [wt.%]')
 
-    ax[0,2].set_xlabel('Radius [km]')  
-    plt.text(0.02, 0.94, 'Avg. incl. inner core = '+str(round(chi_liin*100,1))+' wt.%', transform=ax[0,2].transAxes)
+    ax[0,2].set_xlabel('Radius [km]')
+    if param['li_el']  =='S' or param['li_el']  =='S+Si':
+        plt.text(0.02, 0.94, 'Avg. incl. inner core = '+str(round(chi_liin*100,1))+' wt.%', transform=ax[0,2].transAxes)
     ax[0,2].grid()  
      
     # plot mercury layouts
@@ -147,7 +148,7 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     moi = param['CMR2']
     cmc = param['CmC']
     
-    ax[1,2].annotate('Mass = '+str(round(mass,3))+' | MoI = '+str(round(moi,3))+ ' | $\phi_0$ = 38.5 arcsec', 
+    ax[1,2].annotate('Mass = '+str(round(mass,3))+' | MoI = '+str(round(moi,3))+ ' | $\phi_0$ = 38.5 arcsec'+ ' | Liquidus EQ ' + str(liquidus_eq), 
                 xy=(-off,1.05*off), xytext=(2, 2),
                 textcoords='offset points',
                 color='black', size=14)  

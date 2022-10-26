@@ -104,7 +104,7 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
 
     return r,y,rhof,chi_li
 	
-def rhs_PTrhog_solid_snow(chi_icb, r,y,ricb,scale,param):
+def rhs_PTrhog_solid_snow(chi_icb, r, y, ricb, scale, param):
     """
     rhs_PTrhog  Right-hand sides of coupled ODEs for interior model equations
 
@@ -112,28 +112,28 @@ def rhs_PTrhog_solid_snow(chi_icb, r,y,ricb,scale,param):
               y      = vector (length 3) of dependent variables
               ricb   = ICB radius
 
-    Output:   dydr = column vector of dy(i)/dr values
+    Output:   dydr   = column vector of dy(i)/dr values
     """
 
     # scales
-    a=scale['a']
-    ga=scale['ga']
-    P=scale['P']
-    T=scale['T']
+    a       = scale['a']
+    ga      = scale['ga']
+    P       = scale['P']
+    T       = scale['T']
     
     # get dimensional P and T
-    T1=T*y[2]
-    P1=P*y[0]
+    T1      = T*y[2]
+    P1      = P*y[0]
 
     #out = eos.solidFccFe(P1/1E+9,T1,param)
-    out = eos.eosInnerCore(chi_icb,P1/1E+9,T1,param)
-    rho = out[1]
-    grun = out[6]
-    KS = out[4]*1e+9
+    out     = eos.eosInnerCore(chi_icb,P1/1E+9,T1,param)
+    rho     = out[1]
+    grun    = out[6]
+    KS      = out[4]*1e+9
     # dydr: derivative of y to dr.
-    dydr = [-(a*ga/P)*rho*y[1],
-            (a/ga)*4*np.pi*G*rho-2*y[1]/r,
-            -(a*ga)*grun*rho*y[1]*y[2]/KS]
+    dydr    = [-(a*ga/P)*rho*y[1],
+                (a/ga)*4*np.pi*G*rho-2*y[1]/r,
+                 -(a*ga)*grun*rho*y[1]*y[2]/KS]
     
     return dydr
 	

@@ -280,37 +280,33 @@ def liquidNonIdalFeS(x,p,T,param):
 # 20220331. liquidNonIdalFeSSi is copied from presentDay model.
 def liquidNonIdalFeSSi(x,p,T,param):
     # x[0] is wt S and x[1] is wt Si
-    MolarMassFe = param['MFe']
-    MolarMassS = param['MS']
-    MolarMassSi = param['MSi']
-    liquidFe = param['lFe']
-    liquidFeS = param['lFeS']
-    liquidFeSi = param['lFeSi']    
-    chi = np.zeros(3)
+    MolarMassFe  = param['MFe']
+    MolarMassS   = param['MS']
+    MolarMassSi  = param['MSi']
+    liquidFe     = param['lFe']
+    liquidFeS    = param['lFeS']
+    liquidFeSi   = param['lFeSi']    
+    chi          = np.zeros(3)
     
     
     # convert wt fraction (S,Si) to mol fraction (FeS,FeSi)
     #chi[1]=MolarMassFe*x[0]/(MolarMassS*(1-x[0]-x[1])) 
     #chi[2]=MolarMassFe*x[1]/(MolarMassSi*(1-x[0]-x[1])) 
-    #chi[1]
-    tmp1=(x[0]/MolarMassS)/(x[0]/MolarMassS + x[1]/MolarMassSi + (1-x[0]-x[1])/MolarMassFe)
-    #chi[2]
-    tmp2=(x[1]/MolarMassSi)/(x[0]/MolarMassS + x[1]/MolarMassSi + (1-x[0]-x[1])/MolarMassFe)
-    #chitmp1 = chi[1]/(1-chi[1]-chi[2])
-    #chitmp2 = chi[2]/(1-chi[1]-chi[2])
-    chi[1] = tmp1/(1-tmp1-tmp2)
-    chi[2] = tmp2/(1-tmp1-tmp2)
-    chi[0]=1-chi[1]-chi[2]
+    tmp1         = (x[0]/MolarMassS)/(x[0]/MolarMassS + x[1]/MolarMassSi + (1-x[0]-x[1])/MolarMassFe)
+    tmp2         = (x[1]/MolarMassSi)/(x[0]/MolarMassS + x[1]/MolarMassSi + (1-x[0]-x[1])/MolarMassFe)
+    chi[1]       = tmp1/(1-tmp1-tmp2)
+    chi[2]       = tmp2/(1-tmp1-tmp2)
+    chi[0]       = 1-chi[1]-chi[2]
         
-    nonIdealFeFeSSi=margules3Solution(chi,p,T,liquidFe,liquidFeS,liquidFeSi,VexFeFeSFeSi)
-    liquidNonIdalFeSSi=[nonIdealFeFeSSi.V,
-                       nonIdealFeFeSSi.rho,
-                       nonIdealFeFeSSi.alpha,
-                       nonIdealFeFeSSi.KT,
-                       nonIdealFeFeSSi.KS,
-                       nonIdealFeFeSSi.Cp,
-                       nonIdealFeFeSSi.gamma,
-                       nonIdealFeFeSSi.vp]
+    nonIdealFeFeSSi    = margules3Solution(chi,p,T,liquidFe,liquidFeS,liquidFeSi,VexFeFeSFeSi)
+    liquidNonIdalFeSSi = [nonIdealFeFeSSi.V,
+                          nonIdealFeFeSSi.rho,
+                          nonIdealFeFeSSi.alpha,
+                          nonIdealFeFeSSi.KT,
+                          nonIdealFeFeSSi.KS,
+                          nonIdealFeFeSSi.Cp,
+                          nonIdealFeFeSSi.gamma,
+                          nonIdealFeFeSSi.vp]
     
     return liquidNonIdalFeSSi
 
@@ -343,34 +339,6 @@ def eosInnerCore(chi,p,T,param):
     # 20220302. The function is to calculate inner core density given Si and S wt%.
     fcc = solidFccFeSi(chi['Si'],p,T,param) # for chi['Si'] == 0, this will be the same as solidFccFe.
     return fcc
-
-# Added by Tilio. 20220614. 
-def liquidusFeSSi(xS,xSi,P): # xS and xSi in wt and P in Pa, returns liquidus temperature in K
-    P1=P*1e-9  
-    TmFe= 495.4969600595926*(22.19 + P1)**0.42016806722689076   # Fe liquidus Anzellini et al. 2013
-    # eutectic melting T of Fe-S from Dumberry et al 2015
-    if P1 < 14:
-        Te0=1265.4
-        b1=-11.15
-        Pe0=3
-    elif P1 < 21:   
-        Te0=1142.7
-        b1=29
-        Pe0=14
-    else:    
-        Te0=1345.72
-        b1=12.9975
-        Pe0=21
-
-    TSEut=Te0+b1*(P1-Pe0) # eutectic melting T of Fe-S from Dumberry et al 2015
-    xSEut=0.11+0.187*np.exp(-0.065*P1)  # eutectic S fraction from Dumberry et al 2015
-    TSiEut=1538*(1.+0.040551*P1)**0.4608294930875576 # Fe-rich eutectic melting T of Fe-Si Edmund et al 2022
-    xSiEut=0.12 # assumed constant for p range of Mercury, Edmund et al 2022
-    deltaTSi=(TmFe-TSiEut)*xSi/xSiEut
-    deltaTS=(TmFe-TSEut)*xS/xSEut
-    Tm=TmFe-deltaTS-deltaTSi
-
-    return Tm
     
 class meltingDataFromFile:
     def __init__(self,filename):

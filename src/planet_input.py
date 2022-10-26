@@ -2,7 +2,7 @@ import coreEos as eos
 from libCore import *
 from scipy.constants import G
 
-def planet(mod_type, mod_name, mod_li_el):
+def planet(code_mode, CMR2, light_element, liquidus_eq):
     fccFe=eos.eosAndersonGrueneisen(M0=MFe,p0=1.e-5,T0=298,V0=6.82,
                             alpha0=7.e-5,KT0=163.4,KTP0=5.38,
                             deltaT=5.5,kappa=1.4,GibbsE=eos.GibbsfccFe)        
@@ -41,11 +41,11 @@ def planet(mod_type, mod_name, mod_li_el):
          'li_el':'None',
          'name':'replace_me',
          'rhomean':'None',
-          'rhocr':2974,
-          'hcr':26e3,
-          'rh':'None',
-          'scale':'None',
-          'v0':[0.8,1.0,0.8,0.7,0.05]} # initial guesses
+         'rhocr':2974,
+         'hcr':26e3,
+         'rh':'None',
+         'scale':'None',
+         'v0':[0.8,1.0,0.8,0.7,0.05]} # initial guesses
           
     M = model_generic['GM']/G
     rm = model_generic['rm']
@@ -58,45 +58,60 @@ def planet(mod_type, mod_name, mod_li_el):
     model_generic['rh'] = (rm-hcr)/rm # radius of crust-mantle boundary
     
     # Margot Fe-S-Si models
-    if mod_type == 'p':
-        if mod_name == 'margot' and mod_li_el == 'S+Si':
-            h = model_generic.copy()
+    if code_mode   == 'p':
+        h          = model_generic.copy()
+        if CMR2    == 'margot':
             h['CMR2'] = 0.346
-            h['CmC'] = 0.148/h['CMR2']
-            h['li_el'] = 'S+Si'
-            h['name'] = 'margot/Fe-S-Si'
-        elif mod_name == 'margot' and mod_li_el == 'S':
-            h = model_generic.copy()
-            h['CMR2'] = 0.346
-            h['CmC'] =  0.431# 0.148/margot_fesi['CMR2']
-            h['li_el'] = 'S'
-            h['name'] = 'margot/Fe-S'
-        elif mod_name == 'margot' and mod_li_el == 'Si':
-            h = model_generic.copy()
-            #h['CMR2'] = 0.346
-            #h['CmC'] =  0.148/h['CMR2']
-            h['CMR2'] = 0.346 - 0.014/5 # 0.346+-0.014, Steinbruge et al. (2021)
-            h['CmC'] =  0.431 # 0.426+-0.025, Steinbruge et al. (2021)
-            h['li_el'] = 'Si'
-            h['name'] = 'margot/Fe-Si'
-        elif mod_name == 'genova' and mod_li_el == 'S+Si':
-            h = model_generic.copy()
+        elif CMR2  == 'genova':
             h['CMR2'] = 0.333
-            h['CmC'] = 0.148/h['CMR2']
-            h['li_el'] = 'S+Si'
-            h['name'] = 'genova/Fe-S-Si'
-        elif mod_name == 'genova' and mod_li_el == 'S':
-            h = model_generic.copy()
-            h['CMR2'] = 0.333
-            h['CmC'] = 0.148/h['CMR2']
-            h['li_el'] = 'S'
-            h['name'] = 'genova/Fe-S'
-        elif mod_name == 'genova' and mod_li_el == 'Si':
-            h = model_generic.copy()
-            h['CMR2'] = 0.333
-            h['CmC'] = 0.148/h['CMR2']
-            h['li_el'] = 'Si'
-            h['name'] = 'genova/Fe-Si'
+        h['CmC'] = 0.148/h['CMR2']
+        h['li_el'] = light_element
+        if liquidus_eq == 'Steinbruegge':
+            h['liquidus'] = TmFeSSi_Steinbruegge2020
+            max_Si        = max_Si_Steinbruegge2020
+        elif liquidus_eq == 'Edmund': 
+            h['liquidus'] = TmFeSSi
+            max_Si        = max_Si_Edmund2022
+        h['name'] = CMR2 + '/' + light_element + '_' + liquidus_eq
+
+        # elif mod_name == 'margot' and mod_li_el == 'S':
+            # h = model_generic.copy()
+            # h['CMR2'] = 0.346
+            # h['CmC'] =  0.431# 0.148/margot_fesi['CMR2']
+            # h['li_el'] = 'S'
+            # h['name'] = 'margot/Fe-S'
+        # elif mod_name == 'margot' and mod_li_el == 'Si':
+            # h = model_generic.copy()
+            # #h['CMR2'] = 0.346
+            # #h['CmC'] =  0.148/h['CMR2']
+            # h['CMR2'] = 0.346 - 0.014/5 # 0.346+-0.014, Steinbruge et al. (2021)
+            # h['CmC'] =  0.431 # 0.426+-0.025, Steinbruge et al. (2021)
+            # h['li_el'] = 'Si'
+            # h['name'] = 'margot/Fe-Si'
+            # if liquidus_mode == 'S':
+                # h['liquidus'] = TmFeSSi_Steinbruegge2020
+                # max_Si = max_Si_Steinbruegge2020
+            # elif liquidus_mode == 'E': 
+                # h['liquidus'] = TmFeSSi
+                # max_Si = max_Si_Edmund2022
+        # elif mod_name == 'genova' and mod_li_el == 'S+Si':
+            # h = model_generic.copy()
+            # h['CMR2'] = 0.333
+            # h['CmC'] = 0.148/h['CMR2']
+            # h['li_el'] = 'S+Si'
+            # h['name'] = 'genova/Fe-S-Si'
+        # elif mod_name == 'genova' and mod_li_el == 'S':
+            # h = model_generic.copy()
+            # h['CMR2'] = 0.333
+            # h['CmC'] = 0.148/h['CMR2']
+            # h['li_el'] = 'S'
+            # h['name'] = 'genova/Fe-S'
+        # elif mod_name == 'genova' and mod_li_el == 'Si':
+            # h = model_generic.copy()
+            # h['CMR2'] = 0.333
+            # h['CmC'] = 0.148/h['CMR2']
+            # h['li_el'] = 'Si'
+            # h['name'] = 'genova/Fe-Si'
             
     elif mod_type == 'e':
         h = model_generic.copy()
