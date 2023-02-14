@@ -99,7 +99,8 @@ def getCoreLiquidus(el1,el2,P,param,To):
     return Tm-To
 
 def getchi_li_grun(yT,yP,chi_li_old,scale,param):
-    # The function solves the eos of the outer core. 
+    # The function solves the eos of the outer core.
+    err = False
     # scales
     P       = scale['P']
     T       = scale['T']  
@@ -139,8 +140,9 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
             sol         = scipy.optimize.root(lambda x: getCoreLiquidus(chi_icb['S'], x, P1, param, T1), chi_icb['Si'], tol=1e-6) 
         
         if sol.x[0] < 0:
-            print('No negative %wt of S is allowed. Set to zero.')
-            sol.x[0] = 0
+            print('No negative %wt of S is allowed. Alert! ')
+            err = True # error_code 1, negative %wt light element in the solving process ... ...
+            #sol.x[0] = 10000
         chi_li = min(sol.x[0],chi_li_eut)    
         #print(chi_li, chi_li_eut)
     chi_icb = reorder_el(chi_li, chi_Si_icb, param)
@@ -149,7 +151,7 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
     rho     = out[1]
     KS      = out[4]*1E+9
     grun    = out[6]
-    return chi_li, rho, grun, KS
+    return chi_li, rho, grun, KS, err
 	
 def getpotvsr(nr,bigGnd,rnd,rhond,gnd):
     # This function calculates the total potential vs radius in core

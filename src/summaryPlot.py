@@ -48,17 +48,26 @@ df_compiled     = pd.read_csv(compiled_csv)
 compiled_csv.close()
 # Add dataframe column with markers for snow zone/no snow zone
 # '^' = snow zone, 'o' = no snow zone   
-df_compiled['marker'] = 'o'
+df_compiled['marker'] = 'X'
+
+#isnow      = fout[2] # (0,1,2 = no, layer, deep snow)
+#isnowcmb   = fout[3] #isnowcmb  (0,1 = snow at CMB (no,yes))
 
 for i in range(0, len(df_compiled)):
-    if df_compiled.loc[i, 'isnow'] == 2:
+    if df_compiled.loc[i, 'isnow'] == 2 and df_compiled.loc[i,'chi_li_icb'] > 0: 
+    # isnow==2 and chi_li_icb>0. Snow zone.
         df_compiled.loc[i, 'marker'] = '^'
+    elif df_compiled.loc[i, 'isnow'] == 1 and df_compiled.loc[i,'chi_li_icb'] > 0: 
+        df_compiled.loc[i, 'marker'] = '*'
+    elif df_compiled.loc[i, 'isnow'] == 0 and df_compiled.loc[i,'chi_li_icb'] > 0: 
+        df_compiled.loc[i, 'marker'] = 'o'
 wt_Si     = np.array(df_compiled['chi_Si_icb']) * 100
 ricb      = np.array(df_compiled['ricb']) / 1E+3
 icb_S     = np.array(df_compiled['chi_li_icb']) * 100
 inner_S   = np.array(df_compiled['chi_li_in']) * 100
 markers   = np.array(df_compiled['marker'])
-sz_i      = np.where(markers == '^') # used for plotting
+sz2_i      = np.where(markers == '^') # used for plotting
+sz1_i      = np.where(markers == '*') # used for plotting
 no_sz_i   = np.where(markers == 'o') # used for plotting
 
 # Make axis variables and labels separately in case axes change
@@ -80,15 +89,17 @@ else:
     minc, maxc = np.min(contour_axis), np.max(contour_axis)
     maxc = maxc + 10**(contour_scale-1) / 2
     cmap = 'gist_rainbow_r'
-    plt.scatter(xaxis[sz_i], yaxis[sz_i], c=contour_axis[sz_i], marker='^', edgecolor='black', s=96.0, cmap=cmap, vmin=minc, vmax=maxc)
+    plt.scatter(xaxis[sz2_i], yaxis[sz2_i], c=contour_axis[sz2_i], marker='^', edgecolor='black', s=96.0, cmap=cmap, vmin=minc, vmax=maxc)
+    plt.scatter(xaxis[sz1_i], yaxis[sz1_i], c=contour_axis[sz1_i], marker='X', edgecolor='black', s=96.0, cmap=cmap, vmin=minc, vmax=maxc)
     plt.scatter(xaxis[no_sz_i], yaxis[no_sz_i], c=contour_axis[no_sz_i], marker='o', s=96.0, cmap=cmap, vmin=minc, vmax=maxc)
 
 plt.xlabel(xlabel, fontsize=20)
 plt.xlim((0,13)) # change from plt.xlim((0,16)) to account for Si going up to only 12 wt %
 plt.xticks(fontsize=15)
+plt.ylim((0,2000))
 plt.ylabel(ylabel, fontsize=20)
 plt.yticks(fontsize=15)
-title = CMR2.capitalize() + ' MOI -- Contouring for ' + contourcond.capitalize()
+title = str(CMR2).capitalize() + ' MOI -- Contouring for ' + contourcond.capitalize()
 plt.title(title, fontsize=24)
 plt.colorbar()
 plt.savefig(contourplot_file + contourcond + '_yaxis = ' + ylabel + '.tiff', dpi=300)
@@ -142,20 +153,23 @@ for i in range(0,3):
         elif index == 3:
             minc, maxc = 5.79e22, 5.95e22
         elif index == 4:
-            minc, maxc = -0.01, 0.2
+            minc, maxc = 0.0, 0.2
         elif index == 5:
-            minc, maxc = -0.03, 0.16
+            minc, maxc = 0.0, 0.16
         #minc = np.min(c)
         #maxc = np.max(c) + 10**(cscale-1) / 2
-        ax[i,j].scatter(xaxis[sz_i], yaxis[sz_i], c=c[sz_i], marker='^', edgecolor='black', s=96.0, cmap='gist_rainbow_r', vmin=minc, vmax=maxc)
+        ax[i,j].scatter(xaxis[sz2_i], yaxis[sz2_i], c=c[sz2_i], marker='^', edgecolor='black', s=96.0, cmap='gist_rainbow_r', vmin=minc, vmax=maxc)
+        ax[i,j].scatter(xaxis[sz1_i], yaxis[sz1_i], c=c[sz1_i], marker='*', edgecolor='black', s=96.0, cmap='gist_rainbow_r', vmin=minc, vmax=maxc)
         ax[i,j].scatter(xaxis[no_sz_i], yaxis[no_sz_i], c=c[no_sz_i], marker='o', s=96.0, cmap='gist_rainbow_r', vmin=minc, vmax=maxc)
+        ax[i,j].set_ylim([-50,2050])
+        ax[i,j].set_xlim([-0.5,12.5])
         ax[i,j].set_xlabel(xlabel)
         ax[i,j].set_ylabel(ylabel)
-        ax[i,j].set_title('Contour for '+titles[index], fontsize=30)
+        ax[i,j].set_title(titles[index], fontsize=30)
         norm = matplotlib.colors.Normalize(minc, maxc)
         fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='gist_rainbow_r'), ax=ax[i,j])
-        print('Min of '+titles[index] +' with Snow Zone Models: ' + str(np.min(c[sz_i])))
-        print('Max of '+titles[index] +' with Snow Zone Models: ' + str(np.max(c[sz_i])))
+        print('Min of '+titles[index] +' with Snow Zone Models: ' + str(np.min(c[sz2_i])))
+        print('Max of '+titles[index] +' with Snow Zone Models: ' + str(np.max(c[sz2_i])))
         index += 1
 
 # save subplot figure

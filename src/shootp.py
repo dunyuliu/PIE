@@ -127,9 +127,13 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     # Shoot In Fluid core
     nc        = 51 # discretize the liquid core into nc grids. 
     h         = (rcmb-ricb)/(nc-1) # grid size
-
-    rc,yc,rhof,chi_li = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,v[4],scale,param)
-
+    
+    err0 = False
+    rc,yc,rhof,chi_li, err = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,v[4],scale,param)
+    #print(err)
+    #if err.any() == 1:
+    #   err0 = True
+    
     # rc is radius array from ricb -> rcmb with grid size h.
     # Calculate moments of inertia:
     # First build polynomials of density
@@ -222,7 +226,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     if param['li_el']=='Si': 
         chi[0:ns] = chi_li[0]
     yy          = np.vstack((y[0],y[1],y[2],y[3],rho,chi))
-    return f, r, yy, fout
+    return f, r, yy, fout, err0
 
 def mynewtonSys(Jfun,x0,varargin,
                 xtol=5e-5,ftol=5e-5,maxit=15,verbose=False):

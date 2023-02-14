@@ -1,6 +1,7 @@
 import coreEos as eos
 from libCore import *
 from scipy.constants import G
+import numpy as np
 
 def planet(code_mode, CMR2, light_element, liquidus_eq):
     fccFe=eos.eosAndersonGrueneisen(M0=MFe,p0=1.e-5,T0=298,V0=6.82,
@@ -60,11 +61,13 @@ def planet(code_mode, CMR2, light_element, liquidus_eq):
     # Margot Fe-S-Si models
     if code_mode   == 'p':
         h          = model_generic.copy()
-        if CMR2    == 'margot':
-            h['CMR2'] = 0.346
-        elif CMR2  == 'genova':
-            h['CMR2'] = 0.333
-        h['CmC'] = 0.148/h['CMR2']
+        #if CMR2    == 'margot':
+        #    h['CMR2'] = 0.346
+        #elif CMR2  == 'genova':
+        #    h['CMR2'] = 0.333
+        #h['CmC'] = 0.148/h['CMR2']
+        h['CMR2']  = CMR2
+        h['CmC']   = CMC
         h['li_el'] = light_element
         if liquidus_eq == 'Steinbruegge':
             h['liquidus'] = TmFeSSi_Steinbruegge2020
@@ -72,7 +75,7 @@ def planet(code_mode, CMR2, light_element, liquidus_eq):
         elif liquidus_eq == 'Edmund': 
             h['liquidus'] = TmFeSSi
             max_Si        = max_Si_Edmund2022
-        h['name'] = CMR2 + '/' + light_element + '_' + liquidus_eq
+        h['name'] = str(CMR2) + ' ' + str(CMC) + '/' + light_element + '_' + liquidus_eq
 
         # elif mod_name == 'margot' and mod_li_el == 'S':
             # h = model_generic.copy()

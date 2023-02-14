@@ -18,11 +18,13 @@ def driverp(param, rs):
     ricb        = rs/param['scale']['a'] #non-dimensional
     cmb_radius  = np.zeros(len(ricb))
     cmb_temperature  = np.zeros(len(ricb))
-    core_sulfur = np.zeros(len(ricb))
-    icb_sulfur  = np.zeros(len(ricb))
+    core_sulfur      = np.zeros(len(ricb))
+    icb_sulfur       = np.zeros(len(ricb))
     mantle_density   = np.zeros(len(ricb))
-
+    error_code       = np.zeros(len(ricb))
+    
     for k in range(len(ricb)):
+        print('Finding solutions for inner core radius = ' + str(round(rs[k],2)) + ' ... ...')
         #param['CMR2'] = mois[moi_index]
         #k = 0
         #try:
@@ -34,12 +36,16 @@ def driverp(param, rs):
         v             = lc.mynewtonSys('J_mercmodel', v0, [ricb[k],rhocr,rh,param,scale], xtol=xtol, ftol=ftol, maxit=maxit, verbose=False)
     
         if v is None: break
-	
-	# Set initial guess for next as previous solution.
+    
+        # Set initial guess for next as previous solution.
         v0=v 
       
         # final solution
-        [f,r,yy,fout] = lc.shoot_mercmodel(v,ricb[k],rhocr,rh,param,scale)
+        [f,r,yy, fout, err] = lc.shoot_mercmodel(v,ricb[k],rhocr,rh,param,scale)
+        print(err)
+        if err == True:
+            error_code[k] = 1
+        
         nr=len(r)
         #output: r= radial points of integration (non-dimensional)
         #yy(:,0) = pressure vs radius (non-dimensional)
@@ -69,15 +75,13 @@ def driverp(param, rs):
         Tad        = scale['T']*yy[3] # adiabatic temperature
         rho1       = rhomean*yy[4] # density
         chi_li     = yy[5] # chi light element vs radius
-        
-        if chi_li.any()<0: break # if light element is negative, say sulfer, break the code.
 
         rhom       = v[3]*rhomean
         chi_li_icb = v[4]
         chi_li_cmb = chi_li[-1]
         rcmb       = r[-1]
     
-        r_2        = np.append(r,[rh*scale['a'],rm])# total radius profile in meters 	
+        r_2        = np.append(r,[rh*scale['a'],rm])# total radius profile in meters     
         rho1_2     = np.append(rho1,[rhom,rhocr]) # total density profile from center to surface.
         moi        = lc.get_moi(r_2,rho1_2,rhomean) # compute moment of inertia?
         ccc        = lc.get_ccc(r_2,rho1_2,rhomean) 
@@ -96,14 +100,20 @@ def driverp(param, rs):
         mantle_density[k] = rhom
 
         print('ricb\     trcmb\      trcmb\     tx\       tTcmb\      trhoM\      tMOI')
-        print(1e-3*rs[k],'\t',1.e-3*rcmb,'\t',100*chi_li_in,'\t',Tcmb,'\t',rhom,'\t',moi,'\t',ccc)
+        print(round(1e-3*rs[k],2),'\t',round(1.e-3*rcmb,2),'\t',round(100*chi_li_in,2),'\t',round(Tcmb,2),'\t',round(rhom,2),'\t',round(moi,2),'\t',round(ccc,2))
 
         cmb_temperature[k] = Tcmb
         cmb_radius[k]      = r[-1]
             
         vis.plot_isnow(ricb[k]*scale['a'],r,rh*scale['a'],rm,T1,P1,chi_li,rho1,chi_li_in,moi,cmc,mass,k,param)
          
-        if chi_li.any()<0: break # if light element is negative, say sulfer, break the code.
+        if chi_li.any()<0: 
+            error_code[k] = 2 # Final light element %wt negative.
+            print('Final Light element %wt solution is negative. ... ...')
+            print('Error code 2. ... ...')
+            print('Label error_tag to be TRUE ... ...')    
+            print('Drop the model. ... ...')            
+            #break # if light element is negative, say sulfer, break the code.
     
         Pcmb=P1[-1]
         chi_li_eut_icb=0.11+0.187*np.exp(-0.065*Picb*1e-9)
@@ -140,7 +150,7 @@ def driverp(param, rs):
                            'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 
                            'Pcmb': [Pcmb], 'chi_li_eut_icb': [chi_li_eut_icb],
                            'chi_li_eut_cmb': [chi_li_eut_cmb], 'ricb':rs[k], 'rcmb':[rcmb],
-                           'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb]})
+                           'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb], 'error_code':error_code[k]})
         # append dataframe to csv containing present day model data for contour plot -- added 6/30/2022
         presentday_data = open(csvfiles_path + presentday_data_filename, 'a')
         writer = csv.writer(presentday_data)
@@ -152,9 +162,3 @@ def driverp(param, rs):
         
         #cmb_radius_moi[moi_index] = rcmb
         print('--------------------------')
-        
-   
-    #data = {'is':icb_sulfur[0:k], 'cs':core_sulfur[0:k], 'cr':cmb_radius[0:k],
-    #        'ct':cmb_temperature[0:k], 'md':mantle_density[0:k], 'rs':rs[0:k]}
-
-    #np.save('./results/'+param['name']+'.npy',data)

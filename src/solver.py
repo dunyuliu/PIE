@@ -71,38 +71,43 @@ def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
     
     # Outer loop for all steps:  j = time step index;  k = equation number index
     # Note use of transpose on definition of yold, and in formula for y(j,:) 
-    
+    err2 = np.zeros(nt)
+    err = [False, False, False, False, False]
     res = getchi_li_grun(y0[2],y0[0],chi_li_icb,scale,param)
     chi_li[0],rhof[0] = res[0:2]
-
+    
     for j in range(1,nt): 
         rold = r[j-1]        
         yold = y[j-1,:]
         chi_li_old=chi_li[j-1]       #  Temp variables
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(yold[2],yold[0],chi_li_old,scale,param)
+        chi_li_temp,rhoftemp,grun,KS, err[0]=getchi_li_grun(yold[2],yold[0],chi_li_old,scale,param)
         k1 = eval(diffeq + '(rold,yold,ricb,rcmb,rhoftemp,grun,KS,scale)') #  Slopes at the start
         k1 = np.array(k1)
         ytemp = yold + h2*k1
         
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
+        chi_li_temp,rhoftemp,grun,KS, err[1] =getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
         k2 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') # 1st slope at midpoint
         k2 = np.array(k2)
         
         ytemp = yold + h2*k2
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
+        chi_li_temp,rhoftemp,grun,KS, err[2] =getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
         k3 = eval(diffeq + '(rold+h2,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)') #  2nd slope at midpoint
         k3 = np.array(k3)
         
         ytemp = yold + h*k3
-        chi_li_temp,rhoftemp,grun,KS=getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
+        chi_li_temp,rhoftemp,grun,KS, err[3] =getchi_li_grun(ytemp[2],ytemp[0],chi_li_old,scale,param)
         k4 = eval(diffeq + '(rold+h,ytemp,ricb,rcmb,rhoftemp,grun,KS,scale)')  #  Slope at endpoint
         k4 = np.array(k4)
         
         y[j,:] = ( yold + h6*(k1+k4) + h3*(k2+k3) )  #  Advance all equations
         res = getchi_li_grun(y[j,2],y[j,0],chi_li_old,scale,param)
         chi_li[j],rhof[j] = res[0:2]
-
-    return r,y,rhof,chi_li
+        err[4]            = res[4]
+        
+        if any(err)==True:
+            err2[j] = 1
+          
+    return r,y,rhof,chi_li, err2
 	
 def rhs_PTrhog_solid_snow(chi_icb, r, y, ricb, scale, param):
     """
