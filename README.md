@@ -12,8 +12,9 @@ Before running the code, in globalvar.py, set model_mode to be 'e'/'p' for evolu
 
 Then, to run the code, use the following command
 ```
-python main.py
+python scheduler.py CMR2 CMC
 ```
+where CMR2 and CMC should be numbers like 0.346 and 0.424. Then the scheduler.py will loop over cases (S, Si, S+Si), liquidus equation (Steinbruegge and Edmund), and for the case S+Si, Si%wt from 0% to 15% in 1% increment. 
 
 Figures and datasets will be generated under the paths specified in the src/globalvar.py.
 
