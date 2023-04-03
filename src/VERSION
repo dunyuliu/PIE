@@ -1,3 +1,5 @@
+* v1.0.5; 20230403;
+    1. Add read_plot_datah5.py, which will read and plot *data.h5 results. For Hao's calculation of BV frequency.
 * v1.0.4; 20230127; 
 	1. explore CMR2 and CmC parameter space.
 	2. Add scheduler.py to run models over the CMR2, CMC, liquidus equation,  light element, and Si%wt parameter space.
