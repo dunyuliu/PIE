@@ -7,9 +7,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import coreEos as eos
 import numpy as np
+from planet_input import planet
 
 filename = "./CMR2_0.346_CMC_0.428_S+Si_Steinbruegge/present_Si%wt_0.0_data/550.0_data.h5"
-
+CMR2 = 0.346
+CMC  = 0.428
+light_element = 'S+Si'
+liquidus_eq = 'Steinbruegge'
+chi_Si = 0.0
+cmd = 'python read_plot_datah5.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light_element + ' ' + liquidus_eq + ' ' + str(chi_Si)
+print(cmd)
 # Read the data for each key
 P_data = pd.read_hdf(filename, 'P')
 T_data = pd.read_hdf(filename, 'T')
@@ -22,27 +29,36 @@ rho_data = pd.read_hdf(filename, 'rho')
 # calculate alpha and C_p profiles based on P and T profiles using eosAndersonGrueneisen.eos function.
 alpha_data = np.empty(r_data.shape)
 C_p_data    = np.empty(r_data.shape)
+rho1_data = np.empty(r_data.shape)
+# # use liqudFeS. For other scenarios, please use the corresponding one. 
+# # This part of the code is from planet_input.py.
 
-# use liqudFeS. For other scenarios, please use the corresponding one. 
-# This part of the code is from planet_input.py.
+# MFeS      = (55.845+32.065)
+# liquidFeS = eos.eosAndersonGrueneisen(M0=MFeS,p0=1E-5,T0=1650,
+                                # V0=22.956500240757844,alpha0=11.9e-5,
+                                # KT0=17.01901122392699,
+                                # KTP0=5.92217679116356,
+                                # deltaT=5.9221767911635,kappa=1.4,
+                                # gamma0=1.3,q=0)
 
-MFeS      = (55.845+32.065)
-liquidFeS = eos.eosAndersonGrueneisen(M0=MFeS,p0=1E-5,T0=1650,
-                                V0=22.956500240757844,alpha0=11.9e-5,
-                                KT0=17.01901122392699,
-                                KTP0=5.92217679116356,
-                                deltaT=5.9221767911635,kappa=1.4,
-                                gamma0=1.3,q=0)
+# for i in r_data.index:
+    # ptmp = P_data[i]/1e9 # converting Pa to GPa
+    # Ttmp = T_data[i]
+    # liquidFeS.eos(ptmp,Ttmp)
+    # alpha_data[i] = liquidFeS.alpha
+    # C_p_data[i] = liquidFeS.Cp
+# #print(P_data)
+# #print(alpha_data)
+# #print(C_p_data)
+
+param = planet('p',CMR2, light_element,liquidus_eq)
+print(param)
 
 for i in r_data.index:
-    ptmp = P_data[i]/1e9 # converting Pa to GPa
-    Ttmp = T_data[i]
-    liquidFeS.eos(ptmp,Ttmp)
-    alpha_data[i] = liquidFeS.alpha
-    C_p_data[i] = liquidFeS.Cp
-#print(P_data)
-#print(alpha_data)
-#print(C_p_data)
+    res = eos.liquidNonIdalFeS(chi_li_data[i], P_data[i]/1e9, T_data[i],param)
+    rho1_data[i]  = res[1]
+    alpha_data[i] = res[2]
+    C_p_data[i]   = res[5]
 
 P_norm = P_data / P_data.max()
 T_norm = T_data / T_data.max()

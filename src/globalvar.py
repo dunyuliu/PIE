@@ -1,6 +1,12 @@
 #! /usr/bin/env python3
 
 import sys
+n = len(sys.argv)
+print(n)
+if n!=6 and n!=7:
+    print('!!!')
+    print('Error! Please type in CMR2, CMC, S/Si/S+Si, Steinbrugge/Edmund, chi_Si_icb/none')
+    print('!!!')
 # Global parameters for both the present_day and evolution model.
 # Main adjustables.
 #model_mode = 'e' # 'e'/'p', that will switch between evolution/present_day models.
