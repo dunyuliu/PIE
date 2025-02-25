@@ -94,7 +94,8 @@ def driverp(param, rs):
         isnow      = fout[2] # (0,1,2 = no, layer, deep snow)
         isnowcmb   = fout[3] #isnowcmb  (0,1 = snow at CMB (no,yes))
         chi_li_in  = fout[4] #initial sulfur content in core
-        
+        chi_S_bulk = fout[6]
+
         icb_sulfur[k]     = chi_li_icb
         core_sulfur[k]    = chi_li_in
         mantle_density[k] = rhom
@@ -148,7 +149,7 @@ def driverp(param, rs):
         # column for chi_Si_icb added 6/30/2022
         df = pd.DataFrame({'chi_Si_icb': [chi_Si_icb], 'rhom': [rhom], 'mass': [mass], 'moi': [moi], 'cmc': [cmc],
                            'Picb': [Picb], 'Tcmb': [Tcmb], 'isnow': [isnow],
-                           'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 
+                           'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 'chi_S_bulk': [chi_S_bulk],  
                            'Pcmb': [Pcmb], 'chi_li_eut_icb': [chi_li_eut_icb],
                            'chi_li_eut_cmb': [chi_li_eut_cmb], 'ricb':rs[k], 'rcmb':[rcmb],
                            'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb], 'error_code':error_code[k]})
