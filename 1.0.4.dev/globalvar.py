@@ -49,7 +49,7 @@ csvfiles_path               = model_path
 pMetaDataFileName           = 'pMetaData_'+"{:.2f}".format(chi_Si_icb)+'.csv'
 compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
 #contourplot_file            = 'plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
-presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code']
+presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'chi_S_bulk', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code']
 contourcond                 = 'isnow'
 
 # Paths for csv file(s) and figure(s) that contain information on the snow zone bounds and inner core radius as a function of cmb temperature -- added 6/27/2022
