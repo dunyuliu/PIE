@@ -63,7 +63,7 @@ def driverp(param, rs):
         #fout(4) = C/MR^2
         #fout(5) = xi
         #fout(6) = k2
-        #fout(7) = isnow  (0,1,2 = no, layer, deep snow)
+        #fout(7) = isnow  (0,1,2,3 = no, layers, deep snow, deep snow+layers)
         #fout(8) = isnowcmb  (0,1 = snow at CMB (no,yes))
         #fout(9) = chi_li_in (initial sulfur content in core)
         #fout(10)= gradTa (adiabatic temp gradient at CMB)      

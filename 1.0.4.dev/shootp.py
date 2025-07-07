@@ -53,7 +53,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
          fout(4) = C/MR^2
          fout(5) = xi
          fout(6) = k2
-         fout(7) = isnow  (0,1,2 = no, layer, deep snow)
+         fout(7) = isnow  (0,1,2,3 = no, layers, deep snow, deep snow+layers)
          fout(8) = isnowcmb  (0,1 = snow at CMB (no,yes))
          fout(9) = chi_li_in (initial sulfur content in core)
          fout(10)= gradTa (adiabatic temp gradient at CMB)
@@ -181,14 +181,20 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     print('Volumetric Average of S: '+str(chi_li_in))
     print('Bulk Average of S: '+str(chisbulk))
     print('Mass of Core: '+str(mass_core))
-    #############################################
 
-    # Compute snow state. ???
-    isnow=0  # snow index: default is no snow
+    # Compute snow state. 
+    # 0: no iron snow.
+    # 1: snow layers.
+    # 2: deep snow.
+    # 3: deep snow + layers.
+    isnow = 0  # snow index: default is no snow
     if ((chi_li[-1]-chi_li_icb) > 1e-10):
         isnow   = 1
         # get dimensional P and T at second point in FOC
-        i       = 0
+        # deep snow is defined when the adiabat temp follows the liquidus directly above ICB.
+        # because the temp is always equal to melting temp at ICB, should change 
+        # i from 0 to 1. Now, isnow = 1, 2, 3 are properly classified. 
+        i       = 1 
         T1      = T*yc[i,2]
         P1      = P*yc[i,0]
         chi_icb = reorder_el(chi_li[i],chi_Si_icb, param)             
