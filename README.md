@@ -25,8 +25,8 @@ mkdir results
 ```
 ## Copyright and distribution
 
-All the material in this repository is open-source and distributed under the GNU General Public License v3.0. For detials, see ``LICENSE``. (Will change it after our discussion)
+All the material in this repository is open-source and distributed under the GNU General Public License v3.0. For detials, see ``LICENSE``.
 
-Contributors: Steinbruegge, Rivoldini, Liu.
+Contributors: Liu, Dunnigan, Steinbruegge, Rivoldini.
 
 If you have any questions and comments, feel free to reach out to Dunyu Liu (dliu@ig.utexas.edu). 
