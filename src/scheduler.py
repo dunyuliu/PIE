@@ -17,8 +17,8 @@ import numpy as np
 # So, CMR2 ranges from 0.328 to 0.360. delta is 0.032. 
 # CMC ranges from 0.424 to 0.462. delta is 0.038
 
-dCMR2 = 0.004
-dCMC  = 0.008
+#dCMR2 = 0.004
+#dCMC  = 0.008
 #CMR2_list = np.linspace(0.328, 0.360, 9); also add the means from different studies.
 # 13 Values: [0.328, 0.332, 0.333, 0.336, 0.337, 0.340, 0.344, 0.346, 0.348, 0.352, 0.353, 0.356, 0.360]
 
@@ -33,11 +33,12 @@ CMC_list  = [CMCtmp]
 chi_li_icb_list  = np.linspace(0.0, 0.15, 16)
 light_el_list1    = ['S', 'Si']
 light_el_list2    = ['S+Si']
-liquidus_eq_list = ['Steinbruegge', 'Edmund']
+#liquidus_eq_list = ['Steinbruegge', 'Edmund']
+liquidus_eq_list = ['Edmund']
 
-print(CMR2_list)
-print(CMC_list)
-print(chi_li_icb_list)
+print('SCHEDULER: running model with CMR ', CMR2_list)
+print('SCHEDULER: running model with CMC ', CMC_list)
+print('SCHEDULER: running model with %wt ', chi_li_icb_list)
 
 for CMR2 in CMR2_list:
   for CMC in CMC_list: 

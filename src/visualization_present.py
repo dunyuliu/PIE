@@ -15,7 +15,7 @@ import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
 from globalvar import *
-import os
+import os, stat
 import shutil
 
 def plot_donut(rmin,rmax):
@@ -31,7 +31,7 @@ def plot_donut(rmin,rmax):
     
     return xs,ys
     
-def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
+def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param, isnow):
 
     font = {'family':'normal','size':16}
     matplotlib.rc('font', **font)
@@ -44,6 +44,8 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     # identify snow zones
     zones=[]
     Tms=[]
+    boolsz = np.zeros(len(r)) # indicates whether radii are at snow zones (1) or not (0)
+    
     for i in range(len(r)):
         if param['li_el'] == 'Si':
             chi_icb = {'Si':chi_li[i], 'S':0}
@@ -55,10 +57,31 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
         Tms.append(Tm)
         if abs(T[i]-Tm)<1e-8:
             zones.append(i)
+            boolsz[i] = 1
+        # Check if deep snow configurations have additional snow layer above
+        # If yes, change isnow to isnow = 3 ('layers + deep snow')
+        if isnow == 2 and len(zones) > 1 and i > zones[1]:
+            # expects zones to be only the radial indices with snow zones
+            # Above conditions filter for:
+            # 1: Starting with a deep snow config (helps with assumptions)
+            # 2: Ensuring that arrays w/ no snow zones added yet or only
+            #    one snow zone aren't used
+            # 3: Starting above the base of the deep snow layer (above the 
+            #    first few radial layers)
+            if boolsz[i] == 1:
+                if boolsz[i-2] == 0 and boolsz[i-1] == 1:
+                    # Want to check that:
+                    # 1: The current radial layer is part of a snow zone
+                    # 2: The previous layer is part of a snow zone (to
+                    # filter out isolated 1's in boolsz)
+                    # 3: The second layer below is not part of a snow zone
+                    isnow = 3
+                    print(i)
+    print(r)
+    print(zones)
+    print(boolsz)
     
     fig,ax = plt.subplots(2,3,figsize=(18,12))
-
-
     # Temperature profiles
     ax[0,0].plot(r/1000,np.array(Tms),label='Tmelt',lw=3,color='blue')
     ax[0,0].plot(r/1000,np.array(T),label='Tcore',lw=3,color='red')
@@ -175,10 +198,13 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     #            bbox_inches="tight")
     if not os.path.exists(model_path):
         os.mkdir(model_path)
-    if not os.path.exists(present_figure_path):
-        os.mkdir(present_figure_path)
-    plt.savefig(present_figure_path + '/Figure_'+str(img)+'.pdf',
+    #if not os.path.exists(present_figure_path):
+    #    os.mkdir(present_figure_path)
+    plt.savefig(presentFigureName +'Rid'+str(img).zfill(3)+'.pdf',
                 bbox_inches="tight") # PAPER PLOT
+    if isnow != 0: # added 7/11/2023
+        plt.savefig(presentFigureName +'Rid'+str(img).zfill(3)+'_SN.pdf',
+                    bbox_inches="tight")
     #plt.show()
     plt.close()
     
@@ -202,3 +228,4 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param):
     plt.axis('off')
     plt.show()
     """
+    return isnow

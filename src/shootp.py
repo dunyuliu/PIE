@@ -53,7 +53,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
          fout(4) = C/MR^2
          fout(5) = xi
          fout(6) = k2
-         fout(7) = isnow  (0,1,2 = no, layer, deep snow)
+         fout(7) = isnow  (0,1,2,3 = no, layers, deep snow, deep snow+layers)
          fout(8) = isnowcmb  (0,1 = snow at CMB (no,yes))
          fout(9) = chi_li_in (initial sulfur content in core)
          fout(10)= gradTa (adiabatic temp gradient at CMB)
@@ -166,13 +166,35 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     chi_li_in   = 3/(rcmb**3)*simpsonDat(rc,chisrc2) # light element inside the fluid outer core.
     #print('chi_li', chi_li)
     #print('chi_li_in', chi_li_in)
+    #############################################
+    # calculate volumetric average of sulfur
+    chis_oc = 4*np.pi*chi_li*(rhof*rhomean)*(rc*a)**2
+    chi_li_in_v = simpsonDat(rc*a,chis_oc) / ((4/3)*np.pi*((rcmb*a)**3))
+    print('new volumetric average of S: '+str(chi_li_in_v))
+    #############################################
+    # calculate mass average of sulfur
+    chisrf = 4*np.pi*(rhof*rhomean)*chi_li*(rc*a)**2
+    chismass = simpsonDat(rc*a, chisrf)
+    mass_core = get_mass_core(np.concatenate((rs*a,rc*a)),np.concatenate((rhos*rhomean,rhof*rhomean)))
+    chisbulk=chismass/mass_core
+    print(ricb*a,chi_Si_icb)
+    print('Volumetric Average of S: '+str(chi_li_in))
+    print('Bulk Average of S: '+str(chisbulk))
+    print('Mass of Core: '+str(mass_core))
 
-    # Compute snow state. ???
-    isnow=0  # snow index: default is no snow
+    # Compute snow state. 
+    # 0: no iron snow.
+    # 1: snow layers.
+    # 2: deep snow.
+    # 3: deep snow + layers.
+    isnow = 0  # snow index: default is no snow
     if ((chi_li[-1]-chi_li_icb) > 1e-10):
         isnow   = 1
         # get dimensional P and T at second point in FOC
-        i       = 0
+        # deep snow is defined when the adiabat temp follows the liquidus directly above ICB.
+        # because the temp is always equal to melting temp at ICB, should change 
+        # i from 0 to 1. Now, isnow = 1, 2, 3 are properly classified. 
+        i       = 1 
         T1      = T*yc[i,2]
         P1      = P*yc[i,0]
         chi_icb = reorder_el(chi_li[i],chi_Si_icb, param)             
@@ -205,7 +227,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
         
     # adiabatic temp gradient at CMB
     gradTa      = T/a*(yc[nc-1,3]-yc[nc-2,3])/(rc[nc-1]-rc[nc-2])
-    fout        = [P*ys[0,-1],T*yc[nc-1,2],isnow,isnowcmb,chi_li_in,gradTa]
+    fout        = [P*ys[0,-1],T*yc[nc-1,2],isnow,isnowcmb,chi_li_in,gradTa,chisbulk]
 
     # include the (1+xi) factor on Cm/C
     CmCtry      = CmCtry*(1+xi)

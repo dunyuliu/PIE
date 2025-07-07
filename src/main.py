@@ -135,13 +135,13 @@ if code_mode == 'p':
     # 5) chi_li
     # Parameterize by inner core radius
     # create csv file to store all the data from all present day models per MOI value
-    if os.path.isdir(csvfiles_path):
-        print(csvfiles_path)
+    if os.path.isdir(model_path):
+        print('MAIN: model path is ', model_path)
     else:
-        os.mkdir(contour_plotting_path)
-        os.mkdir(csvfiles_path)
+        #os.mkdir(contour_plotting_path)
+        os.mkdir(model_path)
     # append columns to csv file for present day data
-    presentday_data = open(csvfiles_path + presentday_data_filename, 'w')
+    presentday_data = open(csvfiles_path + pMetaDataFileName, 'w')
     writer          = csv.writer(presentday_data)
 
     writer.writerow(presentday_columns)

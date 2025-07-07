@@ -29,25 +29,27 @@ dr = 50e3 # radius increment in meters for the present_day model.
 max_Si_Steinbruegge2020 = 0.15 # Maximum Si%wt for calculating liquidus temperature based on Steinbruegge et al. (2020). Shouldn't be exceeded. 
 max_Si_Edmund2022       = 0.12 # Maximum Si%wt for calculating liquidus temperature based on Edmund et al. (2022). Shouldn't be exceeded. 
 # Paths for the present day model.
-model_path              = './CMR2_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq + '/'
-present_output_path     = model_path + 'present_Si%wt_'+str(chi_Si_icb) # Root path to data and figures by the present day model.
-present_figure_path     = present_output_path + '_fig/' # Path to figures by the present day model.
-present_data_path       = present_output_path + '_data/' # Path to data by the present day model.
+#model_path              = './CMR2_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq + '/'
+model_path              = './results/CMR2_'+"{:.4f}".format(CMR2)+'_CMC_'+"{:.4f}".format(CMC)+'_'+light_element+'_'+liquidus_eq+'/'
+#present_output_path     = model_path + model0 + 'present_Si%wt_'+str(chi_Si_icb) # Root path to data and figures by the present day model.
+presentFigureName     = model_path + 'FigSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to figures by the present day model.
+presentDataName       = model_path + 'DataSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to data by the present day model.
 ice                     = 300 # inner core extension for plots in km.
 
 # Paths for the evolution model.
 evolution_output_path       = './TEST_results_evolution_Model_Si%wt_'+str(round(chi_Si_icb,3))  # Root path to data and figures by the evolution model.
-path_to_present_day_models  = present_data_path # Path to the output of the data created by the present day model. 
+path_to_present_day_models  = model_path  # Path to the output of the data created by the present day model. 
 evolution_figure_path       = evolution_output_path + '_fig/' # Path to figures by the evolution model.
 evolution_data_path         = evolution_output_path + '_data/' # Path to data by the evolution model.
 
 # Paths for csv files that contain df variables from drivere.py and are used for making the contour plots, as well as the contour plots -- added 6/27/2022
 contour_plotting_path       = model_path #'./contour_plotting_' + CMR2 + '_' + light_element
-csvfiles_path               = contour_plotting_path + 'csvfiles'
-presentday_data_filename    = '/present_day_' + str(round(CMR2,4)) + '_' + str(round(CMC,4)) + '_'+ str(round(chi_Si_icb,3)) + '.csv'
+csvfiles_path               = model_path
+#presentday_data_filename    = 'present_day_' + str(round(CMR2,4)) + '_' + str(round(CMC,4)) + '_'+ str(round(chi_Si_icb,3)) + '.csv'
+pMetaDataFileName           = 'pMetaData_'+"{:.2f}".format(chi_Si_icb)+'.csv'
 compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
-contourplot_file            = 'plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
-presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code']
+#contourplot_file            = 'plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
+presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'chi_S_bulk', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code']
 contourcond                 = 'isnow'
 
 # Paths for csv file(s) and figure(s) that contain information on the snow zone bounds and inner core radius as a function of cmb temperature -- added 6/27/2022

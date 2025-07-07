@@ -63,7 +63,7 @@ def driverp(param, rs):
         #fout(4) = C/MR^2
         #fout(5) = xi
         #fout(6) = k2
-        #fout(7) = isnow  (0,1,2 = no, layer, deep snow)
+        #fout(7) = isnow  (0,1,2,3 = no, layers, deep snow, deep snow+layers)
         #fout(8) = isnowcmb  (0,1 = snow at CMB (no,yes))
         #fout(9) = chi_li_in (initial sulfur content in core)
         #fout(10)= gradTa (adiabatic temp gradient at CMB)      
@@ -94,7 +94,8 @@ def driverp(param, rs):
         isnow      = fout[2] # (0,1,2 = no, layer, deep snow)
         isnowcmb   = fout[3] #isnowcmb  (0,1 = snow at CMB (no,yes))
         chi_li_in  = fout[4] #initial sulfur content in core
-        
+        chi_S_bulk = fout[6]
+
         icb_sulfur[k]     = chi_li_icb
         core_sulfur[k]    = chi_li_in
         mantle_density[k] = rhom
@@ -105,7 +106,7 @@ def driverp(param, rs):
         cmb_temperature[k] = Tcmb
         cmb_radius[k]      = r[-1]
             
-        vis.plot_isnow(ricb[k]*scale['a'],r,rh*scale['a'],rm,T1,P1,chi_li,rho1,chi_li_in,moi,cmc,mass,k,param)
+        isnow = vis.plot_isnow(ricb[k]*scale['a'],r,rh*scale['a'],rm,T1,P1,chi_li,rho1,chi_li_in,moi,cmc,mass,k,param, isnow)
          
         if chi_li.any()<0: 
             error_code[k] = 2 # Final light element %wt negative.
@@ -123,41 +124,42 @@ def driverp(param, rs):
         # SAVE DATA
         if not os.path.isdir(model_path): # added 7/12/2022 when needing to specify li combination and geodetic constraints
             os.mkdir(model_path)
-        root = present_data_path
-        if not os.path.isdir(root):
+        #root = present_data_path
+        #if not os.path.isdir(root):
             #print(present_figure_path)
         #else:
-            os.mkdir(root)
+        #    os.mkdir(root)
+        root = presentDataName+'R'+str(round(rs[k]/1e3,0)).zfill(6)+'.h5'
         out = pd.Series(r)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='r')   
+        out.to_hdf(root, key='r')   
         out = pd.Series(rho1)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='rho')
+        out.to_hdf(root, key='rho')
         out = pd.Series(T1)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='T')
+        out.to_hdf(root, key='T')
         out = pd.Series(P1)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='P')
+        out.to_hdf(root, key='P')
         out = pd.Series(g1)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='g')
+        out.to_hdf(root, key='g')
         out = pd.Series(Tad)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='Tad')
+        out.to_hdf(root, key='Tad')
         out = pd.Series(chi_li)
-        out.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='chi_li')
+        out.to_hdf(root, key='chi_li')
     
         #"""
         # column for chi_Si_icb added 6/30/2022
         df = pd.DataFrame({'chi_Si_icb': [chi_Si_icb], 'rhom': [rhom], 'mass': [mass], 'moi': [moi], 'cmc': [cmc],
                            'Picb': [Picb], 'Tcmb': [Tcmb], 'isnow': [isnow],
-                           'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 
+                           'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 'chi_S_bulk': [chi_S_bulk],  
                            'Pcmb': [Pcmb], 'chi_li_eut_icb': [chi_li_eut_icb],
                            'chi_li_eut_cmb': [chi_li_eut_cmb], 'ricb':rs[k], 'rcmb':[rcmb],
                            'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb], 'error_code':error_code[k]})
         # append dataframe to csv containing present day model data for contour plot -- added 6/30/2022
-        presentday_data = open(csvfiles_path + presentday_data_filename, 'a')
-        writer = csv.writer(presentday_data)
+        csvMetaData = open(csvfiles_path + pMetaDataFileName, 'a')
+        writer = csv.writer(csvMetaData)
         writer.writerow(df.iloc[0,:])
-        presentday_data.close()
+        csvMetaData.close()
         
-        df.to_hdf(root+str(round(rs[k]/1000,0))+'_data.h5', key='misc', mode='a') 
+        df.to_hdf(root, key='misc', mode='a') 
         #"""
         
         #cmb_radius_moi[moi_index] = rcmb

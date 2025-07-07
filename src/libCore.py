@@ -284,7 +284,7 @@ def get_mass_norm(r,rho,rho_mean):
 def get_mass_core(r,rho):
     ssum = rho[0]*r[0]**3/r[-1]**3
     for i in range(1,len(r)):
-        ssum = ssum + rho[i]*(r[i]**3-r[i-1]**3)
+        ssum = ssum + rho[i]*(4./3.)*np.pi*(r[i]**3-r[i-1]**3)
     return ssum
     
 def get_moi(r,rho,rho_mean):   
