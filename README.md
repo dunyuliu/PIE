@@ -1,10 +1,10 @@
 # PIE: Planetary Interior Evolution 
-PIE is a python-based code to invert Mercury interior structure to match geodetic observations and geochemical constraints. <br/>
+PIE is a python-based code to invert Mercury interior structure to match geodetic, geochemical, and thermaldynamic constraints. <br/>
 
-src/ contains the python source code to simulate the present day Mercury structure and its evolution.
-Compared to its predecesor present day model ([GitHub repo](https://github.com/gregorsteinbruegge/MercuryInterior.git)), used in [Steinbruegge et al. 2020](https://doi.org/10.1029/2020GL089895), two light elements - S and Si - are implemented. 
+./src/ contains the python source code to simulate the present day Mercury structure and its evolution.
+Compared to its predecesor present day model ([GitHub repo](https://github.com/gregorsteinbruegge/MercuryInterior.git)), used in [Steinbruegge et al. 2020](https://doi.org/10.1029/2020GL089895), two light elements - S and Si - are implemented, based on late thermodynamic liquidus constraints. 
 
-Si is currently assumed to be a constant throughout the core, which can be adjusted in src/globalvar.py.
+Si %wt is currently assumed to be a constant throughout the core, while S %wt are adjusted according to liqudius properties, variable over the radius. 
 
 # Quickstart guide
 ## Monte Carlo simulation on CMR2:
