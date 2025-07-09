@@ -30,7 +30,7 @@ max_Si_Steinbruegge2020 = 0.15 # Maximum Si%wt for calculating liquidus temperat
 max_Si_Edmund2022       = 0.12 # Maximum Si%wt for calculating liquidus temperature based on Edmund et al. (2022). Shouldn't be exceeded. 
 # Paths for the present day model.
 #model_path              = './CMR2_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq + '/'
-model_path              = './results/CMR2_'+"{:.4f}".format(CMR2)+'_CMC_'+"{:.4f}".format(CMC)+'_'+light_element+'_'+liquidus_eq+'/'
+model_path              = './results/CMR2_'+"{:.17f}".format(CMR2)+'_CMC_'+"{:.17f}".format(CMC)+'_'+light_element+'_'+liquidus_eq+'/'
 #present_output_path     = model_path + model0 + 'present_Si%wt_'+str(chi_Si_icb) # Root path to data and figures by the present day model.
 presentFigureName     = model_path + 'FigSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to figures by the present day model.
 presentDataName       = model_path + 'DataSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to data by the present day model.
