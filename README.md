@@ -41,6 +41,18 @@ sbatch TACC.LS6.parallel.run.slurm
 # The example run here takes less than 2 hours.
 ```
 
+## Testing
+
+```
+/usr/bin/python3 testsys/run.py            # fast tiers: unit + contract + integration, ~85 s
+/usr/bin/python3 testsys/run.py e2e        # full-pipeline run vs a committed golden, ~5.5 min
+```
+
+See [`testsys/README.md`](testsys/README.md) for tier definitions, the
+published-paper parity check against Zenodo-archived output, and a
+known-environment note (`/usr/bin/python3` needs `PYTHONNOUSERSITE=1`
+for subprocess runs -- see that file).
+
 ## Citation
 
 If you use PIE, please cite:
