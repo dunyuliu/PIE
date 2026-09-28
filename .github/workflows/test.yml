@@ -41,24 +41,56 @@ jobs:
           MPLBACKEND: 'Agg'
         run: python3 testsys/run.py unit contract integration
 
-  e2e:
-    # Full scheduler.py-shaped sweep against the committed self-golden.
+  e2e-cli-smoke:
+    # The ONE true full-CLI-subprocess pipeline test (main.py p 0.346
+    # 0.424 S Edmund, ~4.5 min): argv parsing, directory creation, real
+    # h5/csv/figure file writes, all through the real entry point.
     # Opt-in only (see the `on:` block above) -- NOT part of the push/PR
     # gate.
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
       - name: Install dependencies
         run: pip install -r testsys/requirements.txt
-
-      - name: Run e2e tier
+      - name: Run the full-CLI-subprocess e2e test
         env:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
-        run: python3 testsys/run.py e2e
+        run: |
+          python3 -m pytest testsys/e2e/test_full_composition_sweep.py -v -m e2e
+
+  e2e-wide-sweep:
+    # The wide physics-coverage sweep (2 MOI x 6 compositions x 3 radii,
+    # full scalars+profiles) -- sharded by composition so each shard is
+    # 2 MOI x 3 radii = 6 direct solves, ~20 s. Opt-in only, same as
+    # e2e-cli-smoke above.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        composition:
+          - { light: S, liquidus: Edmund }
+          - { light: S, liquidus: Steinbruegge }
+          - { light: Si, liquidus: Edmund }
+          - { light: Si, liquidus: Steinbruegge }
+          - { light: S+Si, liquidus: Edmund }
+          - { light: S+Si, liquidus: Steinbruegge }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r testsys/requirements.txt
+      - name: Run this composition's shard of the wide sweep
+        env:
+          PYTHONNOUSERSITE: '1'
+          MPLBACKEND: 'Agg'
+          PIE_E2E_SHARD: '${{ matrix.composition.light }},${{ matrix.composition.liquidus }}'
+        run: |
+          python3 -m pytest testsys/e2e/test_wide_full_sweep.py -v -m e2e

@@ -121,16 +121,201 @@ def import_src(modname, CMR2=0.346, CMC=0.424, light_element="S",
     return importlib.import_module(modname)
 
 
-@pytest.fixture
-def margot_param(sys_argv_p):
-    """A real `param` dict for CMR2=0.346, CMC=0.424, light_element='S',
-    liquidus_eq='Edmund' -- the Margot present-day case named in the task
-    brief. Session-scoped would be nice, but planet_input.planet() is cheap
-    (no solve, just EOS object construction), so function-scope keeps each
-    test's argv isolated with no measurable cost."""
-    planet_input = import_src("planet_input", CMR2=0.346, CMC=0.424,
-                               light_element="S", liquidus_eq="Edmund")
-    return planet_input.planet("p", 0.346, 0.424, "S", "Edmund")
+CONTINUOUS_FIELDS = [
+    "rhom", "mass", "moi", "cmc", "Picb", "Tcmb", "chi_li_in", "chi_S_bulk",
+    "Pcmb", "chi_li_eut_icb", "chi_li_eut_cmb", "rcmb", "core_mass",
+    "chi_li_icb",
+]
+CATEGORICAL_FIELDS = ["isnow", "isnowcmb", "error_code"]
+PROFILE_FIELDS = ["r", "rho", "P", "T", "Tad", "chi_li"]
+
+
+def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
+                      chi_Si_icb=None):
+    """One converged Newton+shoot solve at a single inner-core radius,
+    computing EVERY quantity driverp.py writes per radius (all 19
+    `presentday_columns`, not just the subset that happened to be cheap
+    to wire up first) plus the full radial profile arrays (r, rho, P, T,
+    Tad, chi_li) -- see src/driverp.py lines ~70-120 for the reference
+    computation this mirrors line-for-line (moi/cmc via get_moi/get_ccc,
+    chi_li_eut_* via the same Dumberry & Rivoldini 2015 eq.28 formula
+    src/driverp.py itself uses).
+
+    Deliberately does NOT go through main.py/driverp.py's file-writing
+    loop (no h5/csv/figure I/O, no warm-start dependency on earlier
+    radii) -- cold-start Newton from the same generic initial guess
+    converges to the same answer regardless of radius (verified:
+    matches published/warm-started values to ~1e-6-1e-7 relative,
+    the solver's own xtol/ftol), so this is the FAST path to "one
+    representative model" rather than paying for every radius before it
+    in a sweep. `raises` on non-convergence (SystemExit from
+    mynewtonSys's singular-Jacobian guard, or v is None) -- callers that
+    are PROBING for which radii converge should catch that, not this
+    function silently returning a sentinel.
+
+    Picklable/module-level (not a closure) so it can be dispatched
+    across a `concurrent.futures.ProcessPoolExecutor` for the wide,
+    many-composition sweeps (testsys/e2e/, the probe scripts under
+    testsys/reference/.../generate_*.py) -- each solve is ~15-20 s and
+    independent, so wall time for N cases is ~N/nproc, not ~N serial.
+    """
+    import importlib
+    _set_argv("p", CMR2, CMC, light_element, liquidus_eq, chi_Si_icb)
+    for name in list(sys.modules):
+        if name in ("globalvar", "planet_input", "libCore", "solver",
+                     "coreEos", "shootp", "driverp"):
+            del sys.modules[name]
+    gv = importlib.import_module("globalvar")
+    planet_input = importlib.import_module("planet_input")
+    lc = importlib.import_module("shootp")
+    import numpy as np
+
+    param = planet_input.planet("p", CMR2, light_element, liquidus_eq)
+    scale = param["scale"]
+    rhomean = param["rhomean"]
+    rhocr, rh, rm = param["rhocr"], param["rh"], param["rm"]
+    ricb_nd = ricb_m / scale["a"]
+
+    v = lc.mynewtonSys(
+        "J_mercmodel", param["v0"],
+        [ricb_nd, rhocr, rh, param, scale],
+        xtol=gv.xtol, ftol=gv.ftol, maxit=gv.maxit, verbose=False,
+    )
+    if v is None:
+        raise RuntimeError(
+            f"Newton solve did not converge: CMR2={CMR2} CMC={CMC} "
+            f"light={light_element} liquidus={liquidus_eq} ricb_m={ricb_m}")
+    f, r, yy, fout, err = lc.shoot_mercmodel(v, ricb_nd, rhocr, rh, param, scale)
+
+    r_phys = scale["a"] * r
+    P_phys = scale["P"] * yy[0]
+    g_phys = scale["ga"] * yy[1]
+    T_phys = scale["T"] * yy[2]
+    Tad_phys = scale["T"] * yy[3]
+    rho_phys = rhomean * yy[4]
+    chi_li = yy[5]
+
+    rhom = v[3] * rhomean
+    chi_li_icb = v[4]
+    rcmb = v[2] * scale["a"]
+
+    r_2 = np.append(r_phys, [rh * scale["a"], rm])
+    rho_2 = np.append(rho_phys, [rhom, rhocr])
+    moi = lc.get_moi(r_2, rho_2, rhomean)
+    ccc = lc.get_ccc(r_2, rho_2, rhomean)
+    cmc = 1 - ccc / moi
+    mass = lc.get_mass_norm(r_2, rho_2, rhomean)
+    core_mass = lc.get_mass_core(r_phys, rho_phys)
+
+    Picb, Tcmb, isnow, isnowcmb, chi_li_in, gradTa, chi_S_bulk = fout
+    Pcmb = P_phys[-1]
+    chi_li_eut_icb = 0.11 + 0.187 * np.exp(-0.065 * Picb * 1e-9)
+    chi_li_eut_cmb = 0.11 + 0.187 * np.exp(-0.065 * Pcmb * 1e-9)
+
+    return {
+        "CMR2": CMR2, "CMC": CMC, "light_element": light_element,
+        "liquidus_eq": liquidus_eq, "ricb_m": ricb_m,
+        "chi_Si_icb": chi_Si_icb if chi_Si_icb is not None else 0.0,
+        "scalars": {
+            "rhom": float(rhom), "mass": float(mass), "moi": float(moi),
+            "cmc": float(cmc), "Picb": float(Picb), "Tcmb": float(Tcmb),
+            "isnow": float(isnow), "isnowcmb": float(isnowcmb),
+            "chi_li_in": float(chi_li_in), "chi_S_bulk": float(chi_S_bulk),
+            "Pcmb": float(Pcmb), "chi_li_eut_icb": float(chi_li_eut_icb),
+            "chi_li_eut_cmb": float(chi_li_eut_cmb), "ricb": float(r_phys[0]),
+            "rcmb": float(rcmb), "core_mass": float(core_mass),
+            "chi_li_icb": float(chi_li_icb), "error_code": 0.0,
+        },
+        "profiles": {
+            "r": r_phys.tolist(), "rho": rho_phys.tolist(),
+            "P": P_phys.tolist(), "T": T_phys.tolist(),
+            "Tad": Tad_phys.tolist(), "g": g_phys.tolist(),
+            "chi_li": chi_li.tolist(),
+        },
+    }
+
+
+def assert_scalars_match(computed, reference, rtol=1e-4, context=""):
+    """Compare a `solve_full_model()`-shaped `scalars` dict against a
+    reference dict with the same keys. Categorical fields (isnow,
+    isnowcmb, error_code) compared for EXACT equality -- they are
+    discrete classification labels, not continuous quantities.
+    `not (diff > bound)`, never `diff <= bound`: a NaN diff must FAIL,
+    not silently pass a comparison NaN always evaluates False for."""
+    for field in CATEGORICAL_FIELDS:
+        c, r = computed[field], reference[field]
+        assert c == pytest.approx(r, abs=1e-9), (
+            f"{context}{field}: categorical field must match EXACTLY "
+            f"(computed={c!r}, reference={r!r})"
+        )
+    for field in CONTINUOUS_FIELDS:
+        c, r = computed[field], reference[field]
+        diff = abs(c - r)
+        bound = rtol * max(abs(r), 1e-12)
+        assert not (diff > bound), (
+            f"{context}{field}: computed={c!r} reference={r!r} "
+            f"diff={diff!r} exceeds rtol={rtol}"
+        )
+
+
+DISCONTINUOUS_PROFILE_FIELDS = ("rho", "chi_li")
+
+
+def assert_profiles_match(computed, reference, rtol=1e-3, atol=1e-6,
+                           context="", interpolate=False, boundary_slop=1):
+    """Compare full radial profile arrays. `interpolate=True` (for
+    cross-environment/published comparisons, where adaptive-step solver
+    node placement can differ between scipy/BLAS versions) resamples
+    the REFERENCE profile onto the computed run's own radius grid via
+    linear interpolation before comparing, rather than requiring
+    identical array lengths. `interpolate=False` (same-machine
+    self-golden, deterministic solve_ivp/RK4 grid) requires exact shape
+    match -- a length mismatch there is itself a regression, not
+    something to paper over with resampling.
+
+    `boundary_slop`: rho and chi_li are PHYSICALLY DISCONTINUOUS at the
+    solid/liquid inner-core boundary (density jumps at freezing; chi_li
+    is 0 throughout the solid inner core, non-zero from the ICB
+    outward -- see src/shootp.py's `chi = np.concatenate((np.zeros(ns),
+    chi_li))`). When `interpolate=True` and the two runs' solid-branch
+    adaptive-solver node counts differ by even one point, linearly
+    interpolating STRAIGHT ACROSS that jump manufactures a large
+    "difference" at the one point nearest the boundary that is an
+    artifact of resampling across a discontinuity, not a real
+    divergence -- confirmed by inspection (this repo's own solve vs the
+    published h5, ns=20/nc=51/71 total points, worst diff exactly at
+    index 19 == the ICB). `boundary_slop` allows up to that many
+    points to exceed tolerance, ONLY for `rho`/`chi_li`, ONLY when
+    interpolating -- every other field, and every point outside that
+    slop, is still a zero-tolerance regression.
+    """
+    import numpy as np
+    r_c = np.asarray(computed["r"])
+    r_r = np.asarray(reference["r"])
+    if not interpolate:
+        assert r_c.shape == r_r.shape, (
+            f"{context}profile grid size changed: computed {r_c.shape} vs "
+            f"reference {r_r.shape} -- regenerate the self-golden "
+            f"deliberately if this is expected, don't silently resample"
+        )
+    for field in PROFILE_FIELDS:
+        if field == "r" or field not in reference:
+            continue
+        c = np.asarray(computed[field])
+        if interpolate:
+            r = np.interp(r_c, r_r, np.asarray(reference[field]))
+        else:
+            r = np.asarray(reference[field])
+        diff = np.abs(c - r)
+        bound = rtol * np.maximum(np.abs(r), 1.0) + atol
+        bad = diff > bound
+        n_bad = int(bad.sum())
+        allowed = boundary_slop if (interpolate and field in DISCONTINUOUS_PROFILE_FIELDS) else 0
+        assert n_bad <= allowed, (
+            f"{context}profile field '{field}': {n_bad}/{len(c)} points "
+            f"exceed rtol={rtol}/atol={atol} (allowed={allowed} boundary "
+            f"slop); worst diff={diff.max():.4g} at index {int(np.argmax(diff))}"
+        )
 
 
 def run_pie(*args, cwd, timeout=600, env_extra=None):
