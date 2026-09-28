@@ -72,13 +72,18 @@ sbatch TACC.LS6.parallel.run.slurm
 - `src/coreEos.py`'s `get_mass_core` was missing a factor of `pi` until fixed
   at `bb37b0a` (v1.0.5) — a reminder that nothing in this codebase has been
   tested against an independent check until `testsys/` lands.
-- The S+Si (two-light-element) case has **no external oracle** — the old
-  predecessor codes (v1.0.3/v1.0.4 and earlier) are Fe-S/Fe-Si only. It can
-  only be checked by self-consistency (limit checks as Si%wt or S%wt → 0
-  against the single-element case) — a known weakness, not a gap to silently
-  paper over.
-- Regression anchors (old PIE versions) are untested legacy code, not
-  ground truth — see `PROJECT_RULES.md` rule 5.
+- The S+Si (two-light-element) case now has a regression anchor: the Zenodo
+  dataset (10.5281/zenodo.16459292) for Dunnigan et al. 2026 JGR Planets
+  (doi:10.1029/2025JE009368), produced by this same v1.0.5 code (published
+  code 10.5281/zenodo.16929504 == current HEAD `src/`). It still has **no
+  independent truth oracle** — the old predecessor codes (v1.0.3/v1.0.4) are
+  Fe-S/Fe-Si only, so S+Si correctness beyond regression parity still rests
+  on self-consistency (limit checks as Si%wt or S%wt → 0). State that
+  distinction — "regression-anchored" vs "independently verified" — wherever
+  S+Si results are reported.
+- Regression anchors (old PIE versions, and the Zenodo/Dunnigan dataset) are
+  same-code-family comparisons, not independent ground truth — see
+  `PROJECT_RULES.md` rule 5.
 
 ## Where to look for open work
 
