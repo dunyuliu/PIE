@@ -1,0 +1,86 @@
+# CLAUDE.md
+
+Guidance for Claude Code (or any agent) working in this repository. See
+`PROJECT_RULES.md` for the binding rules; this file is the working reference.
+
+## Project overview
+
+PIE (Planetary Interior Evolution) inverts Mercury's present-day interior
+structure (Fe core with S and/or Si light elements) against CMR2/CMC
+constraints, and is developing a companion interior-evolution model. All code
+is serial Python under `src/`. No compiled component, no MPI, no conda.
+
+## Environment
+
+- Use **`/usr/bin/python3`**, not whatever `python3` resolves to first on
+  `PATH` — the default on this box is a venv missing `h5py`
+  (`read_plot_datah5.py` needs it). Verify: `/usr/bin/python3 -c "import
+  h5py"`.
+- No conda for this project.
+- Dependencies (no manifest exists yet — `PATHWAY_FORWARD.md` item 8):
+  `numpy`, `scipy`, `pandas`, `matplotlib`, `h5py`.
+
+## Running
+
+```bash
+mkdir results                       # required before any run; nothing creates it
+python scheduler.py CMR2 CMC        # single case, e.g. 0.346 0.424 (Margot fit)
+python monteCarlo.run.py            # Monte Carlo ensemble around a mean CMR2/STD
+```
+
+Large ensembles on TACC Lonestar6:
+
+```bash
+python src/TACC.LS6.create.parallel.launcher.py   # README says TACC.create.parallel.launcher.py — wrong, see PROJECT_RULES.md rule 11
+sbatch TACC.LS6.parallel.run.slurm
+```
+
+## Layout
+
+- `src/` — all source, flat (no package/subdir structure yet).
+  `main.py`/`main_abbey_plot.py` are entry points; `driverp.py`/`shootp.py`
+  drive the present-day model, `drivere.py`/`shoote.py` the evolution model
+  (under development); `libCore.py` + `coreEos.py` hold the physics;
+  `globalvar.py`/`planet_input.py` hold shared state, imported with
+  `from x import *` throughout — a known refactor target (`PATHWAY_FORWARD.md`
+  item 9), not yet started, and not safe to touch until `testsys/` is green
+  (`PROJECT_RULES.md` rule 3a).
+- `src/test.py`, `src/TEST_visualization_evolution.py`,
+  `src/main_abbey_plot.py` are dead/scratch files pending triage
+  (`PATHWAY_FORWARD.md` item 9) — do not extend them; do not delete them
+  either without checking they're truly unused first.
+- `historical_versions/` — frozen zip/tar snapshots of prior versions.
+  Read-only (`PROJECT_RULES.md` rule 7).
+- `testsys/`, `.github/` — owned by a separate, concurrent effort building the
+  tiered test suite (unit/contract/integration/e2e) and CI. Do not create or
+  edit anything here from this working context.
+- `src/VERSION` — the changelog and version source of truth
+  (`PROJECT_RULES.md` rule 1a). `update_log` is the frozen pre-v1.0.5 dev log;
+  it gets no new entries.
+
+## Version state (as of 2026-09-28)
+
+- Latest `src/VERSION` entry: v1.0.5, 20250708.
+- GitHub releases exist for v1.0.0, v1.0.1, v1.0.4. v1.0.2/v1.0.3 were zipped
+  externally but never tagged in git.
+- Commit `387d6e6` (local, **unpushed**) fixed the VERSION/update_log metadata
+  mismatch. The v1.0.5 tag is held deliberately until `testsys/` passes and CI
+  is green — do not tag or release ahead of that (`PROJECT_RULES.md` rule 13).
+
+## Known correctness caveats
+
+- `src/coreEos.py`'s `get_mass_core` was missing a factor of `pi` until fixed
+  at `bb37b0a` (v1.0.5) — a reminder that nothing in this codebase has been
+  tested against an independent check until `testsys/` lands.
+- The S+Si (two-light-element) case has **no external oracle** — the old
+  predecessor codes (v1.0.3/v1.0.4 and earlier) are Fe-S/Fe-Si only. It can
+  only be checked by self-consistency (limit checks as Si%wt or S%wt → 0
+  against the single-element case) — a known weakness, not a gap to silently
+  paper over.
+- Regression anchors (old PIE versions) are untested legacy code, not
+  ground truth — see `PROJECT_RULES.md` rule 5.
+
+## Where to look for open work
+
+`PATHWAY_FORWARD.md` — the living board. Check it before assuming any claim
+in `README.md` or `src/VERSION` still holds.

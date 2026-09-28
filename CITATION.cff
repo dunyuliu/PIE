@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use PIE, please cite the paper below (preferred-citation) and the Zenodo code archive."
+title: "PIE: Planetary Interior Evolution"
+version: 1.0.5
+license: GPL-3.0
+repository-code: "https://github.com/dunyuliu/PIE"
+authors:
+  - family-names: Liu
+    given-names: Dunyu
+  - family-names: Dunnigan
+    given-names: Abigail H.
+  - family-names: Steinbrügge
+    given-names: Gregor B.
+  - family-names: Rivoldini
+    given-names: Attilio
+preferred-citation:
+  type: article
+  title: "Interior Models of Mercury and Conditions for Iron Snow Formation in a Fe-S-Si Core"
+  authors:
+    - family-names: Dunnigan
+      given-names: Abigail H.
+    - family-names: Liu
+      given-names: Dunyu
+    - family-names: Steinbrügge
+      given-names: Gregor B.
+    - family-names: Rivoldini
+      given-names: Attilio
+    - family-names: Dumberry
+      given-names: Mathieu
+    - family-names: Cao
+      given-names: Hao
+    - family-names: Soderlund
+      given-names: Krista M.
+  journal: "Journal of Geophysical Research: Planets"
+  year: 2026
+  month: 4
+  volume: 131
+  issue: 4
+  start: e2025JE009368
+  doi: 10.1029/2025JE009368
+references:
+  - type: software
+    title: 'Code for the paper titled "Interior Models of Mercury and Conditions for Iron Snow Formation in a Fe-S-Si Core"'
+    authors:
+      - name: "Dunnigan, Liu, Steinbrügge, Rivoldini, Dumberry, Cao, Soderlund"
+    year: 2025
+    doi: 10.5281/zenodo.16929504
+  - type: dataset
+    title: 'Simulation dataset and plotting scripts for the paper titled "Interior Models of Mercury and Conditions for Iron Snow Formation in a Fe-S-Si Core"'
+    authors:
+      - name: "Dunnigan, Liu, Steinbrügge, Rivoldini, Dumberry, Cao, Soderlund"
+    year: 2025
+    doi: 10.5281/zenodo.16459292
