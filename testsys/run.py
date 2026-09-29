@@ -25,6 +25,7 @@ TIERS = {
     "integration": ["-m", "integration"],
     "parity": ["-m", "parity"],
     "e2e": ["-m", "e2e"],
+    "published_wide": ["-m", "published_wide"],
 }
 FAST_DEFAULT = ["unit", "contract", "integration"]
 

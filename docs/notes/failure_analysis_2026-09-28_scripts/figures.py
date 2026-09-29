@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = "/home/utig5/dliu/PIE/docs/notes"
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 inv = json.load(open(HERE + "/inventory.json"))
 ENDS = [("detJ0", True, "det(J)=0 at 10 m (zero rows)"), ("crash_stderr", True, "singular-LU crash at 10 m (zero rows)"), ("newton_maxit", True, "Newton maxit at 10 m (zero rows)"),
         ("detJ0", False, "det(J)=0 at later radius"), ("crash_stderr", False, "crash at later radius"), ("newton_maxit", False, "Newton maxit at later radius"), ("finish", False, "finished all 40 radii")]

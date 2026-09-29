@@ -1,6 +1,6 @@
 import os,re,glob,csv,json,sys
 import numpy as np
-D="/home/utig5/dliu/shared_dataset/zenodo.16459292/extracted/PIE"
+D=os.path.expanduser("~/shared_dataset/zenodo.16459292/extracted/PIE")
 RS=np.arange(1e1,2e6,50e3)
 labels=[f"S+Si_{c:.2f}" for c in np.linspace(0,0.15,16)]+["S_0.00","Si_0.00"]
 out={}

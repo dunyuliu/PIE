@@ -44,8 +44,8 @@ sbatch TACC.LS6.parallel.run.slurm
 ## Testing
 
 ```
-/usr/bin/python3 testsys/run.py            # fast tiers: unit + contract + integration, ~85 s
-/usr/bin/python3 testsys/run.py e2e        # full-pipeline run vs a committed golden, ~5.5 min
+/usr/bin/python3 testsys/run.py            # fast tiers: unit + contract + integration, ~3-5 min
+/usr/bin/python3 testsys/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~11 min
 ```
 
 See [`testsys/README.md`](testsys/README.md) for tier definitions, the

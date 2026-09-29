@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /tmp/claude-16759/-home-utig5-dliu-PIE/9c4a8cf5-0ff3-4504-be1f-683a9c776a0a/scratchpad
+cd ${SCRATCH:?set SCRATCH to your work dir}
 export NW=16
 while [ ! -f queue2.done ]; do sleep 60; done
 /usr/bin/python3 run_batch.py cases_detj0.json clamp clamp_chi=1 linesearch=1 maxit=25 > runs_clamp.log 2>&1

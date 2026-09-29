@@ -25,6 +25,6 @@ csv files: 18432 total rows: 201633 error_code1 rows: 0 ec2: 0
 nrows histogram: [(0, 10238), (1, 9), (2, 6), (3, 4), (4, 15), (5, 16), (6, 32), (7, 50), (8, 47), (9, 67), (10, 72), (11, 90), (12, 118), (13, 166), (14, 138), (15, 178), (16, 210), (17, 240), (18, 268), (19, 296), (20, 303), (21, 322), (22, 382), (23, 391), (24, 418), (25, 417), (26, 429), (27, 439), (28, 428), (29, 401), (30, 376), (31, 367), (32, 407), (33, 317), (34, 282), (35, 72), (36, 12), (38, 22), (39, 129), (40, 258)]
 zero-row csvs by label: {'S+Si_0.00': 441, 'S+Si_0.01': 439, 'S+Si_0.02': 439, 'S+Si_0.03': 444, 'S+Si_0.04': 450, 'S+Si_0.05': 464, 'S+Si_0.06': 470, 'S+Si_0.07': 477, 'S+Si_0.08': 490, 'S+Si_0.09': 503, 'S+Si_0.10': 513, 'S+Si_0.11': 509, 'S+Si_0.12': 516, 'S+Si_0.13': 1024, 'S+Si_0.14': 1024, 'S+Si_0.15': 1024, 'S_0.00': 439, 'Si_0.00': 572}
 Traceback (most recent call last):
-  File "/tmp/claude-16759/-home-utig5-dliu-PIE/9c4a8cf5-0ff3-4504-be1f-683a9c776a0a/scratchpad/summarize_inventory.py", line 44, in <module>
+  File "<scratch>/summarize_inventory.py", line 44, in <module>
     print("max ricb (km) histogram:", sorted(((None if k is None else k / 1e3), v) for k, v in maxr.items()))
 TypeError: '<' not supported between instances of 'float' and 'NoneType'

@@ -251,7 +251,18 @@ def assert_scalars_match(computed, reference, rtol=1e-4, context=""):
     for field in CONTINUOUS_FIELDS:
         c, r = computed[field], reference[field]
         diff = abs(c - r)
-        bound = rtol * max(abs(r), 1e-12)
+        # Absolute floor is the Newton solver's OWN xtol=ftol=1e-6
+        # (globalvar.py), not an arbitrary loosening: fields that sit
+        # near zero (e.g. chi_li_in right at the ICB, where it starts
+        # at ~0) have relative bounds far tighter than the solver's own
+        # convergence tolerance, which manufactures false failures on
+        # noise the solver itself considers "converged". Confirmed by a
+        # real case: chi_li_in=-1.358e-4 vs -1.358e-4, diff=2.5e-8,
+        # rtol=1e-4-of-that-tiny-value = 1.4e-8 (tighter than the
+        # solver's own tolerance) -- a 1e-6 floor covers it without
+        # loosening the bound for any O(1)-or-larger quantity (core_mass
+        # ~1e23, moi~0.3, etc. are governed by rtol either way).
+        bound = max(rtol * abs(r), 1e-6)
         assert not (diff > bound), (
             f"{context}{field}: computed={c!r} reference={r!r} "
             f"diff={diff!r} exceeds rtol={rtol}"

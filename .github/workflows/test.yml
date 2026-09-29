@@ -63,6 +63,15 @@ jobs:
         run: |
           python3 -m pytest testsys/e2e/test_full_composition_sweep.py -v -m e2e
 
+  # NOTE: testsys/e2e/test_published_wide_sweep.py (marker
+  # `published_wide`) has deliberately NO job here. It reads directly
+  # from ~/shared_dataset/zenodo.16459292/ (the user's cross-project,
+  # read-only dataset cache) and self-skips with a clear reason when
+  # that path is absent -- which it always is on a GitHub-hosted
+  # runner. Run it manually/locally on a machine with that cache
+  # mounted: `python3 -m pytest testsys/e2e/test_published_wide_sweep.py
+  # -m published_wide -v`.
+
   e2e-wide-sweep:
     # The wide physics-coverage sweep (2 MOI x 6 compositions x 3 radii,
     # full scalars+profiles) -- sharded by composition so each shard is

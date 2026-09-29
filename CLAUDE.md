@@ -58,14 +58,13 @@ sbatch TACC.LS6.parallel.run.slurm
   (`PROJECT_RULES.md` rule 1a). `update_log` is the frozen pre-v1.0.5 dev log;
   it gets no new entries.
 
-## Version state (as of 2026-09-28)
+## Version state (as of 2026-09-29)
 
-- Latest `src/VERSION` entry: v1.0.5, 20250708.
-- GitHub releases exist for v1.0.0, v1.0.1, v1.0.4. v1.0.2/v1.0.3 were zipped
-  externally but never tagged in git.
-- Commit `387d6e6` (local, **unpushed**) fixed the VERSION/update_log metadata
-  mismatch. The v1.0.5 tag is held deliberately until `testsys/` passes and CI
-  is green — do not tag or release ahead of that (`PROJECT_RULES.md` rule 13).
+- v1.0.5 (tag on `683a51d`): the code archived with Dunnigan et al. 2026
+  (Zenodo 10.5281/zenodo.16929504). v1.1.0: first tested baseline (testsys,
+  CI, rules, citation) with `src/` byte-identical to v1.0.5.
+- v1.0.2/v1.0.3 were zipped externally but never tagged; don't tag them.
+- Next: v1.1.1 solver fixes (`PATHWAY_FORWARD.md` items 15-17).
 
 ## Known correctness caveats
 

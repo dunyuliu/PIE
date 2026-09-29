@@ -99,11 +99,11 @@ it does not print and continue.
 
 ## 3. Gate every stage; pass before moving on
 
-Named command: `testsys/run.py` (unit / contract / integration / e2e tiers),
-owned by a separate effort and not yet landed. Until it lands, nothing in
-this repo is gated — this rule states the target, not a current pass
-criterion; do not claim a stage is "gated" before the command exists and
-runs green.
+Named command: `/usr/bin/python3 testsys/run.py` (fast tiers: unit /
+contract / integration, the CI gate on every push and PR) and
+`testsys/run.py all` (adds e2e, including the `published_wide` sweep that
+needs `~/shared_dataset`). Landed in v1.1.0. A stage is "gated" only when the
+named command was run and its pass/fail counts are quoted.
 
 Environment: `/usr/bin/python3`, not the `python3` first on `PATH` (a venv
 missing `h5py`). No conda for this project.
@@ -199,8 +199,8 @@ report or plot caption.
 ## 7. Reference data is read-only
 
 `historical_versions/` and the external oracle trees this project cites
-(`/home/utig5/dliu/3.Krista_Soderlund/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`,
-`/home/utig5/dliu/3.Krista_Soderlund/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`)
+(`~/3.Krista_Soderlund/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`,
+`~/3.Krista_Soderlund/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`)
 are ground truth for regression comparison only (rule 5) — nothing writes
 through them, ever, including "just to patch the known pi bug for a cleaner
 comparison." If a comparison needs the bug fixed, fix it in a copy.
@@ -267,10 +267,13 @@ which are not tracked as extracted files).
 
 ## 13. Land through one gated PR at a time; release in one sequence; state the grant
 
-`v1.0.5` is not yet tagged — a local commit (`387d6e6`) is unpushed, and the
-tag is intentionally held until `testsys/` passes (`PATHWAY_FORWARD.md` item
-6). Release sequence once testsys is green: push, green CI on the exact SHA,
-annotated tag `v1.0.5`, `gh release create v1.0.5 --verify-tag --latest`.
+Release sequence: one PR per release; `testsys/run.py all` green locally,
+counts pasted in the PR; green CI on the PR head; merge; green CI on the
+merge SHA; add a `src/VERSION` entry (in the PR); annotated tag `vX.Y.Z` on
+the merge SHA; `gh release create vX.Y.Z --verify-tag --latest`. State the
+grant (who authorised the release, when) in the PR. `v1.0.5` is tagged on
+`683a51d`, the exact code archived for Dunnigan et al. 2026 (rule 14);
+`v1.1.0` is the first tested baseline.
 `v1.0.2`/`v1.0.3` were never tagged in git — do not retroactively tag them;
 treat their zipped/tarred copies as historical record only (rule 7).
 

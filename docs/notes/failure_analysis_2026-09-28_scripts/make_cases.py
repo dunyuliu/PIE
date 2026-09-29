@@ -1,9 +1,9 @@
 """Stratified sample of published runs by (moi, label, end, died@10m) -> cases.json; plus
 eutectic-clamp check on the LAST csv row of det(J)==0 / newton_maxit truncated models (read-only)."""
-import json, random, csv, glob, collections, sys
+import os, json, random, csv, glob, collections, sys
 import numpy as np
 inv = json.load(open(sys.argv[1]))
-D = "/home/utig5/dliu/shared_dataset/zenodo.16459292/extracted/PIE"
+D = os.path.expanduser("~/shared_dataset/zenodo.16459292/extracted/PIE")
 rng = random.Random(1)
 classes = collections.defaultdict(list)
 for moi in ("margot", "genova"):
