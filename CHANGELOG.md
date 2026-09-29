@@ -2,6 +2,10 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
 
+* v1.1.1; 20260929; scipy compatibility patch. Converged outputs unchanged.
+    1. Port src/coreEos.py meltingDataFromFile from scipy interp2d (removed in scipy 1.14) to RectBivariateSpline(kx=3, ky=3, s=0): same FITPACK fit and evaluation, bit-for-bit on the pinned environment (testsys/unit/test_melting_interp_port.py).
+    2. CI: new fast-latest job on Python 3.12 with current numpy/scipy (pins stripped); pinned job unchanged.
+    3. Contract test: src/ must not use interp2d (replaces the interp2d canary).
 * v1.1.0; 20260929; first tested baseline. src/ physics code byte-identical to v1.0.5 (the code archived for Dunnigan et al. 2026, JGR Planets, doi:10.1029/2025JE009368).
     1. Add testsys/: unit, contract, integration, e2e tiers; parity vs published Zenodo v1.0.5 output (10.5281/zenodo.16459292) for S, Si, S+Si; full radial-profile guards; runner testsys/run.py.
     2. Add CI (.github/workflows/test.yml): fast tiers on push/PR, e2e weekly and on demand.

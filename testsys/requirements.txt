@@ -3,11 +3,10 @@
 # with the published Zenodo v1.0.5 output was established. Change a pin
 # only together with a green testsys/run.py all under the new version.
 #
-# scipy: src/coreEos.py uses scipy.interpolate.interp2d, which since
-# scipy 1.14 raises NotImplementedError when called (the name still
-# imports). Canary: testsys/contract/test_output_schema.py::
-# test_scipy_interp2d_still_callable. Porting off interp2d is
-# PATHWAY_FORWARD.md item 14.
+# These pins are the reference environment. src/ no longer uses the removed
+# scipy interp2d (ported to RectBivariateSpline in v1.1.1, bit-for-bit on
+# these pins: testsys/unit/test_melting_interp_port.py); the CI job
+# `fast-latest` runs the same tiers on current numpy/scipy with pins stripped.
 numpy==1.21.5
 scipy==1.8.0
 matplotlib==3.5.1

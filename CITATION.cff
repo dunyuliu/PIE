@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use PIE, please cite the paper below (preferred-citation) and the Zenodo code archive."
 title: "PIE: Planetary Interior Evolution"
-version: 1.1.0
+version: 1.1.1
 license: GPL-3.0
 repository-code: "https://github.com/dunyuliu/PIE"
 authors:
