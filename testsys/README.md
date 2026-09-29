@@ -56,16 +56,16 @@ PYTHONNOUSERSITE=1 MPLBACKEND=Agg /usr/bin/python3 -m pytest testsys -m "unit or
 | Tier | Marker | What | Count | Runtime |
 |---|---|---|---|---|
 | Unit | `unit` | Pure functions: coreEos EOS objects, libCore's mass/MOI integrals, the Newton solver in isolation, planet_input/globalvar parameter sanity | 32 (+1 xfail) | ~8 s |
-| Contract | `contract` | Output CSV/h5 schema vs `globalvar.presentday_columns`, CI workflow YAML validity and push/PR-excludes-e2e, README/run.py/pytest.ini tier-name parity, repo hygiene (src/ untouched), scipy `interp2d` dependency canary | 13 | ~0.5 s |
+| Contract | `contract` | Output CSV/h5 schema vs `globalvar.presentday_columns`, CI workflow YAML validity and push/PR-excludes-e2e, README/run.py/pytest.ini tier-name parity, repo hygiene (src/ untouched), no `interp2d` in `src/` (removed in scipy 1.14; ported in v1.1.1) | 13 | ~0.5 s |
 | Integration | `integration` (parity subset also marked `parity`) | One present-day solve at Margot CMR2=0.346/CMC=0.424 (self-consistency); 3 solves vs **published paper output** (regression anchor, same code) with ALL 19 scalars + full radial profiles gated; **wide fast subset**: 1 radius x 2 MOI x 6 compositions (12 cases, all scalars+profiles, incl. a documented non-convergent case); **v1.0.4 (2023) history**: 17-row field-by-field diff with 2 known, attributed deltas; **MC-wide parity**: 24 curated real Monte-Carlo-drawn (CMR2,CMC) cases (4 per composition x MOI: extremes/centre/most-converged) vs published scalars | 9+3+12+14+24 | ~19s+~57s+~52s+~0.02s+~65s |
 | E2E | `e2e` | (a) `main.py p 0.346 0.424 S Edmund` end-to-end in a tmp dir via the REAL CLI subprocess (full file/figure I/O), vs a self-golden; (b) wide sweep, ALL 3 radii x 2 MOI x 6 compositions (36 cases, all scalars+profiles), direct-solve (not CLI), parallelized, CI-sharded by composition; (c) `published_wide` (marker `published_wide`, skipped when `~/shared_dataset` absent -- always in CI): 240 further Monte-Carlo-drawn cases sampled directly from the shared cache, never copied | 4 + 36 + 240 | ~4.5 min + ~54 s + ~150-200 s |
 
-`published_wide` currently reports **2 hard failures out of 240**
-(99.2% pass) -- a genuine, reproducible finding, not a test bug; see
-"Findings" #5 below. Left failing rather than softened: the whole
-point of sampling 240 real cases was to find exactly this kind of rare
-divergence, and papering over a real 2/240 mismatch to make the suite
-green would be the "false confidence" this test system exists to avoid.
+`published_wide` sees 1-2 of 240 models where the published run converged
+but a fresh solve raises SciPy "Factor is exactly singular" at ricb = 10 m,
+varying run to run with the same seed (Findings #5; bug B5 in
+`docs/audits/AUDIT_2026-09-29_buglist.md`). Only that exact signature at
+10 m is tolerated, it is printed, and more than max(3, 2% of the sample)
+fails the test (`PATHWAY_FORWARD.md` item 19). Any other mismatch fails.
 
 Fast-tier total (unit+contract+integration, what CI runs on every
 push/PR): **106 passed, 1 xfailed**; measured 194-307 s depending on

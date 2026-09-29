@@ -15,6 +15,8 @@ import pytest
 
 from conftest import import_src
 
+SRC = pathlib.Path(__file__).resolve().parents[2] / "src"
+
 pytestmark = pytest.mark.contract
 
 REF_ROOT = pathlib.Path(__file__).resolve().parent.parent / "reference"
@@ -70,21 +72,11 @@ def test_h5_data_keys_present(sys_argv_p):
         )
 
 
-def test_scipy_interp2d_still_callable():
-    """src/coreEos.py does `from scipy.interpolate import interp2d` at
-    MODULE level (used by meltingDataFromFile, which libCore.py
-    instantiates at ITS OWN import time) -- interp2d is deprecated
-    upstream and scheduled for removal from scipy. When scipy removes
-    it, EVERY src/ module import breaks (coreEos -> libCore -> almost
-    everything), not just the one call site that uses it. This is a
-    canary, not a fix: it fails specifically and first, rather than
-    letting every other test fail with a confusing downstream
-    ImportError. Since scipy 1.14 the name still IMPORTS but raises
-    NotImplementedError when CALLED, so this canary calls it. Fix
-    tracked on PATHWAY_FORWARD.md item 14; testsys/requirements.txt pins
-    scipy==1.8.0 until then.
-    """
-    import numpy as np
-    from scipy.interpolate import interp2d
-    f = interp2d([0.0, 1.0], [0.0, 1.0], np.array([[0.0, 1.0], [1.0, 2.0]]))
-    assert float(f(0.5, 0.5)[0]) == 1.0
+def test_src_does_not_use_removed_scipy_interp2d():
+    """scipy.interpolate.interp2d raises NotImplementedError from scipy 1.14.
+    src/coreEos.py was ported to RectBivariateSpline in v1.1.1 (bit-for-bit,
+    testsys/unit/test_melting_interp_port.py); keep it from coming back."""
+    import re
+    offenders = [str(f.relative_to(SRC.parent)) for f in SRC.glob("*.py")
+                 if re.search(r"^[^#\n]*\binterp2d\b", f.read_text(), re.M)]
+    assert not offenders, f"interp2d used in: {offenders}"

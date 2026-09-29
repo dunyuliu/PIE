@@ -41,6 +41,31 @@ jobs:
           MPLBACKEND: 'Agg'
         run: python3 testsys/run.py unit contract integration
 
+  fast-latest:
+    # Same fast tiers on current Python and the newest numpy/scipy/pandas
+    # (pins stripped). Guards against upstream removals like scipy 1.14's
+    # interp2d, which the pinned job cannot see. The interp2d equivalence
+    # test skips here by design (no legacy reference on scipy >= 1.14).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install latest dependencies (pins stripped)
+        run: |
+          sed -E 's/==[^ ]+//' testsys/requirements.txt | grep -v '^#' > /tmp/req-latest.txt
+          pip install -r /tmp/req-latest.txt
+          pip freeze | grep -iE '^(numpy|scipy|pandas|tables|h5py|matplotlib|pytest)=='
+
+      - name: Run fast tiers (unit, contract, integration)
+        env:
+          PYTHONNOUSERSITE: '1'
+          MPLBACKEND: 'Agg'
+        run: python3 testsys/run.py unit contract integration
+
   e2e-cli-smoke:
     # The ONE true full-CLI-subprocess pipeline test (main.py p 0.346
     # 0.424 S Edmund, ~4.5 min): argv parsing, directory creation, real

@@ -51,7 +51,7 @@ Updated FeSi EoS for solid FeSi and changed partion coefficient.
 
 import numpy as np
 from scipy.interpolate import CubicSpline
-from scipy.interpolate import interp2d
+from scipy.interpolate import RectBivariateSpline
 from scipy import integrate
 from scipy import optimize
 
@@ -353,8 +353,18 @@ class meltingDataFromFile:
             for j in range(nbrPNodes):
                 xx, px, Tx=f.readline().split()
                 T[i,j]=Tx
-        self.TF=interp2d(p,x,T,kind='cubic')
+        # Bicubic interpolating spline on the regular (p, x) grid. Same FITPACK
+        # fit (regrid_smth, kx=ky=3, s=0) and evaluation (bispev) as the
+        # scipy interp2d(p, x, T, kind='cubic') it replaces (removed in
+        # scipy 1.14); bit-for-bit equal, see testsys/unit/test_melting_interp_port.py.
+        self.TF=RectBivariateSpline(p,x,T.T,kx=3,ky=3,s=0)
     
     def __call__(self,x,p):
-        return self.TF(p,x)[0]
+        # interp2d(p, x) returned an array of shape (len(x), len(p)), squeezed
+        # to 1-D when len(x) == 1; [0] then picked the first element (a scalar
+        # for scalar queries). Reproduce that exactly.
+        z=np.atleast_2d(self.TF(np.sort(np.atleast_1d(p)),np.sort(np.atleast_1d(x)))).T
+        if len(z)==1:
+            z=z[0]
+        return np.array(z)[0]
             
