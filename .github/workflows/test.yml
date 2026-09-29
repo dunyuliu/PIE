@@ -1,0 +1,105 @@
+name: PIE test suite
+
+# Fast tiers (unit + contract + integration, target < 5 min total) on
+# every push/PR -- e2e (the full scheduler.py sweep, ~5-6 min PER
+# composition, ~1.5-2 h for the full 18-composition sweep -- see
+# testsys/README.md "Runtimes") is opt-in only: workflow_dispatch or a
+# weekly schedule, never push/PR. That split mirrors this project's own
+# EQdyna/eqquasi sibling projects' CI (fast gate on every push, slow
+# physics sweep on a timer), scaled down for a serial-Python, no-MPI,
+# no-build codebase.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 7 * * 1'  # weekly, Monday 07:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast:
+    # unit + contract + integration (incl. parity against the committed
+    # Zenodo/self-generated references). Runs on every push and PR.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r testsys/requirements.txt
+
+      - name: Run fast tiers (unit, contract, integration)
+        env:
+          PYTHONNOUSERSITE: '1'
+          MPLBACKEND: 'Agg'
+        run: python3 testsys/run.py unit contract integration
+
+  e2e-cli-smoke:
+    # The ONE true full-CLI-subprocess pipeline test (main.py p 0.346
+    # 0.424 S Edmund, ~4.5 min): argv parsing, directory creation, real
+    # h5/csv/figure file writes, all through the real entry point.
+    # Opt-in only (see the `on:` block above) -- NOT part of the push/PR
+    # gate.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r testsys/requirements.txt
+      - name: Run the full-CLI-subprocess e2e test
+        env:
+          PYTHONNOUSERSITE: '1'
+          MPLBACKEND: 'Agg'
+        run: |
+          python3 -m pytest testsys/e2e/test_full_composition_sweep.py -v -m e2e
+
+  # NOTE: testsys/e2e/test_published_wide_sweep.py (marker
+  # `published_wide`) has deliberately NO job here. It reads directly
+  # from ~/shared_dataset/zenodo.16459292/ (the user's cross-project,
+  # read-only dataset cache) and self-skips with a clear reason when
+  # that path is absent -- which it always is on a GitHub-hosted
+  # runner. Run it manually/locally on a machine with that cache
+  # mounted: `python3 -m pytest testsys/e2e/test_published_wide_sweep.py
+  # -m published_wide -v`.
+
+  e2e-wide-sweep:
+    # The wide physics-coverage sweep (2 MOI x 6 compositions x 3 radii,
+    # full scalars+profiles) -- sharded by composition so each shard is
+    # 2 MOI x 3 radii = 6 direct solves, ~20 s. Opt-in only, same as
+    # e2e-cli-smoke above.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        composition:
+          - { light: S, liquidus: Edmund }
+          - { light: S, liquidus: Steinbruegge }
+          - { light: Si, liquidus: Edmund }
+          - { light: Si, liquidus: Steinbruegge }
+          - { light: S+Si, liquidus: Edmund }
+          - { light: S+Si, liquidus: Steinbruegge }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r testsys/requirements.txt
+      - name: Run this composition's shard of the wide sweep
+        env:
+          PYTHONNOUSERSITE: '1'
+          MPLBACKEND: 'Agg'
+          PIE_E2E_SHARD: '${{ matrix.composition.light }},${{ matrix.composition.liquidus }}'
+        run: |
+          python3 -m pytest testsys/e2e/test_wide_full_sweep.py -v -m e2e

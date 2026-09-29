@@ -1,0 +1,27 @@
+Recovery of published zero-row runs (best of tags ['ls', 'clamp', 'clamp_rest', 'start50', 'maxit40', 'eps5', 'cold'] ), by class:
+  genova/S+Si_0.05/crash_stderr/10m        recovered 3/3 (>=5 radii)  mean rows  35.7  recovered isnow>0 frac 0.00  rcmb0 km [1943, 1951, 1945]
+  genova/S+Si_0.10/crash_stderr/10m        recovered 2/3 (>=5 radii)  mean rows  35.5  recovered isnow>0 frac 0.00  rcmb0 km [1965, 1981]
+  genova/S_0.00/crash_stderr/10m           recovered 3/3 (>=5 radii)  mean rows  34.0  recovered isnow>0 frac 0.00  rcmb0 km [1901, 1901, 1901]
+  genova/S_0.00/detJ0/10m                  recovered 1/2 (>=5 radii)  mean rows  30.0  recovered isnow>0 frac 0.07  rcmb0 km [1944]
+  genova/Si_0.00/crash_stderr/10m          recovered 0/1 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+  genova/Si_0.00/newton_maxit/10m          recovered 0/3 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+  margot/S+Si_0.05/crash_stderr/10m        recovered 1/3 (>=5 radii)  mean rows  35.0  recovered isnow>0 frac 0.00  rcmb0 km [1937]
+  margot/S+Si_0.05/detJ0/10m               recovered 0/3 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+  margot/S+Si_0.05/newton_maxit/10m        recovered 2/3 (>=5 radii)  mean rows   9.5  recovered isnow>0 frac 0.35  rcmb0 km [2057, 2057]
+  margot/S+Si_0.10/crash_stderr/10m        recovered 2/3 (>=5 radii)  mean rows  34.0  recovered isnow>0 frac 0.00  rcmb0 km [1911, 1969]
+  margot/S+Si_0.10/detJ0/10m               recovered 0/3 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+  margot/S_0.00/crash_stderr/10m           recovered 2/3 (>=5 radii)  mean rows  32.0  recovered isnow>0 frac 0.00  rcmb0 km [1872, 1872]
+  margot/S_0.00/detJ0/10m                  recovered 0/3 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+  margot/Si_0.00/crash_stderr/10m          recovered 0/3 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+  margot/Si_0.00/newton_maxit/10m          recovered 0/3 (>=5 radii)  mean rows   0.0  recovered isnow>0 frac nan  rcmb0 km []
+
+Published vs. corrected per-composition statistics (rows = model radii; isnow>0 = any iron-snow state):
+moi/label              draws_pub lost@10m(num.) est.recoverable pub isnow>0  corrected pub rcmb0 med km corr rcmb0 med pub CMR2 mean corr CMR2 mean
+margot/S_0.00                585             72              48       0.385      0.345             1991           1986        0.3386         0.3386
+margot/Si_0.00               452            422               0       0.038      0.038             1970           1970        0.3336         0.3336
+margot/S+Si_0.05             560            184              64       0.263      0.227             2011           2005        0.3434         0.3422
+margot/S+Si_0.10             511            320             213       0.199      0.128             2028           2013        0.3482         0.3427
+genova/S_0.00               1006             16              17       0.152      0.149             1960           1960        0.3330         0.3328
+genova/Si_0.00              1006              1               0       0.004      0.004             1960           1960        0.3326         0.3326
+genova/S+Si_0.05             620            404             404       0.049      0.028             1972           1960        0.3359         0.3329
+genova/S+Si_0.10             150            874             583       0.029      0.005             1994           1981        0.3409         0.3333

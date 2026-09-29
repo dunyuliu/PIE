@@ -41,6 +41,30 @@ sbatch TACC.LS6.parallel.run.slurm
 # The example run here takes less than 2 hours.
 ```
 
+## Testing
+
+```
+/usr/bin/python3 testsys/run.py            # fast tiers: unit + contract + integration, ~3-5 min
+/usr/bin/python3 testsys/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~11 min
+```
+
+See [`testsys/README.md`](testsys/README.md) for tier definitions, the
+published-paper parity check against Zenodo-archived output, and a
+known-environment note (`/usr/bin/python3` needs `PYTHONNOUSERSITE=1`
+for subprocess runs -- see that file).
+
+## Citation
+
+If you use PIE, please cite:
+
+Dunnigan, A. H., Liu, D., Steinbrügge, G. B., Rivoldini, A., Dumberry, M., Cao, H., & Soderlund, K. M. (2026). Interior models of Mercury and conditions for iron snow formation in a Fe-S-Si core. *Journal of Geophysical Research: Planets*, 131(4), e2025JE009368. https://doi.org/10.1029/2025JE009368
+
+Code and data archived on Zenodo for that paper (PIE v1.0.5):
+- Code: https://doi.org/10.5281/zenodo.16929504
+- Simulation dataset and plotting scripts: https://doi.org/10.5281/zenodo.16459292
+
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button).
+
 ## Copyright and distribution
 
 All the material in this repository is open-source and distributed under the GNU General Public License v3.0. For detials, see ``LICENSE``.

@@ -1,0 +1,123 @@
+
+######## base
+published class                          pub_rows fresh_ok  stop_km fresh_status       detail
+genova/S+Si_0.05/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.05/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.05/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.05/crash_stderr/later            27       27     1350 singular_LU        it=2 nrs=263 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.05/crash_stderr/later            29       29     1450 singular_LU        it=9 nrs=273 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.05/crash_stderr/later            30       30     1500 newton_maxit       sig=divergence nf_last=1.21e-01 nf_min=7.96e-03 condJ=1.7e+02
+genova/S+Si_0.05/detJ0/later                   30       30     1500 newton_detJ0       zero_cols=[4] x4=0.1869 it=2 nf_at_stop=8.31e-03
+genova/S+Si_0.05/detJ0/later                   30       30     1500 newton_detJ0       zero_cols=[4] x4=0.2460 it=3 nf_at_stop=5.01e-01
+genova/S+Si_0.05/detJ0/later                   32       32     1600 newton_detJ0       zero_cols=[4] x4=0.2009 it=2 nf_at_stop=8.70e-03
+genova/S+Si_0.05/newton_maxit/later            28       28     1400 newton_maxit       sig=irregular nf_last=5.04e-04 nf_min=5.04e-04 condJ=1.2e+03
+genova/S+Si_0.05/newton_maxit/later            32       32     1600 newton_maxit       sig=irregular nf_last=6.44e-03 nf_min=3.99e-03 condJ=1.2e+03
+genova/S+Si_0.05/newton_maxit/later            33       33     1650 k2_grid_error      it=12 nrs=333 nonfiniteA=0 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=getk2: nrs=-431 out of range (ricb=0.676411 rcmb=-0.62723 nd)
+genova/S+Si_0.10/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.10/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.10/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.10/crash_stderr/later            33       33     1650 singular_LU        it=1 nrs=308 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.10/crash_stderr/later            34       34     1700 singular_LU        it=1 nrs=311 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.10/crash_stderr/later            34       34     1700 singular_LU        it=1 nrs=319 nonfiniteA=797 nonfin_rho=None nonfin_g=None nan_yc=None nan_rhof=None rcmb=None v=[] exc=Factor is exactly singular
+genova/S+Si_0.10/detJ0/later                   31       31     1550 newton_detJ0       zero_cols=[4] x4=0.1862 it=2 nf_at_stop=2.35e-01
+genova/S+Si_0.10/detJ0/later                   31       31     1550 newton_detJ0       zero_cols=[4] x4=0.1908 it=2 nf_at_stop=8.88e-03
+genova/S+Si_0.10/detJ0/later                   31       31     1550 newton_detJ0       zero_cols=[4] x4=0.3055 it=7 nf_at_stop=6.82e-01
+genova/S+Si_0.10/newton_maxit/later            31       31     1550 newton_maxit       sig=irregular nf_last=7.15e-03 nf_min=1.09e-03 condJ=2.2e+03
+genova/S+Si_0.10/newton_maxit/later            33       33     1650 newton_maxit       sig=stagnation nf_last=1.42e-02 nf_min=4.42e-03 condJ=9.7e+02
+genova/S+Si_0.10/newton_maxit/later            33       33     1650 newton_maxit       sig=stagnation nf_last=2.28e-02 nf_min=5.02e-03 condJ=1.1e+03
+genova/S_0.00/crash_stderr/10m                  0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=8 nan_rhof=2 rcmb=0.7818097902693791 v=[0.88, 1.941, 0.782, 0.498, -0.063] exc=Factor is exactly singular
+genova/S_0.00/crash_stderr/10m                  0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=8 nan_rhof=2 rcmb=0.7818547920881367 v=[0.88, 1.94, 0.782, 0.498, -0.063] exc=Factor is exactly singular
+genova/S_0.00/crash_stderr/10m                  0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=8 nan_rhof=2 rcmb=0.7820207944573428 v=[0.879, 1.938, 0.782, 0.498, -0.062] exc=Factor is exactly singular
+genova/S_0.00/crash_stderr/later               27       27     1350 singular_LU        it=2 nrs=216 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=1.0251971543439762 v=[1.496, -16.196, 1.025, 0.995, 3.169] exc=Factor is exactly singular
+genova/S_0.00/crash_stderr/later               29       29     1450 singular_LU        it=2 nrs=302 nonfiniteA=196 nonfin_rho=98 nonfin_g=98 nan_yc=152 nan_rhof=38 rcmb=0.787136463445422 v=[0.792, 2.829, 0.787, 0.52, -0.231] exc=Factor is exactly singular
+genova/S_0.00/crash_stderr/later               30       30     1500 singular_LU        it=7 nrs=209 nonfiniteA=382 nonfin_rho=191 nonfin_g=191 nan_yc=84 nan_rhof=21 rcmb=1.176979871734487 v=[1.141, 1.709, 1.177, 31.653, -0.324] exc=Factor is exactly singular
+genova/S_0.00/detJ0/10m                         0        0        0 newton_detJ0       zero_cols=[4] x4=0.1318 it=4 nf_at_stop=8.43e-02
+genova/S_0.00/detJ0/10m                         0       30     1500 newton_detJ0       zero_cols=[4] x4=0.3177 it=9 nf_at_stop=7.67e-01
+genova/S_0.00/detJ0/later                      15       15      750 newton_detJ0       zero_cols=[4] x4=0.1471 it=5 nf_at_stop=1.92e-01
+genova/S_0.00/detJ0/later                      30       30     1500 newton_detJ0       zero_cols=[4] x4=0.1854 it=3 nf_at_stop=6.00e-03
+genova/S_0.00/detJ0/later                      33       33     1650 newton_detJ0       zero_cols=[4] x4=0.2001 it=4 nf_at_stop=2.01e-01
+genova/S_0.00/newton_maxit/later               30       30     1500 newton_maxit       sig=divergence nf_last=2.57e-01 nf_min=8.72e-03 condJ=3.7e+01
+genova/S_0.00/newton_maxit/later               30       30     1500 newton_maxit       sig=irregular nf_last=9.90e-04 nf_min=7.04e-04 condJ=1.8e+03
+genova/S_0.00/newton_maxit/later               36       36     1800 newton_maxit       sig=irregular nf_last=4.75e-05 nf_min=4.56e-05 condJ=2.8e+04
+genova/Si_0.00/crash_stderr/10m                 0        0        0 singular_LU        it=2 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=12 nan_rhof=3 rcmb=0.8390964288755673 v=[0.698, 1.595, 0.839, 0.64, -0.051] exc=Factor is exactly singular
+genova/Si_0.00/crash_stderr/later              39       39     1950 k2_grid_error      it=0 nrs=None nonfiniteA=None nonfin_rho=None nonfin_g=None nan_yc=0 nan_rhof=0 rcmb=0.7907628084881427 v=[0.858, 1.447, 0.791, 0.519, 0.017] exc=getk2: nrs=404 out of range (ricb=0.799394 rcmb=0.790763 nd)
+genova/Si_0.00/crash_stderr/later              39       39     1950 k2_grid_error      it=0 nrs=None nonfiniteA=None nonfin_rho=None nonfin_g=None nan_yc=0 nan_rhof=0 rcmb=0.7962746735374038 v=[0.837, 1.416, 0.796, 0.529, 0.037] exc=getk2: nrs=402 out of range (ricb=0.799394 rcmb=0.796275 nd)
+genova/Si_0.00/crash_stderr/later              39       39     1950 k2_grid_error      it=0 nrs=None nonfiniteA=None nonfin_rho=None nonfin_g=None nan_yc=0 nan_rhof=0 rcmb=0.799628251599159 v=[0.824, 1.396, 0.8, 0.536, 0.05] exc=getk2: nrs=400 out of range (ricb=0.799394 rcmb=0.799628 nd)
+genova/Si_0.00/newton_maxit/10m                 0        0        0 newton_maxit       sig=period2_oscillation nf_last=1.24e-03 nf_min=1.24e-03 condJ=1.6e+02
+genova/Si_0.00/newton_maxit/10m                 0        0        0 newton_maxit       sig=period2_oscillation nf_last=2.61e-03 nf_min=2.61e-03 condJ=1.6e+02
+genova/Si_0.00/newton_maxit/10m                 0        0        0 newton_maxit       sig=period2_oscillation nf_last=8.35e-02 nf_min=1.88e-02 condJ=6.0e+01
+genova/Si_0.00/newton_maxit/later              35       35     1750 newton_maxit       sig=irregular nf_last=1.13e-05 nf_min=1.13e-05 condJ=1.9e+01
+genova/Si_0.00/newton_maxit/later              35       35     1750 newton_maxit       sig=slow_decrease nf_last=2.70e-03 nf_min=3.09e-04 condJ=7.3e+05
+genova/Si_0.00/newton_maxit/later              37       37     1850 newton_maxit       sig=stagnation nf_last=9.23e-06 nf_min=8.81e-06 condJ=5.3e+01
+margot/S+Si_0.05/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=12 nan_rhof=3 rcmb=0.7956837889971698 v=[0.834, 1.892, 0.796, 0.53, -0.076] exc=Factor is exactly singular
+margot/S+Si_0.05/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=20 nan_rhof=5 rcmb=0.7917907549823684 v=[0.846, 1.962, 0.792, 0.521, -0.09] exc=Factor is exactly singular
+margot/S+Si_0.05/crash_stderr/10m               0        0        0 singular_LU        it=2 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.8496641039409858 v=[0.673, -0.037, 0.85, 0.673, 0.233] exc=Factor is exactly singular
+margot/S+Si_0.05/crash_stderr/later            29       29     1450 singular_LU        it=11 nrs=277 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.8578748442988394 v=[0.883, -0.891, 0.858, 0.663, 0.495] exc=Factor is exactly singular
+margot/S+Si_0.05/crash_stderr/later            29       29     1450 singular_LU        it=3 nrs=295 nonfiniteA=210 nonfin_rho=105 nonfin_g=105 nan_yc=32 nan_rhof=8 rcmb=0.805256246975614 v=[0.768, 2.236, 0.805, 0.552, -0.133] exc=Factor is exactly singular
+margot/S+Si_0.05/crash_stderr/later            31       31     1550 singular_LU        it=2 nrs=295 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.8624595188035541 v=[0.888, -0.623, 0.862, 0.658, 0.498] exc=Factor is exactly singular
+margot/S+Si_0.05/detJ0/10m                      0        0        0 newton_detJ0       zero_cols=[4] x4=0.1420 it=4 nf_at_stop=1.61e-01
+margot/S+Si_0.05/detJ0/10m                      0        0        0 newton_detJ0       zero_cols=[4] x4=0.1958 it=2 nf_at_stop=3.37e-01
+margot/S+Si_0.05/detJ0/10m                      0        0        0 newton_detJ0       zero_cols=[4] x4=0.2215 it=2 nf_at_stop=4.73e-01
+margot/S+Si_0.05/detJ0/later                   11       11      550 newton_detJ0       zero_cols=[4] x4=0.1363 it=5 nf_at_stop=1.16e-01
+margot/S+Si_0.05/detJ0/later                   19       19      950 newton_detJ0       zero_cols=[4] x4=0.1446 it=2 nf_at_stop=2.79e-03
+margot/S+Si_0.05/detJ0/later                   24       24     1200 newton_detJ0       zero_cols=[4] x4=0.1538 it=2 nf_at_stop=2.66e-03
+margot/S+Si_0.05/newton_maxit/10m               0        0        0 newton_maxit       sig=slow_decrease nf_last=2.04e-03 nf_min=6.37e-04 condJ=1.0e+03
+margot/S+Si_0.05/newton_maxit/10m               0        0        0 newton_maxit       sig=slow_decrease nf_last=4.46e-03 nf_min=6.44e-04 condJ=1.3e+03
+margot/S+Si_0.05/newton_maxit/10m               0        0        0 newton_maxit       sig=stagnation nf_last=5.85e-05 nf_min=5.85e-05 condJ=3.6e+02
+margot/S+Si_0.05/newton_maxit/later             4        4      200 newton_maxit       sig=stagnation nf_last=4.78e-05 nf_min=4.77e-05 condJ=3.5e+02
+margot/S+Si_0.05/newton_maxit/later             9        9      450 newton_maxit       sig=stagnation nf_last=3.65e-05 nf_min=3.65e-05 condJ=3.4e+02
+margot/S+Si_0.05/newton_maxit/later            15       15      750 newton_maxit       sig=irregular nf_last=7.80e-03 nf_min=5.34e-04 condJ=2.3e+03
+margot/S+Si_0.10/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=100 nan_rhof=25 rcmb=0.7841946779673145 v=[0.861, 2.372, 0.784, 0.503, -0.193] exc=Factor is exactly singular
+margot/S+Si_0.10/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=16 nan_rhof=4 rcmb=0.808714886330636 v=[0.791, 1.832, 0.809, 0.562, -0.087] exc=Factor is exactly singular
+margot/S+Si_0.10/crash_stderr/10m               0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.8913055454969945 v=[0.547, -0.051, 0.891, 0.773, 0.282] exc=Factor is exactly singular
+margot/S+Si_0.10/crash_stderr/later            26       26     1300 singular_LU        it=2 nrs=251 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.850510500677086 v=[0.783, -0.007, 0.851, 0.668, 0.266] exc=Factor is exactly singular
+margot/S+Si_0.10/crash_stderr/later            28       28     1400 singular_LU        it=3 nrs=227 nonfiniteA=346 nonfin_rho=173 nonfin_g=173 nan_yc=96 nan_rhof=24 rcmb=1.0135202827730858 v=[0.453, 1.212, 1.014, 2.0, 0.834] exc=Factor is exactly singular
+margot/S+Si_0.10/crash_stderr/later            31       31     1550 singular_LU        it=4 nrs=149 nonfiniteA=502 nonfin_rho=251 nonfin_g=251 nan_yc=104 nan_rhof=26 rcmb=1.707380305878635 v=[1.266, 1.567, 1.707, 8.715, 0.664] exc=Factor is exactly singular
+margot/S+Si_0.10/detJ0/10m                      0        0        0 newton_detJ0       zero_cols=[4] x4=0.1348 it=3 nf_at_stop=2.56e-03
+margot/S+Si_0.10/detJ0/10m                      0        0        0 newton_detJ0       zero_cols=[4] x4=0.1733 it=2 nf_at_stop=2.15e-01
+margot/S+Si_0.10/detJ0/10m                      0        0        0 newton_detJ0       zero_cols=[4] x4=0.1869 it=2 nf_at_stop=2.85e-01
+margot/S+Si_0.10/detJ0/later                   22       22     1100 newton_detJ0       zero_cols=[4] x4=0.1491 it=2 nf_at_stop=9.85e-04
+margot/S+Si_0.10/detJ0/later                   22       22     1100 newton_detJ0       zero_cols=[4] x4=0.2097 it=4 nf_at_stop=5.31e-01
+margot/S+Si_0.10/detJ0/later                   27       27     1350 newton_detJ0       zero_cols=[4] x4=0.1697 it=2 nf_at_stop=6.86e-03
+margot/S+Si_0.10/newton_maxit/later            12       12      600 newton_maxit       sig=slow_decrease nf_last=3.68e-03 nf_min=5.94e-04 condJ=9.5e+02
+margot/S+Si_0.10/newton_maxit/later            28       28     1400 newton_maxit       sig=slow_decrease nf_last=1.02e-03 nf_min=1.88e-04 condJ=1.5e+03
+margot/S+Si_0.10/newton_maxit/later            32       32     1600 singular_LU        it=2 nrs=327 nonfiniteA=146 nonfin_rho=73 nonfin_g=73 nan_yc=4 nan_rhof=1 rcmb=0.8033671003898697 v=[0.74, 2.036, 0.803, 0.546, -0.151] exc=Factor is exactly singular
+margot/S_0.00/crash_stderr/10m                  0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=28 nan_rhof=7 rcmb=0.7704064062502052 v=[0.915, 2.109, 0.77, 0.471, -0.094] exc=Factor is exactly singular
+margot/S_0.00/crash_stderr/10m                  0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=28 nan_rhof=7 rcmb=0.7704957907465043 v=[0.915, 2.108, 0.77, 0.472, -0.094] exc=Factor is exactly singular
+margot/S_0.00/crash_stderr/10m                  0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=4 nan_rhof=1 rcmb=0.8860289859444764 v=[0.55, 0.356, 0.886, 0.757, 0.235] exc=Factor is exactly singular
+margot/S_0.00/crash_stderr/later               25       25     1250 singular_LU        it=2 nrs=223 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.9193693565445429 v=[1.214, -9.869, 0.919, 0.805, 1.866] exc=Factor is exactly singular
+margot/S_0.00/crash_stderr/later               25       25     1250 singular_LU        it=5 nrs=238 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=204 nan_rhof=51 rcmb=0.8595157824955942 v=[0.984, -3.247, 0.86, 0.668, 0.804] exc=Factor is exactly singular
+margot/S_0.00/crash_stderr/later               30       30     1500 singular_LU        it=6 nrs=312 nonfiniteA=176 nonfin_rho=88 nonfin_g=88 nan_yc=36 nan_rhof=9 rcmb=0.7883727309286745 v=[0.821, 2.284, 0.788, 0.523, -0.143] exc=Factor is exactly singular
+margot/S_0.00/detJ0/10m                         0        0        0 newton_detJ0       zero_cols=[4] x4=0.1405 it=2 nf_at_stop=6.53e-02
+margot/S_0.00/detJ0/10m                         0        0        0 newton_detJ0       zero_cols=[4] x4=0.1433 it=2 nf_at_stop=7.67e-02
+margot/S_0.00/detJ0/10m                         0        0        0 newton_detJ0       zero_cols=[4] x4=0.1460 it=4 nf_at_stop=1.44e-02
+margot/S_0.00/detJ0/later                      18       18      900 newton_detJ0       zero_cols=[4] x4=0.1466 it=2 nf_at_stop=6.20e-03
+margot/S_0.00/detJ0/later                      20       20     1000 newton_detJ0       zero_cols=[4] x4=0.1579 it=11 nf_at_stop=2.48e-01
+margot/S_0.00/detJ0/later                      24       24     1200 newton_detJ0       zero_cols=[4] x4=0.1496 it=4 nf_at_stop=6.29e-04
+margot/S_0.00/newton_maxit/later               14       14      700 newton_maxit       sig=stagnation nf_last=1.56e-05 nf_min=1.54e-05 condJ=3.2e+02
+margot/S_0.00/newton_maxit/later               19       19      950 newton_maxit       sig=irregular nf_last=5.72e-04 nf_min=1.35e-05 condJ=7.9e+02
+margot/S_0.00/newton_maxit/later               35       35     1750 newton_maxit       sig=period2_oscillation nf_last=4.55e-03 nf_min=3.60e-03 condJ=1.9e+02
+margot/Si_0.00/crash_stderr/10m                 0        0        0 singular_LU        it=1 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=20 nan_rhof=5 rcmb=0.8773974465524631 v=[0.578, 0.845, 0.877, 0.732, 0.314] exc=Factor is exactly singular
+margot/Si_0.00/crash_stderr/10m                 0        0        0 singular_LU        it=2 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=8 nan_rhof=2 rcmb=0.8364842242242985 v=[0.706, 1.542, 0.836, 0.632, -0.021] exc=Factor is exactly singular
+margot/Si_0.00/crash_stderr/10m                 0        0        0 singular_LU        it=2 nrs=0 nonfiniteA=797 nonfin_rho=400 nonfin_g=400 nan_yc=8 nan_rhof=2 rcmb=0.8379729056466303 v=[0.702, 1.571, 0.838, 0.636, -0.038] exc=Factor is exactly singular
+margot/Si_0.00/crash_stderr/later              39       39     1950 k2_grid_error      it=0 nrs=None nonfiniteA=None nonfin_rho=None nonfin_g=None nan_yc=0 nan_rhof=0 rcmb=0.7861079662182756 v=[0.877, 1.472, 0.786, 0.51, -0.001] exc=getk2: nrs=407 out of range (ricb=0.799394 rcmb=0.786108 nd)
+margot/Si_0.00/crash_stderr/later              39       39     1950 k2_grid_error      it=0 nrs=None nonfiniteA=None nonfin_rho=None nonfin_g=None nan_yc=0 nan_rhof=0 rcmb=0.7871886214062878 v=[0.873, 1.466, 0.787, 0.512, 0.003] exc=getk2: nrs=406 out of range (ricb=0.799394 rcmb=0.787189 nd)
+margot/Si_0.00/crash_stderr/later              39       39     1950 k2_grid_error      it=0 nrs=None nonfiniteA=None nonfin_rho=None nonfin_g=None nan_yc=0 nan_rhof=0 rcmb=0.7929954618723984 v=[0.85, 1.435, 0.793, 0.523, 0.024] exc=getk2: nrs=403 out of range (ricb=0.799394 rcmb=0.792995 nd)
+margot/Si_0.00/newton_maxit/10m                 0        0        0 newton_maxit       sig=period2_oscillation nf_last=1.59e-02 nf_min=1.38e-02 condJ=1.5e+02
+margot/Si_0.00/newton_maxit/10m                 0        0        0 newton_maxit       sig=period2_oscillation nf_last=4.45e-03 nf_min=4.44e-03 condJ=1.6e+02
+margot/Si_0.00/newton_maxit/10m                 0        0        0 newton_maxit       sig=period2_oscillation nf_last=6.03e-03 nf_min=6.03e-03 condJ=1.6e+02
+margot/Si_0.00/newton_maxit/later               8        8      400 newton_maxit       sig=period2_oscillation nf_last=6.21e-04 nf_min=1.86e-04 condJ=6.9e+01
+margot/Si_0.00/newton_maxit/later              12       12      600 newton_maxit       sig=period2_oscillation nf_last=2.15e-03 nf_min=5.11e-04 condJ=6.8e+01
+margot/Si_0.00/newton_maxit/later              19       19      950 newton_maxit       sig=divergence nf_last=5.30e-02 nf_min=5.57e-04 condJ=6.1e+01
+aggregate (published end/where -> fresh status):
+   ('crash_stderr/10m', 'singular_LU') -> 22
+   ('crash_stderr/later', 'k2_grid_error') -> 6
+   ('crash_stderr/later', 'newton_maxit') -> 1
+   ('crash_stderr/later', 'singular_LU') -> 17
+   ('detJ0/10m', 'newton_detJ0') -> 11
+   ('detJ0/later', 'newton_detJ0') -> 18
+   ('newton_maxit/10m', 'newton_maxit') -> 9
+   ('newton_maxit/later', 'k2_grid_error') -> 1
+   ('newton_maxit/later', 'newton_maxit') -> 22
+   ('newton_maxit/later', 'singular_LU') -> 1
+fresh row count == published row count: 107/108; fresh more rows: 1; fewer: 0
