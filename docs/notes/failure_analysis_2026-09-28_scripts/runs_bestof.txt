@@ -1,0 +1,75 @@
+class | n | mean published rows | mean best-of rows | n improved | n improved by >=5 radii | n unchanged
+genova/S+Si_0.05/crash_stderr/10m        3   0.0  35.7 3 3 0
+genova/S+Si_0.05/crash_stderr/later      3  28.7  29.3 2 0 1
+genova/S+Si_0.05/detJ0/later             3  30.7  30.7 0 0 3
+genova/S+Si_0.05/newton_maxit/later      3  31.0  32.0 2 0 1
+genova/S+Si_0.10/crash_stderr/10m        3   0.0  23.7 2 2 1
+genova/S+Si_0.10/crash_stderr/later      3  33.7  34.7 3 0 0
+genova/S+Si_0.10/detJ0/later             3  31.0  31.3 1 0 2
+genova/S+Si_0.10/newton_maxit/later      3  32.3  32.7 1 0 2
+genova/S_0.00/crash_stderr/10m           3   0.0  34.0 3 3 0
+genova/S_0.00/crash_stderr/later         3  28.7  29.0 1 0 2
+genova/S_0.00/detJ0/10m                  2   0.0  15.0 1 1 1
+genova/S_0.00/detJ0/later                3  26.0  26.3 1 0 2
+genova/S_0.00/newton_maxit/later         3  32.0  32.7 2 0 1
+genova/Si_0.00/crash_stderr/10m          1   0.0   0.0 0 0 1
+genova/Si_0.00/crash_stderr/later        3  39.0  39.0 0 0 3
+genova/Si_0.00/newton_maxit/10m          3   0.0   0.0 0 0 3
+genova/Si_0.00/newton_maxit/later        3  35.7  39.0 3 0 0
+margot/S+Si_0.05/crash_stderr/10m        3   0.0  11.7 1 1 2
+margot/S+Si_0.05/crash_stderr/later      3  29.7  30.0 1 0 2
+margot/S+Si_0.05/detJ0/10m               3   0.0   0.0 0 0 3
+margot/S+Si_0.05/detJ0/later             3  18.0  18.7 1 0 2
+margot/S+Si_0.05/newton_maxit/10m        3   0.0   6.3 2 2 1
+margot/S+Si_0.05/newton_maxit/later      3   9.3  11.7 2 1 1
+margot/S+Si_0.10/crash_stderr/10m        3   0.0  22.7 2 2 1
+margot/S+Si_0.10/crash_stderr/later      3  28.3  29.0 1 0 2
+margot/S+Si_0.10/detJ0/10m               3   0.0   0.0 0 0 3
+margot/S+Si_0.10/detJ0/later             3  23.7  23.7 0 0 3
+margot/S+Si_0.10/newton_maxit/later      3  24.0  26.7 3 0 0
+margot/S_0.00/crash_stderr/10m           3   0.0  21.3 2 2 1
+margot/S_0.00/crash_stderr/later         3  26.7  26.7 0 0 3
+margot/S_0.00/detJ0/10m                  3   0.0   0.0 0 0 3
+margot/S_0.00/detJ0/later                3  20.7  20.7 0 0 3
+margot/S_0.00/newton_maxit/later         3  22.7  23.7 2 0 1
+margot/Si_0.00/crash_stderr/10m          3   0.0   0.0 0 0 3
+margot/Si_0.00/crash_stderr/later        3  39.0  39.0 0 0 3
+margot/Si_0.00/newton_maxit/10m          3   0.0   0.0 0 0 3
+margot/Si_0.00/newton_maxit/later        3  13.0  20.0 1 1 2
+
+Per-variant: n cases with MORE rows than published / FEWER / same (variant alone, not best-of)
+  ls           more= 20 fewer=  9 same= 79 (n=108)
+  clamp        more=  2 fewer= 11 same= 16 (n=29)
+  clamp_rest   more=  7 fewer= 23 same= 49 (n=79)
+  start50      more=  2 fewer=  0 same= 40 (n=42)
+  maxit40      more= 11 fewer=  0 same= 22 (n=33)
+  eps5         more=  3 fewer=  0 same= 30 (n=33)
+  cold         more= 15 fewer=  7 same= 44 (n=66)
+
+Residual floor (min |f| over all variants) for 10-m cases never recovered (no converged radius under any variant):
+  genova/S+Si_0.10/crash_stderr/10m        CMR2=0.3327 min|f|=6.0e-02  statuses=['newton_maxit', 'singular_LU']
+  genova/S_0.00/detJ0/10m                  CMR2=0.3517 min|f|=6.8e-03  statuses=['newton_detJ0', 'newton_maxit']
+  genova/Si_0.00/crash_stderr/10m          CMR2=0.3517 min|f|=5.5e-02  statuses=['newton_maxit', 'singular_LU']
+  genova/Si_0.00/newton_maxit/10m          CMR2=0.3444 min|f|=9.6e-04  statuses=['newton_maxit']
+  genova/Si_0.00/newton_maxit/10m          CMR2=0.3445 min|f|=2.0e-03  statuses=['newton_maxit']
+  genova/Si_0.00/newton_maxit/10m          CMR2=0.3469 min|f|=1.8e-02  statuses=['newton_maxit']
+  margot/S+Si_0.05/crash_stderr/10m        CMR2=0.3574 min|f|=7.3e-02  statuses=['singular_LU']
+  margot/S+Si_0.05/crash_stderr/10m        CMR2=0.3255 min|f|=6.0e-02  statuses=['newton_maxit', 'singular_LU']
+  margot/S+Si_0.05/detJ0/10m               CMR2=0.3551 min|f|=3.3e-03  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S+Si_0.05/detJ0/10m               CMR2=0.3693 min|f|=8.3e-02  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S+Si_0.05/detJ0/10m               CMR2=0.3733 min|f|=1.0e-01  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S+Si_0.05/newton_maxit/10m        CMR2=0.3542 min|f|=4.5e-05  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S+Si_0.10/crash_stderr/10m        CMR2=0.3785 min|f|=9.7e-02  statuses=['newton_detJ0', 'newton_maxit', 'singular_LU']
+  margot/S+Si_0.10/detJ0/10m               CMR2=0.3672 min|f|=4.4e-02  statuses=['newton_detJ0', 'newton_maxit', 'singular_LU']
+  margot/S+Si_0.10/detJ0/10m               CMR2=0.3656 min|f|=3.8e-02  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S+Si_0.10/detJ0/10m               CMR2=0.3597 min|f|=2.6e-03  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S_0.00/crash_stderr/10m           CMR2=0.3792 min|f|=3.3e-01  statuses=['singular_LU']
+  margot/S_0.00/detJ0/10m                  CMR2=0.3603 min|f|=6.4e-02  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S_0.00/detJ0/10m                  CMR2=0.3528 min|f|=1.4e-02  statuses=['newton_detJ0', 'newton_maxit']
+  margot/S_0.00/detJ0/10m                  CMR2=0.3608 min|f|=6.8e-02  statuses=['newton_detJ0', 'newton_maxit']
+  margot/Si_0.00/crash_stderr/10m          CMR2=0.3751 min|f|=3.6e-01  statuses=['singular_LU']
+  margot/Si_0.00/crash_stderr/10m          CMR2=0.3511 min|f|=5.7e-02  statuses=['newton_maxit', 'singular_LU']
+  margot/Si_0.00/crash_stderr/10m          CMR2=0.3503 min|f|=5.0e-02  statuses=['newton_maxit', 'singular_LU']
+  margot/Si_0.00/newton_maxit/10m          CMR2=0.3448 min|f|=4.6e-03  statuses=['newton_maxit']
+  margot/Si_0.00/newton_maxit/10m          CMR2=0.3458 min|f|=1.1e-02  statuses=['newton_maxit']
+  margot/Si_0.00/newton_maxit/10m          CMR2=0.3447 min|f|=3.4e-03  statuses=['newton_maxit']

@@ -1,0 +1,14 @@
+[ls] Recovered 10-m-crash models vs published survivors of the same MOI/composition
+moi/label              n_rec  rec_isnow>0  pub_isnow>0  rec_rcmb0_km  pub_rcmb0_med  rec_maxricb_km  pub_maxricb_med
+genova/S+Si_0.05           3         0.00         0.05          1946           1972            1733             1500
+      recovered CMR2: [0.3289, 0.3293, 0.3306]  rcmb0 km: [1943.0, 1945.0, 1951.0]  max ricb km: [1750.0, 1800.0, 1650.0]
+genova/S+Si_0.10           2         0.00         0.03          1973           1994            1725             1600
+      recovered CMR2: [0.3373, 0.3339]  rcmb0 km: [1981.0, 1965.0]  max ricb km: [1700.0, 1750.0]
+genova/S_0.00              3         0.00         0.15          1901           1960            1650             1350
+      recovered CMR2: [0.3199, 0.3198, 0.3199]  rcmb0 km: [1901.0, 1901.0, 1901.0]  max ricb km: [1650.0, 1650.0, 1650.0]
+margot/S+Si_0.05           1         0.00         0.26          1937           2011            1700             1150
+      recovered CMR2: [0.3275]  rcmb0 km: [1937.0]  max ricb km: [1700.0]
+margot/S+Si_0.10           2         0.00         0.20          1940           2028            1650             1300
+      recovered CMR2: [0.3346, 0.3221]  rcmb0 km: [1969.0, 1911.0]  max ricb km: [1750.0, 1550.0]
+margot/S_0.00              2         0.00         0.39          1872           1991            1550             1100
+      recovered CMR2: [0.3136, 0.3136]  rcmb0 km: [1872.0, 1872.0]  max ricb km: [1550.0, 1550.0]
