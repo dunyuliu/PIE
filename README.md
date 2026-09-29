@@ -29,7 +29,7 @@ and figures and datasets will be stored under ./results/.
 To produce a large ensemble of interior models that samples a normal distribution from a CMR2 with its STD, supercomputuers such as Lonestar6 at TACC provides LAUNCHER computing module to run serial jobs in parallel.
 
 ```
-python TACC.create.parallel.launcher.py
+python TACC.LS6.create.parallel.launcher.py
 # create a command_launcher file that contains X number of lines of commands.
 # command_launcher will be used by LAUNCHER module on TACC LS6.
 # X is specified in variable total_CPU in the file.

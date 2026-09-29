@@ -1,0 +1,6 @@
+# Runtime dependencies for PIE (target interpreter: /usr/bin/python3 -- see PROJECT_RULES.md rule 3)
+numpy
+scipy
+pandas
+matplotlib
+h5py
