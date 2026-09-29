@@ -70,7 +70,7 @@ def test_h5_data_keys_present(sys_argv_p):
         )
 
 
-def test_scipy_interp2d_still_importable():
+def test_scipy_interp2d_still_callable():
     """src/coreEos.py does `from scipy.interpolate import interp2d` at
     MODULE level (used by meltingDataFromFile, which libCore.py
     instantiates at ITS OWN import time) -- interp2d is deprecated
@@ -79,7 +79,12 @@ def test_scipy_interp2d_still_importable():
     everything), not just the one call site that uses it. This is a
     canary, not a fix: it fails specifically and first, rather than
     letting every other test fail with a confusing downstream
-    ImportError. Confirmed still present as of scipy installed here;
-    see testsys/requirements.txt for the pin note if this ever goes red.
+    ImportError. Since scipy 1.14 the name still IMPORTS but raises
+    NotImplementedError when CALLED, so this canary calls it. Fix
+    tracked on PATHWAY_FORWARD.md item 14; testsys/requirements.txt pins
+    scipy==1.8.0 until then.
     """
-    from scipy.interpolate import interp2d  # noqa: F401
+    import numpy as np
+    from scipy.interpolate import interp2d
+    f = interp2d([0.0, 1.0], [0.0, 1.0], np.array([[0.0, 1.0], [1.0, 2.0]]))
+    assert float(f(0.5, 0.5)[0]) == 1.0

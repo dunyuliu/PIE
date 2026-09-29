@@ -1,20 +1,18 @@
-# Minimal set to run testsys/ against src/. Matches /usr/bin/python3's
-# system (apt dist-packages) versions on the dev box (numpy 1.21.5, scipy
-# 1.8.0, matplotlib 3.5.1, h5py 3.6.0, pandas 1.3.5); CI installs via pip
-# instead, so versions here are floors, not pins, and get exercised in a
-# clean venv before being trusted (see testsys/README.md "CI validation").
-numpy
-# scipy: src/coreEos.py imports the deprecated scipy.interpolate.interp2d
-# at module level (used by TmFeS/meltingDataFromFile, loaded at
-# src/libCore.py IMPORT time -- so its removal breaks nearly every src/
-# import, not just one call site). Confirmed present through scipy
-# 1.15.3 (2025) in CI; testsys/contract/test_output_schema.py::
-# test_scipy_interp2d_still_importable is the canary that goes red
-# FIRST and specifically if a future scipy drops it, rather than every
-# other test failing with a confusing downstream ImportError.
-scipy
-matplotlib
-h5py
-pandas
-pytest
-pyyaml  # only for testsys/contract/test_ci_and_cli.py's own YAML-validity check
+# Exact pins = the dev-box environment (/usr/bin/python3 3.10, apt
+# dist-packages) on which testsys/run.py all is green and on which parity
+# with the published Zenodo v1.0.5 output was established. Change a pin
+# only together with a green testsys/run.py all under the new version.
+#
+# scipy: src/coreEos.py uses scipy.interpolate.interp2d, which since
+# scipy 1.14 raises NotImplementedError when called (the name still
+# imports). Canary: testsys/contract/test_output_schema.py::
+# test_scipy_interp2d_still_callable. Porting off interp2d is
+# PATHWAY_FORWARD.md item 14.
+numpy==1.21.5
+scipy==1.8.0
+matplotlib==3.5.1
+h5py==3.6.0
+pandas==1.3.5
+tables==3.7.0  # pandas read_hdf/to_hdf backend (the .h5 fixtures)
+pytest==6.2.5
+pyyaml==6.0.1  # only for testsys/contract/test_ci_and_cli.py's YAML check
