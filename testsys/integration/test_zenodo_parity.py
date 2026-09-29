@@ -3,7 +3,7 @@ output for the SAME code.
 
 Oracle: Dunnigan et al. (2026), JGR Planets, doi:10.1029/2025JE009368,
 whose Zenodo code record (10.5281/zenodo.16929504) is byte-identical to
-this repo's src/ (verified: `diff -rq` finds only src/VERSION differs --
+this repo's src/ (verified: `diff -rq` finds only src/VERSION differed; removed in v1.1.0 --
 see testsys/reference/zenodo_v1.0.5/PROVENANCE.md). Because the code is
 identical, this is a REGRESSION ANCHOR (proves reproducibility across
 machine/library-version, catches a real behavioural divergence), not an

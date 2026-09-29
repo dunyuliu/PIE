@@ -3,7 +3,7 @@
 Index — read this list first; jump to a rule only when it's load-bearing.
 
 1. Minimal changes; no new files until necessary — and a curated root.
-1a. `src/VERSION` is the single source of truth for release version and changelog.
+1a. Git tags are the version source of truth; `CHANGELOG.md` holds the change list.
 2. No silent fallbacks, swallowed errors, or placeholder data.
 3. Gate every stage; pass before moving on.
 3a. A refactor of `src/` runs testsys green before and after, one module at a time.
@@ -27,7 +27,7 @@ Smallest edit that solves the problem; fold content into the file it belongs
 to; never refactor unrelated code in the same change.
 
 The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
-`PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `update_log` (frozen, see 1a), plus
+`PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a), `update_log` (frozen, see 1a), plus
 `src/`, `historical_versions/` (frozen zips/tars of prior versions, read-only —
 see rule 7), `testsys/` and `.github/` (owned by the testing effort, out of
 scope for this rule book's own writer). `results/` is a run artifact, not
@@ -45,36 +45,25 @@ belongs in `src/`, `docs/notes/`, or one of the four named documents instead.
 
 ---
 
-## 1a. `src/VERSION` is the single source of truth for release version and changelog
+## 1a. Git tags are the version source of truth; `CHANGELOG.md` holds the change list
 
-`src/VERSION` carries the current version string and the per-release change
-list (most recent entry: `v1.0.5; 20250708`). `update_log` is the pre-v1.0.5
-development log, frozen: it is kept for history and never deleted, but it
-gets no new entries after v1.0.5 — every future release's changelog body
-lives in `src/VERSION` only.
+The released version is the annotated git tag `vX.Y.Z` (and its GitHub
+release). `CHANGELOG.md` at the root carries the per-release change list, and
+`CITATION.cff` `version:` is bumped in the same release PR. There is no
+version file inside `src/`: release bookkeeping must never touch the physics
+code tree, so `src/` can be compared byte-for-byte with an archived release
+(e.g. Zenodo 10.5281/zenodo.16929504). `update_log` is the pre-v1.0.5
+development log, frozen: kept for history, never deleted, no new entries.
 
-**Rationale**: `update_log` and `src/VERSION` disagree on the v1.0.5 entry's
-date and scope (`update_log`: "V1.0.5; 20250707; merge scripts... ready for
-publication" — one line; `src/VERSION`: "v1.0.5; 20250708" with 7 dated
-sub-items). Commit `387d6e6` (unpushed) fixed `src/VERSION`'s own metadata to
-cover all changes since v1.0.4 and relabelled the 2025 merge in `update_log`,
-but nothing stopped a future edit from re-diverging the two files, because
-neither was ever declared authoritative.
+**Incident**: `src/VERSION` (removed in v1.1.0, history moved to
+`CHANGELOG.md`) disagreed with `update_log` on the v1.0.5 entry, and editing it
+for a release tripped the `src/`-unmodified contract test and blurred the
+"src/ == published code" check. v1.0.2 and v1.0.3 were never tagged (only
+zipped externally, `historical_versions/`); don't tag them retroactively.
 
-**Incident**: v1.0.2 and v1.0.3 were never tagged in git (only zipped
-externally — see `historical_versions/`), so `git tag` and `src/VERSION`'s own
-list already disagree on what "released" means for those two; that gap is
-inherent to history and is not this rule's job to fix, but it is the reason a
-single forward-looking source of truth matters now.
-
-**How to apply**: a release bumps `src/VERSION` (new dated entry, in the same
-commit as the change it describes — rule 11) and does not touch `update_log`.
-`update_log`'s last line stays "V1.0.5; 20250707; ..." permanently. A
-mechanical check (once `testsys/` lands) can grep `update_log` for any date
-past 20250708 and fail if found.
-
-**Tier**: unenforceable until `testsys/` exists — proposed as a Tier-1 check
-for whoever owns that tree.
+**How to apply**: each release PR adds a dated `CHANGELOG.md` entry and bumps
+`CITATION.cff` `version:`; the tag is created after merge (rule 13).
+`update_log` gets no entries dated after 20250708.
 
 ---
 
@@ -153,7 +142,7 @@ a norm until then.
 
 ## 4. Only fresh runs are evidence
 
-A number in `README.md`, `src/VERSION`, or a prior session's summary is a
+A number in `README.md`, `CHANGELOG.md`, or a prior session's summary is a
 hypothesis until reproduced on the current `src/` and the SHA it's attached
 to. Be most skeptical of "already fixed" — v1.0.3/v1.0.4 both predate the
 `bb37b0a` pi fix and are known to contain it.
@@ -240,7 +229,7 @@ Until then, state explicitly in the commit what manual check was run.
 ## 11. Docs move with the code, in the same change
 
 A file rename or removal updates every reference to it in `README.md`,
-`CLAUDE.md`, and `src/VERSION` in the same commit.
+`CLAUDE.md`, and `CHANGELOG.md` in the same commit.
 
 **Rationale**: `README.md:32` still reads `python TACC.create.parallel.launcher.py`;
 the file is `src/TACC.LS6.create.parallel.launcher.py` — renamed without the
@@ -269,7 +258,7 @@ which are not tracked as extracted files).
 
 Release sequence: one PR per release; `testsys/run.py all` green locally,
 counts pasted in the PR; green CI on the PR head; merge; green CI on the
-merge SHA; add a `src/VERSION` entry (in the PR); annotated tag `vX.Y.Z` on
+merge SHA; add a `CHANGELOG.md` entry and bump `CITATION.cff` `version:` (in the PR); annotated tag `vX.Y.Z` on
 the merge SHA; `gh release create vX.Y.Z --verify-tag --latest`. State the
 grant (who authorised the release, when) in the PR. `v1.0.5` is tagged on
 `683a51d`, the exact code archived for Dunnigan et al. 2026 (rule 14);

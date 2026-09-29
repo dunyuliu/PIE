@@ -1,8 +1,13 @@
-* v1.1.0; 20260929; first tested baseline. src/ physics code unchanged from v1.0.5 (the code archived for Dunnigan et al. 2026, JGR Planets, doi:10.1029/2025JE009368).
+# Changelog
+
+Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
+
+* v1.1.0; 20260929; first tested baseline. src/ physics code byte-identical to v1.0.5 (the code archived for Dunnigan et al. 2026, JGR Planets, doi:10.1029/2025JE009368).
     1. Add testsys/: unit, contract, integration, e2e tiers; parity vs published Zenodo v1.0.5 output (10.5281/zenodo.16459292) for S, Si, S+Si; full radial-profile guards; runner testsys/run.py.
     2. Add CI (.github/workflows/test.yml): fast tiers on push/PR, e2e weekly and on demand.
     3. Add CITATION.cff and README citation; PROJECT_RULES.md, PATHWAY_FORWARD.md, CLAUDE.md.
-    4. Add docs/notes/failure_analysis_2026-09-28.md and docs/audits/: solver-failure analysis and audits (fixes scheduled for v1.1.1).
+    4. Move src/VERSION to CHANGELOG.md (git tags = version source of truth); pin CI requirements (scipy 1.8.0: interp2d removed in 1.14).
+    5. Add docs/notes/failure_analysis_2026-09-28.md and docs/audits/: solver-failure analysis and audits (fixes scheduled for v1.1.1).
 * v1.0.5; 20250708; publication release (all changes since v1.0.4 tag, 20230214)
     1. Add read_plot_datah5.py, which will read and plot *data.h5 results. For Hao's calculation of BV frequency. (20230403)
     2. Use eos.liquidNonIdaFeS; take alpha and C_p from eos function. (20230607)

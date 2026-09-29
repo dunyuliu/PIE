@@ -54,7 +54,7 @@ sbatch TACC.LS6.parallel.run.slurm
 - `testsys/`, `.github/` — owned by a separate, concurrent effort building the
   tiered test suite (unit/contract/integration/e2e) and CI. Do not create or
   edit anything here from this working context.
-- `src/VERSION` — the changelog and version source of truth
+- `CHANGELOG.md` — per-release change list; git tags are the version source of truth
   (`PROJECT_RULES.md` rule 1a). `update_log` is the frozen pre-v1.0.5 dev log;
   it gets no new entries.
 
@@ -87,4 +87,4 @@ sbatch TACC.LS6.parallel.run.slurm
 ## Where to look for open work
 
 `PATHWAY_FORWARD.md` — the living board. Check it before assuming any claim
-in `README.md` or `src/VERSION` still holds.
+in `README.md` or `CHANGELOG.md` still holds.

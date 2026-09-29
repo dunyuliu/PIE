@@ -6,7 +6,7 @@ Conditions for Iron Snow Formation in a Fe-S-Si Core," JGR Planets,
 
 Code record: Zenodo 10.5281/zenodo.16929504 ("PIE-main.zip"). Verified
 byte-identical to this repo's `src/` at the commit this reference was
-added in (only `src/VERSION` differs -- version metadata, not code).
+added in (only `src/VERSION` differed, removed in v1.1.0 -- version metadata, not code).
 
 Data record: Zenodo 10.5281/zenodo.16459292, file
 `Plotting and Analysis Scripts.zip`
