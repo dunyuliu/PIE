@@ -3,7 +3,7 @@
 and for the v1.3.0 recovery measurements (docs/notes/solver_v1.3.0.md).
 
     /usr/bin/python3 generate_sweeps.py --src /path/to/src --out sweeps.json
-                     [--policy stop|continue] [--adaptive] [--extra-radii N] [--workers 8]
+                     [--policy stop|continue] [--adaptive] [--extra-radii N] [--workers 8] [--partial-dir DIR]
 
 Replicates src/driverp.py's radius loop (same grid, same warm start) WITHOUT
 csv/h5/figure I/O and records per radius the unknown vector v (full repr),
@@ -135,7 +135,10 @@ def detect_policy(src):
     return "continue" if "def solve_radius(" in open(pathlib.Path(src) / "driverp.py").read() else "stop"
 
 
-def generate(src, workers=8, cases=None, policy=None, adaptive=False, extra_radii=None, verbose=True):
+def generate(src, workers=8, cases=None, policy=None, adaptive=False, extra_radii=None, verbose=True, partial_dir=None):
+    """partial_dir: when given, each finished case is written to
+    <partial_dir>/<case name>.json as soon as it completes and cases whose
+    file already exists are not re-run -- an interrupted run resumes."""
     src = pathlib.Path(src).resolve()
     cases = cases if cases is not None else json.load(open(HERE / "sample.json"))
     policy = policy or detect_policy(src)
@@ -151,12 +154,22 @@ def generate(src, workers=8, cases=None, policy=None, adaptive=False, extra_radi
                           "grid": "np.arange(1e1, 2e6, 50e3) capped at case max_ricb_m / max_rows"},
            "cases": {}}
     t0 = time.time()
+    todo = []
+    for c in cases:
+        if partial_dir and (pathlib.Path(partial_dir) / (c["name"] + ".json")).is_file():
+            out["cases"][c["name"]] = json.load(open(pathlib.Path(partial_dir) / (c["name"] + ".json")))
+        else:
+            todo.append(c)
+    if partial_dir:
+        pathlib.Path(partial_dir).mkdir(parents=True, exist_ok=True)
     with cf.ProcessPoolExecutor(max_workers=workers) as ex:
-        futs = {ex.submit(_run_case, c, src, policy, adaptive): c for c in cases}
+        futs = {ex.submit(_run_case, c, src, policy, adaptive): c for c in todo}
         for fut in cf.as_completed(futs):
             c = futs[fut]
             rows = fut.result()
-            out["cases"][c["name"]] = {"case": c, "rows": rows}
+            out["cases"][c["name"]] = {"case": c, "rows": rows, "provenance": out["provenance"]}
+            if partial_dir:
+                json.dump(out["cases"][c["name"]], open(pathlib.Path(partial_dir) / (c["name"] + ".json"), "w"), indent=0)
             if verbose:
                 print(c["name"], "rows ok:", sum(r["status"] == "ok" for r in rows), "of", len(rows), flush=True)
     out["provenance"]["wall_s"] = time.time() - t0
@@ -172,8 +185,9 @@ if __name__ == "__main__":
     ap.add_argument("--adaptive", action="store_true")
     ap.add_argument("--extra-radii", type=int, default=None)
     ap.add_argument("--cases", default=None, help="alternative cases json (same schema as sample.json)")
+    ap.add_argument("--partial-dir", default=None, help="per-case results dir; makes the run resumable")
     a = ap.parse_args()
     cases = json.load(open(a.cases)) if a.cases else None
-    res = generate(a.src, a.workers, cases=cases, policy=a.policy, adaptive=a.adaptive, extra_radii=a.extra_radii)
+    res = generate(a.src, a.workers, cases=cases, policy=a.policy, adaptive=a.adaptive, extra_radii=a.extra_radii, partial_dir=a.partial_dir)
     json.dump(res, open(a.out, "w"), indent=0)
     print("wrote", a.out, "policy", res["provenance"]["policy"], "wall", round(res["provenance"]["wall_s"]), "s")
