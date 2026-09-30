@@ -302,17 +302,18 @@ def mercmodel_box(x, f, fout, args):
         Dumberry & Rivoldini 2015 eq. 28, the same bound libCore.
         getchi_li_grun clamps to) or above the liquidus table's Si max
         (Si)                                              -> CHI_OUTSIDE_ADMISSIBLE_BOX
-      * chi_li_icb below -CHI_NEG_TOL                     -> CHI_OUTSIDE_ADMISSIBLE_BOX
+      * chi_li_icb below CHI_MIN (disabled by default, see CHI_MIN)
 
-    Why the lower bound is not 0: 103,243 of the 474,075 converged rows in
-    the published v1.0.5 dataset (21.8%) have a slightly negative
-    chi_li_icb (typically -0.001 to -0.003; recorded as error_code 4 since
-    v1.2.0) and the Newton paths that produced them shoot finitely. A hard
-    lower bound at 0 would reject alpha=1 on those paths and break the
-    v1.2.0 identity invariant (docs/notes/solver_v1.3.0.md). What actually
-    killed the published sweeps was an overshoot to chi ~ -0.02..-0.06 (S)
-    that makes the fluid-core RK4 return NaN; the non-finite test catches
-    that regardless of CHI_NEG_TOL.
+    Why there is no lower bound at 0: 103,243 of the 474,075 converged rows
+    in the published v1.0.5 dataset (21.8%) have a negative chi_li_icb
+    (mostly -0.001 to -0.003, down to about -0.045 for Si-only at low
+    CMR2; recorded as error_code 4 since v1.2.0) and the Newton paths that
+    produced them shoot finitely. A lower bound would reject alpha=1 on
+    those paths and break the v1.2.0 identity invariant
+    (docs/notes/solver_v1.3.0.md). What actually killed the published
+    sweeps was an overshoot to chi ~ -0.06 (S) or above the Si max (Si)
+    that makes the fluid-core RK4 return NaN or zeroes a Jacobian column;
+    the non-finite test and the upper bound catch those.
     """
     ricb, rhocr, rh, param, scale = args
     if not (np.all(np.isfinite(f)) and np.all(np.isfinite(fout))):
@@ -328,12 +329,22 @@ def mercmodel_box(x, f, fout, args):
         chi_max = 0.11 + 0.187*np.exp(-0.065*Picb*1e-9)
     if chi > chi_max:
         return False, ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX, 'trial chi_li_icb=%g > bound %g' % (chi, chi_max)
-    if chi < -CHI_NEG_TOL:
-        return False, ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX, 'trial chi_li_icb=%g < -%g' % (chi, CHI_NEG_TOL)
+    if CHI_MIN is not None and chi < CHI_MIN:
+        return False, ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX, 'trial chi_li_icb=%g < %g' % (chi, CHI_MIN)
     return True, None, ''
 
 
-CHI_NEG_TOL = 0.01   # see mercmodel_box: below the most negative chi_li_icb on any v1.2.0-converged path measured
+# Lower bound on chi_li_icb for a TRIAL iterate. None = no explicit lower
+# bound (a trial with chi so negative that the fluid-core EOS/liquidus root
+# returns NaN is still rejected by the non-finite test above). Measured
+# reason (docs/notes/solver_v1.3.0.md sec. 1.1): v1.2.0 converged -- and the
+# published v1.0.5 dataset contains -- rows with chi_li_icb down to about
+# -0.045 (Si-only, low CMR2), and converging paths whose intermediate
+# iterates dip below -0.01; a bound of -0.01 broke the v1.2.0 identity on
+# 2 of 6 sampled converging sweeps and rejected 24 converged Si rows.
+# Negative converged rows keep their error_code 4 (err flag /
+# (chi_li<0).any() in driverp.py).
+CHI_MIN = None
 
 
 def mynewtonSys(Jfun,x0,varargin,
@@ -372,7 +383,7 @@ def mynewtonSys(Jfun,x0,varargin,
       * otherwise the trial is evaluated with trial_fun and rejected if
         box_fun says it is outside the admissible box (Mercury model:
         non-finite residual, rcmb <= ricb, chi_li_icb above the eutectic /
-        Si max or below -CHI_NEG_TOL, see mercmodel_box), if trial_fun
+        Si max, see mercmodel_box), if trial_fun
         raised a SolverError, or if |f_trial| > growth_max * |f|.
 
     Invariant (enforced by testsys/integration/test_v1_2_0_invariant.py):

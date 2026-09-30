@@ -60,12 +60,13 @@ PYTHONNOUSERSITE=1 MPLBACKEND=Agg /usr/bin/python3 -m pytest testsys -m "unit or
 | Integration | `integration` (parity subset also marked `parity`) | One present-day solve at Margot CMR2=0.346/CMC=0.424 (self-consistency); 3 solves vs **published paper output** (regression anchor, same code) with ALL 19 scalars + full radial profiles gated; **wide fast subset**: 1 radius x 2 MOI x 6 compositions (12 cases, all scalars+profiles, incl. a documented non-convergent case); **v1.0.4 (2023) history**: 17-row field-by-field diff with 2 known, attributed deltas; **MC-wide parity**: 24 curated real Monte-Carlo-drawn (CMR2,CMC) cases (4 per composition x MOI: extremes/centre/most-converged) vs published scalars | 9+3+12+14+24 | ~19s+~57s+~52s+~0.02s+~65s |
 | E2E | `e2e` | (a) `main.py p 0.346 0.424 S Edmund` end-to-end in a tmp dir via the REAL CLI subprocess (full file/figure I/O), vs a self-golden; (b) wide sweep, ALL 3 radii x 2 MOI x 6 compositions (36 cases, all scalars+profiles), direct-solve (not CLI), parallelized, CI-sharded by composition; (c) `published_wide` (marker `published_wide`, skipped when `~/shared_dataset` absent -- always in CI): 240 further Monte-Carlo-drawn cases sampled directly from the shared cache, never copied | 4 + 36 + 240 | ~4.5 min + ~54 s + ~150-200 s |
 
-`published_wide` sees 1-2 of 240 models where the published run converged
-but a fresh solve raises SciPy "Factor is exactly singular" at ricb = 10 m,
-varying run to run with the same seed (Findings #5; bug B5 in
-`docs/audits/AUDIT_2026-09-29_buglist.md`). Only that exact signature at
-10 m is tolerated, it is printed, and more than max(3, 2% of the sample)
-fails the test (`PATHWAY_FORWARD.md` item 19). Any other mismatch fails.
+`published_wide` (since v1.3.0): a fresh failure where the published run
+converged is a HARD failure whatever its signature -- the ricb = 10 m
+"Factor is exactly singular" flake (Findings #5, bug B5) is fixed by the
+getk2 nrs=0 index fix (board item 19 closed). A fresh convergence where the
+published run had zero rows is accepted only if the recovered model passes
+`conftest.assert_recovered_model_valid` (residual, chi box, ricb < rcmb,
+rho > 0, finite) and is printed as "recovered".
 
 Fast-tier total (unit+contract+integration, what CI runs on every
 push/PR): **106 passed, 1 xfailed**; measured 194-307 s depending on
@@ -186,6 +187,20 @@ shoot → h5/csv/figure output), just not all 18 compositions of it.
   `isnow`'s classification-logic fix -- checked against their
   documented delta instead). See that directory's PROVENANCE.md for the
   full per-field delta table.
+
+### v1.2.0 identity + recovery gate (v1.3.0)
+
+`testsys/integration/test_v1_2_0_invariant.py` re-runs the 14-case fixed
+sample in `testsys/reference/v1_2_0_sweeps/sample.json` (one published MC
+draw per failure class; 6 cases with converged v1.2.0 rows, 8 zero-row
+cases) with the current `src/` and the v1.3.0 continue policy, capped at
+(v1.2.0 rows + 2) radii per case, and asserts: every row that converged in
+v1.2.0 (fixture `v1_2_0_sweeps.json`, generated from `src/` at 18cf78a with
+`generate_sweeps.py --policy stop` on the pinned env) has a bit-identical
+`v`, `f`, `fout` (exact on numpy 1.21.5/scipy 1.8.0, rtol 1e-9 elsewhere);
+every additional converged row is "recovered" and valid (residual < 1e-5,
+0 <= chi <= eutectic / Si max, ricb < rcmb, rho > 0, finite, smooth in
+ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
 
 ## Findings (real bugs found while building this suite -- not fixed here, per constraint)
 

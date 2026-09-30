@@ -192,8 +192,15 @@ def test_box_accepts_a_typical_iterate_and_rejects_each_violation(sys_argv_p, gl
     # slightly negative chi (as 21.8% of published converged rows have) passes
     ok, code, _ = shootp.mercmodel_box(np.array([0.8, 1.0, 0.8, 0.7, -0.003]), f, fout, args)
     assert ok
-    ok, code, _ = shootp.mercmodel_box(np.array([0.8, 1.0, 0.8, 0.7, -0.02]), f, fout, args)
-    assert not ok and code == globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+    # no lower bound by default (CHI_MIN=None): -0.045 converged in v1.2.0 (Si, low CMR2)
+    ok, code, _ = shootp.mercmodel_box(np.array([0.8, 1.0, 0.8, 0.7, -0.045]), f, fout, args)
+    assert ok
+    shootp.CHI_MIN = -0.01
+    try:
+        ok, code, _ = shootp.mercmodel_box(np.array([0.8, 1.0, 0.8, 0.7, -0.02]), f, fout, args)
+        assert not ok and code == globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+    finally:
+        shootp.CHI_MIN = None
     ok, code, _ = shootp.mercmodel_box(np.array([0.8, 1.0, 0.8, 0.7, eut + 1e-3]), f, fout, args)
     assert not ok and code == globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
     ok, code, _ = shootp.mercmodel_box(np.array([0.8, 1.0, args[0] * 0.5, 0.7, 0.05]), f, fout, args)
