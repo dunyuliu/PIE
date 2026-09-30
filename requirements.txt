@@ -1,0 +1,12 @@
+# Runtime dependencies for PIE (target interpreter: /usr/bin/python3 --
+# see PROJECT_RULES.md rule 3). Exact pins, matching testsys/requirements.txt's
+# reference environment on which testsys/run.py all is green -- the two
+# files must not drift (testsys/contract/test_repo_hygiene.py checks this).
+# Changing a pin here requires a green testsys/run.py all under the new
+# version (PROJECT_RULES.md).
+numpy==1.21.5
+scipy==1.8.0
+pandas==1.3.5
+matplotlib==3.5.1
+h5py==3.6.0
+tables==3.7.0  # pandas read_hdf/to_hdf backend (the .h5 outputs)

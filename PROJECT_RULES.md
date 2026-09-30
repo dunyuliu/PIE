@@ -7,6 +7,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 2. No silent fallbacks, swallowed errors, or placeholder data.
 3. Gate every stage; pass before moving on.
 3a. A refactor of `src/` runs testsys green before and after, one module at a time.
+3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`.
 4. Only fresh runs are evidence.
 5. One calibrated definition of "pass" — never invent a metric.
 6. Every result carries its provenance.
@@ -140,6 +141,27 @@ a norm until then.
 
 ---
 
+## 3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`
+
+Every Python dependency manifest in this repo — `requirements.txt`,
+`testsys/requirements.txt`, and any future one — pins exact versions
+(`pkg==x.y.z`); no ranges, no unpinned lines. Changing a pin ships together
+with a green `/usr/bin/python3 testsys/run.py all` run under the new version,
+in the same commit/PR, not a follow-up.
+
+**Rationale**: `testsys/requirements.txt` already did this by convention
+(all exact pins) with no rule saying so.
+
+**Incident**: PR #3 (unmerged) initially added a root `requirements.txt` with
+unpinned lines; caught in review before merge, not by any gate.
+
+**How to apply**: `testsys/contract/test_dependency_pins_match.py` (added in
+PR #3) is the mechanical enforcement — fails on an unpinned line in any
+manifest, or on root and `testsys/` disagreeing about a shared package's
+version.
+
+---
+
 ## 4. Only fresh runs are evidence
 
 A number in `README.md`, `CHANGELOG.md`, or a prior session's summary is a
@@ -268,34 +290,6 @@ treat their zipped/tarred copies as historical record only (rule 7).
 
 **How to apply**: do not tag ahead of a green testsys run; do not skip the
 GitHub release step after tagging.
-
----
-
-## 14. Every paper that uses PIE output records its Zenodo DOIs and a matching git tag
-
-A publication built on PIE output (Dunnigan et al. 2026 JGR Planets,
-doi:10.1029/2025JE009368, is the first) gets its code DOI and data DOI
-recorded in `CITATION.cff` and `README.md`'s citation section, and the code
-release those DOIs point to has a corresponding git tag — so "which commit
-made this paper's numbers" is answerable without opening Zenodo.
-
-**Rationale**: Dunnigan et al. 2026's code archive (10.5281/zenodo.16929504)
-is identical to current `src/` HEAD and its data archive
-(10.5281/zenodo.16459292) is this project's strongest regression anchor
-(`PATHWAY_FORWARD.md` item 2) — that link is only useful if it stays written
-down, in the repo, next to the tag it corresponds to, rather than living only
-in the paper's own acknowledgments.
-
-**How to apply**: when a paper's Zenodo DOIs are minted, add them to
-`CITATION.cff` and `README.md` (this repo: owned directly by the coordinator,
-not edited from this working context — `PATHWAY_FORWARD.md` item 10) and
-confirm the git tag the code DOI archived actually exists
-(`git tag --points-at <SHA>` or `git describe --tags <SHA>`); if it doesn't,
-that is a release gap under rule 13, not a citation-only fix.
-
-**Tier**: unenforceable as a mechanical gate — no script knows a new paper
-exists. `PATHWAY_FORWARD.md` item 10 is the reviewable trace of this rule
-having been applied at least once.
 
 ---
 
