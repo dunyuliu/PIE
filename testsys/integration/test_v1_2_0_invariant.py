@@ -9,8 +9,13 @@ the v1.2.0 stop-at-first-failure policy on the pinned environment.
 
 Gates
 1. IDENTITY: every row that converged in v1.2.0 converges in the current
-   src/ with a bit-identical unknown vector v (and f, fout) on the pinned
-   environment (numpy 1.21.5 / scipy 1.8.0); on any other environment
+   src/ with an unknown vector v (and f, fout) matching to rtol 1e-8 /
+   atol 1e-10 on the pinned environment (numpy 1.21.5 / scipy 1.8.0) --
+   not bit-identical: measured false even under identical pins across two
+   machines (LAPACK/BLAS ULP-level rounding), see `_same`'s docstring
+   comment; `test_v1_2_0_converged_rows_bitwise_same_host` below runs the
+   strict bitwise check where the fixture was actually generated. On any
+   other environment
    (CI fast-latest) within the calibrated cross-environment parity
    tolerance (rtol 1e-4, atol 1e-6 -- the one used against the published
    data), because integrator/BLAS rounding legitimately differs there. The line search must have accepted alpha = 1 on every
@@ -75,7 +80,20 @@ def _on_pinned_env():
 def _same(a, b):
     a = np.asarray(a, dtype=float); b = np.asarray(b, dtype=float)
     if _on_pinned_env():
-        return np.array_equal(a, b)
+        # NOT np.array_equal: bit-identical was measured false even with
+        # the exact same package versions, across two different machines
+        # (this dev box vs the GH Actions `fast` runner, both numpy
+        # 1.21.5/scipy 1.8.0) -- CI run 36715921055/job 109888682172 failed
+        # 8/30 cases with LAPACK/BLAS ULP-level rounding differences (CPU
+        # microarchitecture / SIMD dispatch, not package version), measured
+        # abs diff up to ~3e-11, rel diff up to ~1.6e-8 (smallest-magnitude
+        # component). rtol 1e-8 / atol 1e-10 is well above that measured
+        # cross-platform noise and far below the solver's own convergence
+        # tolerance (ftol/xtol ~5e-5) -- a real regression cannot hide
+        # inside this bound. See test_v1_2_0_converged_rows_bitwise_same_host
+        # for the strict bitwise check, which only runs where the fixture
+        # was generated.
+        return np.allclose(a, b, rtol=1e-8, atol=1e-10)
     # Off the pinned environment (CI fast-latest: numpy 2.x / scipy 1.15)
     # the LSODA/RK45 integrators, polyfit and BLAS differ in rounding, and a
     # Newton iterate that stops at the same |f| < ftol lands within the
@@ -109,6 +127,28 @@ def test_v1_2_0_converged_rows_are_identical(case, current):
         assert _same(rr["f"], cr["f"]) and _same(rr["fout"], cr["fout"]), f"{case['name']} k={rr['k']}: f/fout differ"
         n_checked += 1
     assert n_checked == sum(r["status"] == "ok" for r in ref_rows)
+
+
+@pytest.mark.skipif(
+    os.environ.get("GITHUB_ACTIONS") == "true" or not os.environ.get("PIE_SAME_HOST_AS_FIXTURE"),
+    reason=(
+        "strict bitwise identity only holds on the exact machine that "
+        "generated testsys/reference/v1_2_0_sweeps/v1_2_0_sweeps.json -- "
+        "LAPACK/BLAS ULP-level rounding differs by CPU/SIMD dispatch even "
+        "under identical pins (see _same's docstring, CI run 36715921055). "
+        "Set PIE_SAME_HOST_AS_FIXTURE=1 to run this on that box; the "
+        "portable rtol 1e-8/atol 1e-10 check above is the CI gate."))
+@pytest.mark.parametrize("case", _case_ids(), ids=lambda c: c["name"])
+def test_v1_2_0_converged_rows_bitwise_same_host(case, current):
+    ref_rows = _fixture()["cases"][case["name"]]["rows"]
+    cur_rows = current["cases"][case["name"]]["rows"]
+    cur_by_k = {r["k"]: r for r in cur_rows}
+    for rr in ref_rows:
+        if rr["status"] != "ok":
+            continue
+        cr = cur_by_k[rr["k"]]
+        assert np.array_equal(np.asarray(rr["v"]), np.asarray(cr["v"])), (
+            f"{case['name']} k={rr['k']}: v not bitwise-identical on same host")
 
 
 def _admissible(row):
