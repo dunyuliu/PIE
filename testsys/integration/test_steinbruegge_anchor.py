@@ -245,7 +245,8 @@ def test_core_mass_quadrature_bias_is_bounded():
         pie = solve_full_model(CMR2, CMC, "S", "Steinbruegge", ricb_m)
         r = np.asarray(pie["profiles"]["r"])
         rho = np.asarray(pie["profiles"]["rho"])
-        mass_trapz = np.trapz(4 * np.pi * rho * r ** 2, r)
+        _trapz = getattr(np, "trapezoid", None) or np.trapz
+        mass_trapz = _trapz(4 * np.pi * rho * r ** 2, r)
         core_mass = pie["scalars"]["core_mass"]
         rel_bias = abs(core_mass - mass_trapz) / mass_trapz
         assert not (rel_bias > 4e-3), (
