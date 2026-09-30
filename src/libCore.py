@@ -5,6 +5,8 @@ import time
 import scipy
 import coreEos as eos
 import sys
+import os
+import json
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv
 from scipy.constants import G
@@ -14,6 +16,78 @@ from planet_input import *
 
 # Added by Tilio. 20220614.
 TmFeS     = eos.meltingDataFromFile("TmFeSmelt.dat")
+
+
+# --- Error codes / structured logging (PATHWAY_FORWARD.md items 15/16) ---
+#
+# SolverError replaces the bare `sys.exit()` calls that used to terminate
+# the whole process on a Newton/shooting failure (src/shootp.py's
+# mynewtonSys, src/libCore.py's getchi_li_grun). It subclasses
+# SystemExit -- NOT a new, unrelated exception type -- on purpose: any
+# caller that does not explicitly catch it (a direct unit-test call to
+# mynewtonSys, e.g.) sees exactly the same "loud stop" contract as
+# before (`except BaseException`/`pytest.raises(SystemExit)` both still
+# work). What changes is that src/driverp.py's per-radius loop now DOES
+# catch it, records the error code + context to the structured log and
+# to the per-radius `error_code` column, and moves on -- so a single
+# radius's failure no longer kills the whole run's process.
+class SolverError(SystemExit):
+    def __init__(self, error_code, message, context=None):
+        super().__init__(message)
+        self.error_code = ErrorCode(error_code)
+        self.message = message
+        self.context = context or {}
+
+    def __repr__(self):
+        return f"SolverError({self.error_code.name}: {self.message})"
+
+    def __reduce__(self):
+        # BaseException's default pickling reconstructs via
+        # `type(self)(*self.args)`, and `self.args` is only
+        # (message,) (set by the `super().__init__(message)` above) --
+        # that drops error_code/context and makes __init__ raise
+        # "missing required positional argument" on unpickling.
+        # testsys/e2e/test_wide_full_sweep.py and
+        # testsys/integration/test_wide_self_consistency.py send a
+        # caught SolverError back across a ProcessPoolExecutor
+        # boundary (`except BaseException as e: return e`), which
+        # pickles it -- this failed with a BrokenProcessPool until
+        # this override; a regression test lives in
+        # testsys/unit/test_error_codes.py.
+        return (self.__class__, (self.error_code, self.message, self.context))
+
+
+def write_solver_log(log_path, record):
+    """Append one JSON line to the structured per-run solver log.
+
+    No silent fallback (PROJECT_RULES.md rule 2): if log_path is given
+    but the write fails (e.g. the model_path directory does not exist
+    yet), this raises -- it does not swallow the error and continue as
+    if logging had happened. Passing log_path=None is the explicit
+    opt-out (used by callers/tests that have no run directory, e.g. the
+    toy Jacobians in testsys/unit/test_solver.py).
+    """
+    if log_path is None:
+        return
+    record = dict(record)
+    record.setdefault("t", time.time())
+    d = os.path.dirname(log_path)
+    if d and not os.path.isdir(d):
+        os.makedirs(d, exist_ok=True)
+    with open(log_path, "a") as f:
+        f.write(json.dumps(record, default=_json_default) + "\n")
+
+
+def _json_default(o):
+    if isinstance(o, (np.integer,)):
+        return int(o)
+    if isinstance(o, (np.floating,)):
+        return float(o)
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    if isinstance(o, ErrorCode):
+        return {"code": int(o), "name": o.name}
+    return str(o)
 
 def TmFeSSi(xS,xSi,p):
     p1      = p*1e-9 
@@ -127,10 +201,20 @@ def getchi_li_grun(yT,yP,chi_li_old,scale,param):
             sol         = scipy.optimize.root(lambda x: getCoreLiquidus(x, chi_icb['Si'], P1, param, T1), chi_icb['S'], tol=1e-6) 
             if liquidus_eq == 'Steinbruegge' and chi_Si_icb > max_Si_Steinbruegge2020:
                 print('Exceeding allowed maximum Si%wt of 15% with Steinbruegge2020 value, break the code ... ...')
-                sys.exit()
+                raise SolverError(ErrorCode.SI_ABOVE_LIQUIDUS_MAX,
+                                  'chi_Si_icb %r exceeds max_Si_Steinbruegge2020 %r'
+                                  % (chi_Si_icb, max_Si_Steinbruegge2020),
+                                  context={'chi_Si_icb': chi_Si_icb,
+                                           'max_Si_allowed': max_Si_Steinbruegge2020,
+                                           'liquidus_eq': liquidus_eq})
             elif liquidus_eq == 'Edmund' and chi_Si_icb > max_Si_Edmund2022:
                 print('Exceeding allowed maximum Si%wt of 12% with Edmund2022 value, break the code ... ...')
-                sys.exit()
+                raise SolverError(ErrorCode.SI_ABOVE_LIQUIDUS_MAX,
+                                  'chi_Si_icb %r exceeds max_Si_Edmund2022 %r'
+                                  % (chi_Si_icb, max_Si_Edmund2022),
+                                  context={'chi_Si_icb': chi_Si_icb,
+                                           'max_Si_allowed': max_Si_Edmund2022,
+                                           'liquidus_eq': liquidus_eq})
         elif el == 'Si':
             # ATTENTION! the eq above for chi_li_eut is not good for Fe-Si or Fe-S-Si.
             if liquidus_eq == 'Steinbruegge':
@@ -263,7 +347,30 @@ def getpotvsr(nr,bigGnd,rnd,rhond,gnd):
 
     A = csc_matrix(A)
     #print(A)
-    b = inv(A)*rhs
+    # SuperLU raises RuntimeError("Factor is exactly singular") on a
+    # singular A instead of returning a value -- previously uncaught
+    # (docs/audits/AUDIT_2026-09-29_buglist.md B2), which crashed the
+    # whole process. Caught here and re-raised as a SolverError so
+    # src/driverp.py's per-radius try/except can record it and move on.
+    try:
+        b = inv(A)*rhs
+    except RuntimeError as e:
+        n_nonfinite_rho = int(np.sum(~np.isfinite(rhond)))
+        n_nonfinite_g = int(np.sum(~np.isfinite(gnd)))
+        raise SolverError(
+            ErrorCode.NONFINITE_SHOOT,
+            'getpotvsr: SuperLU failed to invert A (%r)' % (e,),
+            context={'superlu_error': repr(e),
+                     'nonfinite_rho_count': n_nonfinite_rho,
+                     'nonfinite_g_count': n_nonfinite_g,
+                     'nr': nr},
+        ) from e
+    if not np.all(np.isfinite(b)):
+        raise SolverError(
+            ErrorCode.NONFINITE_SHOOT,
+            'getpotvsr: non-finite entries in solved potential vector b',
+            context={'nonfinite_b_count': int(np.sum(~np.isfinite(b))), 'nr': nr},
+        )
 
     # solution
     pot = np.empty(nr)
