@@ -22,7 +22,10 @@ Gates
    a smooth continuation in ricb from the neighbouring converged rows.
 3. REGRESSION of recovery: the committed recovered_rows_v1_3_0.json (same
    harness, current src/ at the release SHA) must be reproduced -- a
-   recovered row may not silently disappear.
+   recovered row may not silently disappear. Each fixture row carries an
+   "admissible" tag: converged rows with chi_li_icb outside [0, bound]
+   (error_code 4 in the csv, like 21.8% of the published rows) are
+   reproduced but are NOT counted as recovered valid models.
 
 Runtime is bounded by --extra-radii 2: each case runs (v1.2.0 rows + 2)
 radii, so the identity rows and two continuation radii are exercised
@@ -99,9 +102,19 @@ def test_v1_2_0_converged_rows_are_identical(case, current):
     assert n_checked == sum(r["status"] == "ok" for r in ref_rows)
 
 
+def _admissible(row):
+    """A converged row is admissible when chi_li_icb is in [0, eutectic/Si max]
+    and the shoot raised no negative-chi flag. Converged rows outside that box
+    are what driverp.py writes with error_code 4 (the err flag /
+    (chi_li<0).any() checks): recorded, reproducible, but NOT counted as
+    recovered valid models -- the same status the 21.8% of published rows
+    with chi_li_icb < 0 have."""
+    return (0.0 <= row["chi_li_icb"] <= row["chi_max"]) and not row.get("err_flag", False)
+
+
 def _validity(row, case, context):
     assert row["resid_norm"] < 1e-5, f"{context}: resid_norm {row['resid_norm']:.3e} not below solver tolerance"
-    assert 0.0 <= row["chi_li_icb"] <= row["chi_max"], f"{context}: chi_li_icb {row['chi_li_icb']} outside [0, {row['chi_max']}]"
+    assert _admissible(row), f"{context}: chi_li_icb {row['chi_li_icb']} outside [0, {row['chi_max']}] or err flag set"
     assert row["ricb_m"] < row["rcmb_m"], f"{context}: ricb >= rcmb"
     assert row["rho_min"] > 0, f"{context}: non-positive density"
     assert row["profile_finite"], f"{context}: non-finite profile"
@@ -119,6 +132,11 @@ def test_recovered_rows_are_valid_and_smooth(case, current):
     ok_rows = [r for r in rows if r["status"] == "ok"]
     rec = _recovered_rows(case, current)
     for r in rec:
+        if not _admissible(r):
+            # converged but inadmissible (chi < 0 or > bound): driverp writes it
+            # with error_code 4; it is not a recovered model. Finite + converged only.
+            assert r["resid_norm"] < 1e-5 and np.all(np.isfinite(r["v"])), f"{case['name']} k={r['k']}: inadmissible row not even converged"
+            continue
         _validity(r, case, f"{case['name']} k={r['k']} (recovered)")
     # smooth continuation in ricb: each recovered row's v must be within the
     # local step scale of the previous converged row (no jump to another
@@ -155,6 +173,7 @@ def test_recovered_rows_regression_fixture(current):
             cr = cur.get(rr["k"])
             assert cr is not None and cr["status"] == "ok", f"{name} k={rr['k']}: recovered row lost (status={cr and cr.get('status')})"
             assert _same(rr["v"], cr["v"]), f"{name} k={rr['k']}: recovered v changed\n  fixture {rr['v']}\n  now     {cr['v']}"
+            assert _admissible(cr) == rr["admissible"], f"{name} k={rr['k']}: admissibility tag changed"
 
 
 def test_sample_provenance_is_v1_2_0_pinned():
