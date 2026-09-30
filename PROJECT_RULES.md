@@ -293,34 +293,6 @@ GitHub release step after tagging.
 
 ---
 
-## 14. Every paper that uses PIE output records its Zenodo DOIs and a matching git tag
-
-A publication built on PIE output (Dunnigan et al. 2026 JGR Planets,
-doi:10.1029/2025JE009368, is the first) gets its code DOI and data DOI
-recorded in `CITATION.cff` and `README.md`'s citation section, and the code
-release those DOIs point to has a corresponding git tag — so "which commit
-made this paper's numbers" is answerable without opening Zenodo.
-
-**Rationale**: Dunnigan et al. 2026's code archive (10.5281/zenodo.16929504)
-is identical to current `src/` HEAD and its data archive
-(10.5281/zenodo.16459292) is this project's strongest regression anchor
-(`PATHWAY_FORWARD.md` item 2) — that link is only useful if it stays written
-down, in the repo, next to the tag it corresponds to, rather than living only
-in the paper's own acknowledgments.
-
-**How to apply**: when a paper's Zenodo DOIs are minted, add them to
-`CITATION.cff` and `README.md` (this repo: owned directly by the coordinator,
-not edited from this working context — `PATHWAY_FORWARD.md` item 10) and
-confirm the git tag the code DOI archived actually exists
-(`git tag --points-at <SHA>` or `git describe --tags <SHA>`); if it doesn't,
-that is a release gap under rule 13, not a citation-only fix.
-
-**Tier**: unenforceable as a mechanical gate — no script knows a new paper
-exists. `PATHWAY_FORWARD.md` item 10 is the reviewable trace of this rule
-having been applied at least once.
-
----
-
 ## 14. Every paper that uses PIE output is citable from the repo
 
 Each publication built on PIE output gets its paper DOI, Zenodo code DOI and
