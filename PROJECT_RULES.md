@@ -7,6 +7,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 2. No silent fallbacks, swallowed errors, or placeholder data.
 3. Gate every stage; pass before moving on.
 3a. A refactor of `src/` runs testsys green before and after, one module at a time.
+3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`.
 4. Only fresh runs are evidence.
 5. One calibrated definition of "pass" — never invent a metric.
 6. Every result carries its provenance.
@@ -137,6 +138,27 @@ or commit message. This rule is blocked on testsys existing at all — see
 
 **Tier**: unenforceable as a mechanical gate until `testsys/run.py` exists;
 a norm until then.
+
+---
+
+## 3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`
+
+Every Python dependency manifest in this repo — `requirements.txt`,
+`testsys/requirements.txt`, and any future one — pins exact versions
+(`pkg==x.y.z`); no ranges, no unpinned lines. Changing a pin ships together
+with a green `/usr/bin/python3 testsys/run.py all` run under the new version,
+in the same commit/PR, not a follow-up.
+
+**Rationale**: `testsys/requirements.txt` already did this by convention
+(all exact pins) with no rule saying so.
+
+**Incident**: PR #3 (unmerged) initially added a root `requirements.txt` with
+unpinned lines; caught in review before merge, not by any gate.
+
+**How to apply**: `testsys/contract/test_dependency_pins_match.py` (added in
+PR #3) is the mechanical enforcement — fails on an unpinned line in any
+manifest, or on root and `testsys/` disagreeing about a shared package's
+version.
 
 ---
 
