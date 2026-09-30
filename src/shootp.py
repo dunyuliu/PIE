@@ -440,7 +440,8 @@ def mynewtonSys(Jfun,x0,varargin,
     def _flush_log(status):
         last_solve_info.clear()
         last_solve_info.update({'status': int(status), 'n_iterations': k,
-                                'normf_last': history[-1]['normf'] if history else float('nan')})
+                                'normf_last': history[-1]['normf'] if history else float('nan'),
+                                'normdx_last': (history[-1]['normdx'] if history and history[-1]['normdx'] is not None else float('nan'))})
         if log_path is None:
             return
         record = {'kind': 'newton_solve', 'Jfun': Jfun,

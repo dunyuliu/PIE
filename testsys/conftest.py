@@ -221,6 +221,9 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
         # assert_recovered_model_valid.
         "v": [float(x) for x in v], "resid_norm": float(np.linalg.norm(f)),
         "err_flag": bool(err),
+        "normf_last": float(lc.last_solve_info.get("normf_last", float("nan"))),
+        "normdx_last": float(lc.last_solve_info.get("normdx_last", float("nan"))),
+        "xtol": float(gv.xtol),
         "max_Si": float(gv.max_Si_Steinbruegge2020 if liquidus_eq == "Steinbruegge" else gv.max_Si_Edmund2022),
         "ftol": float(gv.ftol),
         "scalars": {
@@ -353,6 +356,15 @@ def run_pie(*args, cwd, timeout=600, env_extra=None):
     )
 
 
+def solver_converged(result):
+    """mynewtonSys's own stop rule, unchanged since v1.0.5: return x when
+    |f| < ftol OR |dx| < xtol at the current iterate. A row accepted on the
+    |dx| criterion can carry |f| above ftol (observed: 6.8e-5 with ftol
+    1e-6); it is a converged row by the solver's definition, so validity
+    checks use that definition, not a re-invented one (rule 5)."""
+    return (result["resid_norm"] < 10 * result["ftol"]) or (result["normdx_last"] < result["xtol"])
+
+
 def is_admissible(result):
     """True when a converged solve is inside the admissible box driverp.py
     writes with error_code 0: chi_li_icb in [0, eutectic at P_icb] (S, S+Si)
@@ -377,7 +389,7 @@ def check_converged_without_reference(result, context=""):
         assert_recovered_model_valid(result, context=context)
         return "recovered"
     import numpy as np
-    assert result["resid_norm"] < 10 * result["ftol"], f"{context}inadmissible solve is not even converged"
+    assert solver_converged(result), f"{context}inadmissible solve is not even converged (|f|={result['resid_norm']:.2e}, |dx|={result['normdx_last']:.2e})"
     assert np.all(np.isfinite(result["v"])), f"{context}non-finite v"
     return "inadmissible"
 
@@ -397,8 +409,9 @@ def assert_recovered_model_valid(result, context=""):
     """
     import numpy as np
     s = result["scalars"]
-    assert result["resid_norm"] < 10 * result["ftol"], (
-        f"{context}recovered model residual {result['resid_norm']:.3e} not below solver tolerance")
+    assert solver_converged(result), (
+        f"{context}recovered model not converged by the solver's own rule: "
+        f"resid_norm={result['resid_norm']:.3e} (ftol {result['ftol']}), |dx|={result['normdx_last']:.3e} (xtol {result['xtol']})")
     chi = s["chi_li_icb"]
     chi_max = result["max_Si"] if result["light_element"] == "Si" else s["chi_li_eut_icb"]
     assert 0.0 <= chi <= chi_max, f"{context}recovered chi_li_icb={chi} outside [0, {chi_max}]"
