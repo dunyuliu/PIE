@@ -29,7 +29,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match
+from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference
 
 pytestmark = [pytest.mark.integration, pytest.mark.parity]
 
@@ -72,9 +72,9 @@ def _job(entry):
     chi_si = 0.05 if entry["light"] == "S+Si" else None
     if ricb_m is None:
         try:
-            solve_full_model(entry["cmr2"], entry["cmc"], entry["light"],
-                              "Edmund", 10.0, chi_Si_icb=chi_si)
-            return ("unexpected_convergence", None)
+            result = solve_full_model(entry["cmr2"], entry["cmc"], entry["light"],
+                                       "Edmund", 10.0, chi_Si_icb=chi_si)
+            return ("recovered", result)
         except BaseException as e:  # noqa: BLE001
             return ("expected_nonconvergence", repr(e))
     try:
@@ -99,13 +99,16 @@ def test_mc_wide_case(entry, computed_by_case):
     _, reference = _load_case(entry)
 
     if reference is None:
-        assert status == "expected_nonconvergence", (
-            f"{_case_id(entry)}: published draw has ZERO converged rows "
-            f"(CMR2={entry['cmr2']}, CMC={entry['cmc']}), so re-solving at "
-            f"the first grid radius (10 m) should also fail to converge -- "
-            f"got status={status!r} instead. Either the golden is stale "
-            f"or something now converges that published didn't."
-        )
+        # Published draw has ZERO converged rows. v1.0.5 failed at the
+        # first grid radius (10 m); v1.3.0's line-search Newton may
+        # recover it (item 17) -- accepted only if the recovered model
+        # passes the validity gate; a fresh failure is also accepted.
+        if status == "expected_nonconvergence":
+            return
+        assert status == "recovered", f"{_case_id(entry)}: unexpected status {status!r}"
+        kind = check_converged_without_reference(payload, context=f"{_case_id(entry)}: ")
+        print(f"{_case_id(entry)}: published 0 rows, v1.3.0 converges -> {kind} "
+              f"(chi_li_icb={payload['scalars']['chi_li_icb']:.4f})")
         return
 
     assert status == "converged", (

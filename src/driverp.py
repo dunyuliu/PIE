@@ -6,6 +6,66 @@ import visualization_present as vis
 import pandas as pd
 import csv # added 6/30/2022
 
+def solve_radius(k, rs_k, ricb_k, v_last, v_cold, rhocr, rh, param, scale, log_path):
+    """Newton solve at one inner-core radius with the v1.3.0 start policy.
+
+    Warm start from v_last (the last converged solution; None before the
+    first convergence, in which case the cold start is the only attempt);
+    if the warm start fails with a radius-dependent error (codes 1-5) and
+    the cold start v_cold differs from it, one cold start from v_cold. The
+    solver log records which start produced the solution ('warm'/'cold').
+    Returns (v, start). Raises the LAST SolverError when every attempt
+    fails (the warm-start error is kept in its context as 'warm_start_error').
+    SI_ABOVE_LIQUIDUS_MAX is re-raised immediately (by design, not
+    radius-dependent).
+    """
+    args = [ricb_k, rhocr, rh, param, scale]
+    attempts = []
+    if v_last is not None:
+        attempts.append(('warm', v_last))
+    if v_last is None or not np.array_equal(np.asarray(v_last, dtype=float), np.asarray(v_cold, dtype=float)):
+        attempts.append(('cold', list(v_cold)))
+    warm_error = None
+    for start, v0 in attempts:
+        try:
+            v = lc.mynewtonSys('J_mercmodel', v0, args,
+                                xtol=xtol, ftol=ftol, maxit=maxit, verbose=False,
+                                log_path=log_path,
+                                log_context={'k_radius': int(k), 'ricb_m': float(rs_k), 'start': start})
+            return v, start
+        except lc.SolverError as e:
+            e.context['start'] = start
+            if e.error_code == ErrorCode.SI_ABOVE_LIQUIDUS_MAX:
+                raise
+            if start == 'warm':
+                warm_error = e
+                continue
+            if warm_error is not None:
+                e.context['warm_start_error'] = {'error_code': int(warm_error.error_code),
+                                                 'error_name': warm_error.error_code.name,
+                                                 'message': warm_error.message}
+            raise
+    raise warm_error
+
+
+def write_failure_row(rs_k, code, start):
+    """Append the csv row for a radius whose solve FAILED (v1.3.0, owner
+    decision 2026-09-30): ricb, chi_Si_icb, error_code, start, newton_iters
+    and resid_norm are set; every physical quantity is NaN -- never 0 or a
+    stale value from the previous radius. No .h5 is written for a failed
+    radius; this row is the record. Consumers must filter error_code == 0
+    (README 'Outputs and error codes')."""
+    row = {c: np.nan for c in presentday_columns}
+    row['chi_Si_icb'] = chi_Si_icb
+    row['ricb'] = rs_k
+    row['error_code'] = int(code)
+    row['start'] = start if start is not None else ''
+    row['newton_iters'] = int(lc.last_solve_info.get('n_iterations', -1))
+    row['resid_norm'] = float(lc.last_solve_info.get('normf_last', np.nan))
+    with open(csvfiles_path + pMetaDataFileName, 'a') as csvMetaData:
+        csv.writer(csvMetaData).writerow([row[c] for c in presentday_columns])
+
+
 def driverp(param, rs):
     # Initiate
     
@@ -32,30 +92,45 @@ def driverp(param, rs):
         os.makedirs(model_path, exist_ok=True)
     log_path = model_path + pSolverLogFileName
 
+    # SI_ABOVE_LIQUIDUS_MAX (code 6) does not depend on the radius: checked
+    # once, before the sweep. One csv row (ricb = rs[0]) records it and the
+    # composition ends (owner decision 2026-09-30, point 5).
+    if param['li_el'] == 'S+Si':
+        si_max = max_Si_Steinbruegge2020 if liquidus_eq == 'Steinbruegge' else max_Si_Edmund2022
+        if chi_Si_icb > si_max:
+            lc.last_solve_info.clear()
+            code = ErrorCode.SI_ABOVE_LIQUIDUS_MAX
+            lc.write_solver_log(log_path, {
+                'kind': 'composition_failure', 'stage': 'pre-sweep',
+                'error_code': int(code), 'error_name': code.name,
+                'message': 'chi_Si_icb %r exceeds the %s liquidus Si max %r (by design)' % (chi_Si_icb, liquidus_eq, si_max),
+                'context': {'chi_Si_icb': chi_Si_icb, 'max_Si_allowed': si_max, 'liquidus_eq': liquidus_eq},
+            })
+            print('chi_Si_icb %r exceeds allowed maximum Si%%wt %r (%s): error code %d, composition ends.'
+                  % (chi_Si_icb, si_max, liquidus_eq, code))
+            write_failure_row(rs[0], code, None)
+            return
+
+    v_last = None                 # last converged solution (warm start)
+    v_cold = list(param['v0'])    # the generic initial guess (cold start)
+
     for k in range(len(ricb)):
         print('Finding solutions for inner core radius = ' + str(round(rs[k],2)) + ' ... ...')
-        #param['CMR2'] = mois[moi_index]
-        #k = 0
-        #try:
-        # for a certain inner core radius, normalized, ricb[k] in rs, rhocr (crust thickness), rh (radius of crust-mantle boundary),
-        # and initial guesses v0, try to solve for v.
-        # The Newton method calls J_mercmodel, which calculates the Jacobian and f of the system given initial v0 guesses.
+        # For a certain inner core radius, normalized, ricb[k] in rs, rhocr (crust thickness), rh (radius of crust-mantle boundary),
+        # solve for v. The Newton method calls J_mercmodel, which calculates the Jacobian and f of the system given the initial v0 guesses.
         # J_mercmodel calls shoot_mercmodel to build J and f.
-
-        # mynewtonSys used to return None on failure (checked by the
-        # `if v is None: break` below) but actually always either
-        # returns a solution or calls sys.exit() -- "v is None" could
-        # never fire (docs/audits/AUDIT_2026-09-29_buglist.md B1). It
-        # now raises lc.SolverError instead of exiting the process; this
-        # try/except IS the fix for that dead check -- it stops the
-        # sweep at the same point a maxit/singular-J failure always did,
-        # but via a caught, recorded exception instead of killing the
-        # whole run.
+        #
+        # Sweep policy (v1.3.0, owner decision 2026-09-30, PATHWAY_FORWARD.md
+        # item 17): a failure at one radius is recorded (error_code + a
+        # radius_failure record in the solver log) and the sweep CONTINUES
+        # to the next radius, warm-starting from the last converged solution
+        # (v1.2.0 stopped the whole composition at the first failure).
+        # solve_radius tries the warm start first and, if that fails, one
+        # cold start from the generic v0. Only SI_ABOVE_LIQUIDUS_MAX (by
+        # design, radius-independent) still ends the composition. Rows
+        # before the first failure follow exactly the v1.2.0 path.
         try:
-            v = lc.mynewtonSys('J_mercmodel', v0, [ricb[k],rhocr,rh,param,scale],
-                                xtol=xtol, ftol=ftol, maxit=maxit, verbose=False,
-                                log_path=log_path,
-                                log_context={'k_radius': int(k), 'ricb_m': float(rs[k])})
+            v, start = solve_radius(k, rs[k], ricb[k], v_last, v_cold, rhocr, rh, param, scale, log_path)
         except lc.SolverError as e:
             error_code[k] = e.error_code
             lc.write_solver_log(log_path, {
@@ -66,17 +141,15 @@ def driverp(param, rs):
             })
             print('Newton solve failed at ricb=%r m: %s (%s)' %
                   (rs[k], e.error_code.name, e.message))
-            break
-
-        # Set initial guess for next as previous solution.
-        v0=v
+            write_failure_row(rs[k], error_code[k], e.context.get('start'))
+            if e.error_code == ErrorCode.SI_ABOVE_LIQUIDUS_MAX:
+                break
+            continue
 
         # final solution. shoot_mercmodel can also raise lc.SolverError
-        # (getk2's IndexError/non-finite result, or a SuperLU singular
-        # matrix from libCore.getpotvsr -- both used to crash the whole
-        # process uncaught, docs/audits/AUDIT_2026-09-29_buglist.md
-        # B2/B5/A1) -- caught here the same way, so a bad radius stops
-        # the sweep instead of the process.
+        # (getk2's physical-limit / non-finite guards, or a SuperLU singular
+        # matrix from libCore.getpotvsr) -- recorded the same way; the sweep
+        # continues from the last converged solution.
         try:
             [f,r,yy, fout, err] = lc.shoot_mercmodel(v,ricb[k],rhocr,rh,param,scale)
         except lc.SolverError as e:
@@ -89,7 +162,10 @@ def driverp(param, rs):
             })
             print('shoot_mercmodel failed at ricb=%r m: %s (%s)' %
                   (rs[k], e.error_code.name, e.message))
-            break
+            write_failure_row(rs[k], error_code[k], start)
+            continue
+        # Set initial guess for the next radius to this converged solution.
+        v_last = v
         print(err)
         if err == True:
             error_code[k] = ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
@@ -213,7 +289,10 @@ def driverp(param, rs):
                            'isnowcmb': [isnowcmb], 'chi_li_in': [chi_li_in], 'chi_S_bulk': [chi_S_bulk],  
                            'Pcmb': [Pcmb], 'chi_li_eut_icb': [chi_li_eut_icb],
                            'chi_li_eut_cmb': [chi_li_eut_cmb], 'ricb':rs[k], 'rcmb':[rcmb],
-                           'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb], 'error_code':error_code[k]})
+                           'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb], 'error_code':error_code[k],
+                           # v1.3.0 columns: which start converged, Newton iterations, final ||f|| at the returned v
+                           'start': [start], 'newton_iters': [int(lc.last_solve_info.get('n_iterations', -1))],
+                           'resid_norm': [float(np.linalg.norm(f))]})
         # append dataframe to csv containing present day model data for contour plot -- added 6/30/2022
         csvMetaData = open(csvfiles_path + pMetaDataFileName, 'a')
         writer = csv.writer(csvMetaData)

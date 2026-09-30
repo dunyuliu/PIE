@@ -25,7 +25,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match
+from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference
 
 pytestmark = pytest.mark.integration
 
@@ -73,13 +73,17 @@ def test_wide_case_matches_self_golden(entry, computed_by_case):
     _, computed = computed_by_case[_case_id(entry)]
 
     if not entry["converged"]:
-        assert isinstance(computed, BaseException), (
-            f"{_case_id(entry)}: golden says this case does NOT converge "
-            f"(see wide_sweep/PROVENANCE.md), but a fresh solve succeeded -- "
-            f"either the golden is stale (regenerate deliberately) or "
-            f"something now converges that previously didn't (worth noting "
-            f"in the commit message either way)."
-        )
+        # The v1.0.5 golden recorded this case as non-convergent. Since
+        # v1.3.0 (bounded line-search Newton, PATHWAY_FORWARD.md item 17)
+        # a fresh solve MAY converge where v1.0.5 did not; that is the
+        # intended recovery, not a regression -- provided the recovered
+        # model passes the validity gate. A fresh failure is still
+        # accepted (the golden's own outcome).
+        if isinstance(computed, BaseException):
+            return
+        kind = check_converged_without_reference(computed, context=f"{_case_id(entry)}: ")
+        print(f"{kind}: {_case_id(entry)} (golden non-convergent, v1.3.0 converges; "
+              f"chi_li_icb={computed['scalars']['chi_li_icb']:.4f})")
         return
 
     assert not isinstance(computed, BaseException), (

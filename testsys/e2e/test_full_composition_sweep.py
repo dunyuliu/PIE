@@ -37,9 +37,32 @@ RTOL = 1e-4
 CATEGORICAL_FIELDS = ["isnow", "isnowcmb", "error_code"]
 
 
-def _read_rows(path):
+def _read_rows(path, converged_only=True):
+    """Since v1.3.0 every ATTEMPTED radius has a csv row; failed radii
+    carry error_code != 0 and NaN physics. The golden predates that and
+    holds converged rows only, so comparisons filter error_code == 0."""
     with open(path) as f:
-        return list(csv.DictReader(f))
+        rows = list(csv.DictReader(f))
+    if converged_only:
+        rows = [r for r in rows if float(r["error_code"]) == 0.0]
+    return rows
+
+
+def test_failed_radii_have_nan_physics_and_no_h5(full_run):
+    rows = _read_rows(next(full_run.glob("pMetaData_*.csv")), converged_only=False)
+    failed = [r for r in rows if float(r["error_code"]) != 0.0]
+    ok = [r for r in rows if float(r["error_code"]) == 0.0]
+    assert len(list(full_run.glob("*.h5"))) == len(ok), "one .h5 per CONVERGED radius, none for failures"
+    physical = [c for c in rows[0] if c not in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm")]
+    for r in failed:
+        assert all(r[c] == "nan" or r[c] == "" or r[c] != r[c] or float(r[c]) != float(r[c]) for c in physical), (
+            f"failed radius ricb={r['ricb']} carries non-NaN physics: "
+            f"{[(c, r[c]) for c in physical if r[c] not in ('nan', '')]}")
+        assert r["start"] in ("warm", "cold", "")
+    for r in ok:
+        assert r["start"] in ("warm", "cold")
+        assert int(float(r["newton_iters"])) >= 1
+        assert float(r["resid_norm"]) < 1e-5
 
 
 @pytest.fixture(scope="module")
@@ -50,8 +73,13 @@ def full_run(tmp_path_factory):
     (workdir / "TmFeSmelt.dat").symlink_to(SRC / "TmFeSmelt.dat")
     (workdir / "results").mkdir()
 
+    # v1.3.0 sweep policy: all 40 radii are attempted (v1.2.0 stopped at the
+    # first failure), and every failed radius costs a warm + a cold Newton
+    # attempt (~90 s each on this shared box under load) -- the 900 s budget
+    # of v1.2.0 timed out; measured wall is recorded in
+    # docs/notes/solver_v1.3.0.md sec. 4.
     result = run_pie("main.py", "p", "0.346", "0.424", "S", "Edmund",
-                      cwd=str(workdir), timeout=900)
+                      cwd=str(workdir), timeout=5400)
     assert result.returncode == 0, (
         f"main.py exited {result.returncode}:\n{result.stdout[-4000:]}"
     )

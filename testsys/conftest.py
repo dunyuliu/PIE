@@ -216,6 +216,16 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
         "CMR2": CMR2, "CMC": CMC, "light_element": light_element,
         "liquidus_eq": liquidus_eq, "ricb_m": ricb_m,
         "chi_Si_icb": chi_Si_icb if chi_Si_icb is not None else 0.0,
+        # v1.3.0 additions (not compared against published references):
+        # the converged unknown vector and the residual norm at it, for
+        # assert_recovered_model_valid.
+        "v": [float(x) for x in v], "resid_norm": float(np.linalg.norm(f)),
+        "err_flag": bool(err),
+        "normf_last": float(lc.last_solve_info.get("normf_last", float("nan"))),
+        "normdx_last": float(lc.last_solve_info.get("normdx_last", float("nan"))),
+        "xtol": float(gv.xtol),
+        "max_Si": float(gv.max_Si_Steinbruegge2020 if liquidus_eq == "Steinbruegge" else gv.max_Si_Edmund2022),
+        "ftol": float(gv.ftol),
         "scalars": {
             "rhom": float(rhom), "mass": float(mass), "moi": float(moi),
             "cmc": float(cmc), "Picb": float(Picb), "Tcmb": float(Tcmb),
@@ -344,3 +354,70 @@ def run_pie(*args, cwd, timeout=600, env_extra=None):
         cwd=cwd, env=env, timeout=timeout,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
     )
+
+
+def solver_converged(result):
+    """mynewtonSys's own stop rule, unchanged since v1.0.5: return x when
+    |f| < ftol OR |dx| < xtol at the current iterate. A row accepted on the
+    |dx| criterion can carry |f| above ftol (observed: 6.8e-5 with ftol
+    1e-6); it is a converged row by the solver's definition, so validity
+    checks use that definition, not a re-invented one (rule 5)."""
+    return (result["resid_norm"] < 10 * result["ftol"]) or (result["normdx_last"] < result["xtol"])
+
+
+def is_admissible(result):
+    """True when a converged solve is inside the admissible box driverp.py
+    writes with error_code 0: chi_li_icb in [0, eutectic at P_icb] (S, S+Si)
+    or [0, liquidus Si max] (Si) and no negative-chi err flag from the shoot.
+    A converged solve outside it is what driverp.py records with
+    error_code 4 -- the class 21.8% of the published converged rows belong
+    to (chi_li_icb < 0). `scalars["error_code"]` in solve_full_model stays
+    0.0 for parity with the published csvs, which predate the restored
+    err flag; use this function, not that field, to classify."""
+    s = result["scalars"]
+    chi_max = result["max_Si"] if result["light_element"] == "Si" else s["chi_li_eut_icb"]
+    return (0.0 <= s["chi_li_icb"] <= chi_max) and not result.get("err_flag", False)
+
+
+def check_converged_without_reference(result, context=""):
+    """Gate for a solve that converged where the reference (published run /
+    pre-v1.3.0 golden / v1.2.0) did not. Returns 'recovered' after the full
+    validity gate when the model is admissible, or 'inadmissible' (finite,
+    converged, but chi_li_icb outside [0, bound] -> error_code 4 in the
+    csv) -- recorded, never a hard failure, never counted as recovered."""
+    if is_admissible(result):
+        assert_recovered_model_valid(result, context=context)
+        return "recovered"
+    import numpy as np
+    assert solver_converged(result), f"{context}inadmissible solve is not even converged (|f|={result['resid_norm']:.2e}, |dx|={result['normdx_last']:.2e})"
+    assert np.all(np.isfinite(result["v"])), f"{context}non-finite v"
+    return "inadmissible"
+
+
+def assert_recovered_model_valid(result, context=""):
+    """Validity gate for a model that CONVERGES in the current code but has
+    no reference (absent from the published data / a pre-v1.3.0 golden /
+    v1.2.0): the line-search solver of v1.3.0 (PATHWAY_FORWARD.md item 17)
+    recovers such models by design, so "it converged where the reference
+    did not" is no longer a failure -- but the recovered model must be a
+    physically admissible root, not a solver artefact. Checks (owner
+    decision 2026-09-30): residual below the solver tolerance; chi_li_icb
+    in [0, eutectic at P_icb] (S, S+Si) or in [0, liquidus Si max] (Si);
+    ricb < rcmb; rho > 0 everywhere; finite profiles; error_code == 0.
+    Smoothness in ricb is a sweep property, gated in
+    testsys/integration/test_v1_2_0_invariant.py.
+    """
+    import numpy as np
+    s = result["scalars"]
+    assert solver_converged(result), (
+        f"{context}recovered model not converged by the solver's own rule: "
+        f"resid_norm={result['resid_norm']:.3e} (ftol {result['ftol']}), |dx|={result['normdx_last']:.3e} (xtol {result['xtol']})")
+    chi = s["chi_li_icb"]
+    chi_max = result["max_Si"] if result["light_element"] == "Si" else s["chi_li_eut_icb"]
+    assert 0.0 <= chi <= chi_max, f"{context}recovered chi_li_icb={chi} outside [0, {chi_max}]"
+    assert s["ricb"] < s["rcmb"], f"{context}recovered ricb={s['ricb']} >= rcmb={s['rcmb']}"
+    rho = np.asarray(result["profiles"]["rho"])
+    assert np.all(rho > 0), f"{context}recovered model has non-positive density"
+    for k, prof in result["profiles"].items():
+        assert np.all(np.isfinite(prof)), f"{context}recovered profile {k} has non-finite values"
+    assert not result.get("err_flag", False), f"{context}recovered model raised the negative-chi err flag (error_code 4)"

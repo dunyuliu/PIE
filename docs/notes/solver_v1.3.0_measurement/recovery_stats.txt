@@ -1,0 +1,11 @@
+
+=== invariant sample: 14 cases, radii beyond the v1.2.0 stop (max 2 per case)
+published class (end/where)  cases  radii  converged (CI95)      admissible (CI95)     inadmissible  failures
+crash_stderr/10m                 5     10     6 (0.26-0.88)      0 (0.00-0.31)        6        {'CHI_OUTSIDE_ADMISSIBLE_BOX': 4}
+crash_stderr/later               2      0     0 (nan-nan)      0 (nan-nan)        0        {}
+detJ0/10m                        2      2     0 (0.00-0.84)      0 (0.00-0.84)        0        {'CHI_OUTSIDE_ADMISSIBLE_BOX': 2}
+detJ0/later                      1      0     0 (nan-nan)      0 (nan-nan)        0        {}
+newton_maxit/10m                 1      2     0 (0.00-0.84)      0 (0.00-0.84)        0        {'CHI_OUTSIDE_ADMISSIBLE_BOX': 2}
+newton_maxit/later               3      2     1 (0.01-0.99)      1 (0.01-0.99)        0        {'NEWTON_MAXIT': 1}
+TOTAL: cases=14 radii beyond stop=16; converged=7 (0.20-0.70); admissible=1 (0.00-0.30); inadmissible=6; cases with >=1 admissible recovered radius: 1/14 (0.00-0.34)
+runtime per radius (s, contended host, 8 workers): converged median 26 (n=91); failed radius (warm+cold attempts) median 88 (n=9)

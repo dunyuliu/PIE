@@ -53,25 +53,72 @@ published-paper parity check against Zenodo-archived output, and a
 known-environment note (`/usr/bin/python3` needs `PYTHONNOUSERSITE=1`
 for subprocess runs -- see that file).
 
+## Solver
+
+Each present-day model is a 5-unknown shooting problem (P and T at the
+centre, core radius, mantle density, light-element fraction at the
+inner-core boundary) solved by Newton's method with a finite-difference
+Jacobian (`src/shootp.py`, `mynewtonSys`). Since v1.3.0 the Newton step is
+bounded (PATHWAY_FORWARD.md item 17; design and measurements in
+`docs/notes/solver_v1.3.0.md`):
+
+- direction `dx = J^-1 f` as before; step length `alpha` starts at 1 and is
+  halved while the trial iterate is outside the admissible box -- non-finite
+  residual, `rcmb <= ricb`, `chi_li_icb` above the eutectic at the trial's
+  own P_icb (S, S+Si) or above the liquidus table's Si maximum (Si) -- or while `|f|` grows by more than 100x. Below
+  `alpha = 1e-3` the radius fails with the code of the last rejection.
+- an Armijo decrease test is deliberately NOT used: on 1841 converged
+  v1.2.0 radii, 1.4% of accepted steps increase `|f|` (up to 18.6x) and
+  those paths converge anyway. Wherever v1.2.0 converged, `alpha = 1` is
+  accepted on every iteration and the result is bit-identical.
+- a singular Jacobian is `cond(J) > 1e12` (or `LinAlgError`), not an exact
+  `det(J) == 0` compare; a chi column clamped at the eutectic gives
+  `cond = inf` and is caught the same way.
+- the ellipticity grid (`getk2`) at the 10-m first radius (`nrs = 0`) treats
+  the core as fully fluid from the centre (`g(0) = 0`, no inner-core term)
+  instead of wrapping an index to the CMB end and reading uninitialised
+  memory (bug B5); `xi` is exactly 0 there as before, so 10-m outputs are
+  unchanged.
+
+Sweep policy (v1.3.0): a failure at one radius is recorded and the sweep
+continues to the next radius, warm-starting from the last *converged*
+solution; if the warm start fails and differs from the generic initial
+guess, one cold start from that guess is tried. Only code 6 (Si above the
+liquidus cap, radius-independent, by design) ends a composition, with a
+single row. Before v1.3.0 the first failure ended the composition.
+
 ## Outputs and error codes
 
-Each run writes, per light-element setting, `pMetaData_<chi_Si>.csv` (one row
-per inner-core radius attempted) and `solverLog_<chi_Si>.jsonl` (Newton
-iterations and failure context). The `error_code` column:
+Each run writes, per light-element setting, `pMetaData_<chi_Si>.csv` and
+`solverLog_<chi_Si>.jsonl` (Newton iterations incl. step lengths and
+rejected trials, failure context), plus one `Data*_R<ricb>.h5` profile file
+per **converged** radius.
+
+Since v1.3.0 the csv has **one row per attempted radius** (40 rows for
+`rs = arange(10 m, 2e6, 50e3)`; a composition that fails everywhere has 40
+failed rows, not an empty file). A failed radius has `ricb`, `chi_Si_icb`,
+`error_code`, `start`, `newton_iters`, `resid_norm` set and **every physical
+column NaN**; no `.h5` is written for it. Consumers must keep converged
+rows only, e.g. `df[df.error_code == 0]` (the repo's own plotting scripts
+do). Three columns were appended in v1.3.0 (positions of the original 19
+are unchanged): `start` (`warm`/`cold`: which start converged, or was last
+tried), `newton_iters`, `resid_norm` (final `||f||`). The `error_code`
+column:
 
 | code | meaning |
 |---|---|
 | 0 | converged |
 | 1 | Newton hit maxit |
-| 2 | singular Jacobian |
-| 3 | non-finite shoot (NaN, singular sparse solve, grid index) |
-| 4 | light-element fraction outside its admissible range |
+| 2 | singular Jacobian (`cond(J) > 1e12`, e.g. chi clamped at the eutectic) |
+| 3 | non-finite shoot (NaN in the fluid-core integration, singular sparse solve, non-finite k2 grid) |
+| 4 | light-element fraction outside its admissible range (also after line-search backtracking) |
 | 5 | inner-core radius reached the core-mantle boundary |
-| 6 | Si above the liquidus table's maximum (by design) |
+| 6 | Si above the liquidus table's maximum (by design; checked once before the sweep) |
 
-A failure ends that radius sweep, as in earlier versions, but is now recorded
-instead of silently truncating the output (before v1.2.0, `error_code` was
-always 0).
+History: before v1.2.0 `error_code` was always 0 and a failure silently
+truncated the csv; in v1.2.0 failures were recorded only in the jsonl log
+and still ended the sweep; since v1.3.0 they are rows in the csv and the
+sweep continues.
 
 ## Citation
 

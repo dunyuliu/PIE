@@ -21,7 +21,7 @@ import random
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match
+from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference
 
 pytestmark = [pytest.mark.e2e, pytest.mark.published_wide]
 
@@ -29,16 +29,6 @@ SHARED_ROOT = pathlib.Path("~/shared_dataset/zenodo.16459292/extracted/PIE").exp
 SAMPLE_PER_CELL = int(os.environ.get("PIE_PUBLISHED_WIDE_N", "40"))
 SEED = 20260928
 
-# Known nondeterminism (PATHWAY_FORWARD.md item 19, bug B5 in
-# docs/audits/AUDIT_2026-09-29_buglist.md): at ricb = 10 m getk2 has
-# nrs = 0 and its fluid loop reads uninitialised g[399]; when that memory
-# happens to hold NaN, SuperLU raises "Factor is exactly singular" for a
-# model the published run solved. The same fixed-seed sample flipped 1 vs 2
-# such cases between runs. Tolerated ONLY for that exact signature at
-# ricb = 10 m, reported, and capped so a real regression still fails.
-# Remove when item 17 fixes getk2.
-B5_SIGNATURE = "Factor is exactly singular"
-B5_RICB_M = 10.0
 
 if not SHARED_ROOT.is_dir():
     pytest.skip(
@@ -89,8 +79,8 @@ def _job(case):
     chi_si = 0.05 if light == "S+Si" else None
     if reference is None:
         try:
-            solve_full_model(cmr2, cmc, light, "Edmund", 10.0, chi_Si_icb=chi_si)
-            return ("unexpected_convergence", None, None)
+            result = solve_full_model(cmr2, cmc, light, "Edmund", 10.0, chi_Si_icb=chi_si)
+            return ("recovered", result, None)
         except BaseException as e:  # noqa: BLE001
             return ("expected_nonconvergence", None, None)
     try:
@@ -107,50 +97,33 @@ def test_published_wide_sample_matches():
         results = list(ex.map(_job, cases))
 
     failures = []
-    b5_flakes = []  # known-nondeterministic, see B5_SIGNATURE above
-    softer_mismatches = []  # see note below -- not a hard failure
     n_converged_checked = 0
     n_nonconvergent_guarded = 0
+    recovered = []
+    inadmissible = []  # converged where published had 0 rows, but chi outside [0, bound] (error_code 4)
     for (moi, light, case_dir), (status, payload, reference) in zip(cases, results):
         label = f"{moi}/{light}/{case_dir.name}"
         if reference is None:
             if status == "expected_nonconvergence":
                 n_nonconvergent_guarded += 1
             else:
-                # "unexpected_convergence": the PUBLISHED run recorded
-                # zero converged rows for this (CMR2, CMC, light,
-                # chi_Si_icb), but a fresh cold-start solve at the SAME
-                # first radius (10 m, the same starting point driverp.py's
-                # own k=0 step uses -- no warm-start dependency to
-                # explain a mismatch here) converges. This is the SAFER
-                # direction (current code finds a solution the published
-                # run didn't, not the reverse) and was observed in 2/240
-                # published_wide samples. Cause unconfirmed (see
-                # docs/audits/AUDIT_2026-09-29_solver-failures.md claims
-                # 4b/4c/5): candidates are the 10-m getk2 index
-                # wrap-around (nrs=0 -> k+nrs-1 = -1 at k=0 reads the
-                # uninitialised g[399], src/shootp.py:426,:456-460, so the
-                # solve depends on heap contents) and non-reproducible
-                # published boundary cases (runs/base/034.json: a
-                # published 10-m det(J)==0 case re-ran 0 -> 30 radii).
-                # Either way the direction does not hide a real
-                # divergence. Recorded, not silently
-                # dropped, but NOT a hard failure -- see
-                # testsys/README.md "Findings" for the writeup and the
-                # opposite (concerning) direction this test DOES still
-                # hard-fail on.
-                softer_mismatches.append(
-                    f"{label}: published 0 rows, fresh solve converged "
-                    f"(cmr2={_parse_cmr2_cmc(case_dir.name)})"
-                )
+                # Published run recorded zero rows; v1.3.0 converges at the
+                # same first radius (10 m). Intended recovery (item 17):
+                # gated by the validity checks, tagged "recovered".
+                try:
+                    kind = check_converged_without_reference(payload, context=f"{label}: ")
+                    (recovered if kind == "recovered" else inadmissible).append(
+                        f"{label} chi_li_icb={payload['scalars']['chi_li_icb']:.4f}")
+                except AssertionError as e:
+                    failures.append(str(e))
             continue
         if status != "converged":
-            msg = (f"{label}: published converges, fresh solve "
-                   f"status={status!r} ({payload!r})")
-            if B5_SIGNATURE in str(payload) and abs(reference["ricb"] - B5_RICB_M) < 1.0:
-                b5_flakes.append(msg)
-            else:
-                failures.append(msg)
+            # HARD gate since v1.3.0 (board item 19): the ricb=10 m
+            # singular-LU flake (B5) is fixed by the getk2 nrs=0 index fix,
+            # so a fresh failure where the published run converged is a
+            # regression, whatever its signature.
+            failures.append(f"{label}: published converges, fresh solve "
+                             f"status={status!r} ({payload!r})")
             continue
         if {payload["isnow"], reference["isnow"]} == {2.0, 3.0}:
             payload = dict(payload, isnow=reference["isnow"])  # see mc_wide test
@@ -162,20 +135,12 @@ def test_published_wide_sample_matches():
 
     print(f"\npublished_wide: {len(cases)} sampled, "
           f"{n_converged_checked} converged+matched, "
-          f"{n_nonconvergent_guarded} non-convergence guarded, "
-          f"{len(softer_mismatches)} soft (safe-direction) mismatches, "
-          f"{len(b5_flakes)} known B5 flakes, "
+          f"{n_nonconvergent_guarded} non-convergence reproduced, "
+          f"{len(recovered)} recovered (published 0 rows, v1.3.0 converges, admissible), "
+          f"{len(inadmissible)} converged-inadmissible (chi outside [0, bound], error_code 4), "
           f"{len(failures)} hard failures")
-    if softer_mismatches:
-        print("soft mismatches (published 0 rows, fresh solve converged):")
-        for m in softer_mismatches:
-            print(f"  {m}")
-    if b5_flakes:
-        print("known B5 flakes (ricb=10 m singular LU, item 19):")
-        for m in b5_flakes:
-            print(f"  {m}")
-    b5_cap = max(3, len(cases) // 50)
-    if len(b5_flakes) > b5_cap:
-        failures.append(f"{len(b5_flakes)} B5-signature failures exceed the "
-                        f"nondeterminism cap {b5_cap}: treat as a regression")
+    for m in recovered:
+        print(f"  recovered: {m}")
+    for m in inadmissible:
+        print(f"  inadmissible: {m}")
     assert not failures, "\n".join(failures)

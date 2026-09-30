@@ -43,6 +43,8 @@ if code_mode == 'plot':
     row_index = 0
     for csvfile in os.listdir(csvfiles_path):
         df_individual = pd.read_csv(csvfiles_path + '/' + csvfile)
+        if 'error_code' in df_individual.columns:  # v1.3.0: failed radii are rows too (NaN physics); keep converged only
+            df_individual = df_individual[df_individual['error_code'] == 0].reset_index(drop=True)
         # Also extract data of contour variable to make into 2D matrix
         row = list(df_individual[contourcond])
         if len(row) != icr_inc:
