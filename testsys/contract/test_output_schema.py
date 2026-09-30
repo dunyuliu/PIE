@@ -28,7 +28,19 @@ def test_presentday_columns_matches_written_csv_header(sys_argv_p):
                 / "pMetaData_0.01.csv")
     with open(csv_path) as f:
         header = f.readline().strip().split(",")
-    assert header == globalvar.presentday_columns
+    # v1.3.0 appended start/newton_iters/resid_norm; the published v1.0.5
+    # files carry the first 19 columns, in the same order.
+    assert header == globalvar.presentday_columns[:len(header)]
+    assert len(header) == 19
+
+
+def test_v1_3_0_columns_are_appended_not_inserted(sys_argv_p):
+    globalvar = import_src("globalvar")
+    assert globalvar.presentday_columns[-3:] == ["start", "newton_iters", "resid_norm"]
+    assert globalvar.presentday_columns[:19] == [
+        "chi_Si_icb", "rhom", "mass", "moi", "cmc", "Picb", "Tcmb", "isnow", "isnowcmb",
+        "chi_li_in", "chi_S_bulk", "Pcmb", "chi_li_eut_icb", "chi_li_eut_cmb", "ricb", "rcmb",
+        "core_mass", "chi_li_icb", "error_code"]
 
 
 def test_self_golden_csv_also_matches_schema(sys_argv_p):
@@ -42,7 +54,7 @@ def test_self_golden_csv_also_matches_schema(sys_argv_p):
                 / "pMetaData_0.00.csv")
     with open(csv_path) as f:
         header = f.readline().strip().split(",")
-    assert header == globalvar.presentday_columns
+    assert header == globalvar.presentday_columns[:len(header)]
 
 
 def test_h5_misc_key_columns_are_a_subset_of_presentday_columns(sys_argv_p):

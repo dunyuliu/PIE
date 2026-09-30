@@ -197,7 +197,7 @@ def test_mynewtonSys_raises_solvererror_not_systemexit_bare_on_singular_jacobian
                                         # still catch this uncaught
     assert len(err.context["newton_history"]) == 1
     entry = err.context["newton_history"][0]
-    assert set(entry) == {"k", "v", "normf", "normdx", "detJ"}
+    assert {"k", "v", "normf", "normdx", "detJ", "condJ", "alpha"} <= set(entry)  # v1.3.0 adds condJ/alpha
     assert entry["detJ"] == 0.0
 
 

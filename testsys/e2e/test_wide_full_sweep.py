@@ -25,7 +25,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match
+from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, assert_recovered_model_valid
 
 pytestmark = pytest.mark.e2e
 
@@ -77,10 +77,16 @@ def test_wide_case_matches_self_golden(entry, computed_by_case):
     _, computed = computed_by_case[_case_id(entry)]
 
     if not entry["converged"]:
-        assert isinstance(computed, BaseException), (
-            f"{_case_id(entry)}: golden says non-convergent, fresh solve "
-            f"succeeded -- regenerate the golden deliberately if intended."
-        )
+        # The v1.0.5 golden recorded this case as non-convergent. Since
+        # v1.3.0 (bounded line-search Newton, PATHWAY_FORWARD.md item 17)
+        # a fresh solve MAY converge where v1.0.5 did not; that is the
+        # intended recovery, not a regression -- provided the recovered
+        # model passes the validity gate. A fresh failure is still
+        # accepted (the golden's own outcome).
+        if isinstance(computed, BaseException):
+            return
+        assert_recovered_model_valid(computed, context=f"{_case_id(entry)} (recovered): ")
+        print(f"recovered: {_case_id(entry)} (golden non-convergent, v1.3.0 converges and is valid)")
         return
 
     assert not isinstance(computed, BaseException), (
