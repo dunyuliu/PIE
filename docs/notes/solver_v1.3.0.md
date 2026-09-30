@@ -51,8 +51,10 @@ Runtime (contended host, load 40–60, 8 workers, `OMP_NUM_THREADS=1`): converge
 ### 3.2 37-case full-grid measurement (one published run per {MOI x composition x end state x died-at-10-m}, 40 radii, continue policy, plus the report-only adaptive-halving probe; and a line-search-only / stop-policy pass)
 Running in the background at PR time (resumable: `generate_sweeps.py --partial-dir`); results will be posted as a PR comment / follow-up notes commit. Numbers above are the evidence the PR ships with and are explicitly partial.
 
-## 4. Gate results
-TODO-FILL: `testsys/run.py all` counts and runtime on the committed tree; fast tiers in a pins-stripped venv.
+## 4. Gate results (fresh, committed tree, this shared 64-core box at load 40–60, `OMP_NUM_THREADS=OPENBLAS_NUM_THREADS=1`, `nice -n 10`)
+- Pinned env (`/usr/bin/python3` 3.10.12, numpy 1.21.5, scipy 1.8.0), `testsys/run.py all` at 6cbf39f: 237 passed, 3 xfailed, 1 failed + 5 errors in 1884 s — the 5 errors were the e2e `main.py` sweep timing out at the v1.2.0 budget of 900 s (the 40-radius continue policy plus warm+cold attempts on failed radii), the 1 failure a published_wide inadmissible solve accepted on the |dx| < xtol criterion with |f| = 6.8e-5 > ftol. Both fixed in 7feb91d (timeout 5400 s; validity uses the solver's own stop rule). Re-run of the two affected e2e tests at 7feb91d: **6 passed in 2540 s**; published_wide: 240 sampled, 171 converged+matched, 46 non-convergence reproduced, **1 recovered (admissible)**, 22 converged-inadmissible (chi < 0, error_code 4), **0 hard failures** (B5 flake allowance removed). Fast tiers at 7feb91d (unit+contract+integration): 201 passed, 3 xfailed, 1110 s.
+- Pins-stripped venv (numpy 2.2.6, scipy 1.15.3, pandas 2.3.3, tables 3.10.1, pytest 9.1.1), fast tiers at 7feb91d: **200 passed, 1 skipped (interp2d legacy reference, by design), 3 xfailed, 777 s**.
+- Runtime change: fast tiers 194–307 s (v1.1.0, 106 tests) → ~1110 s (v1.3.0, 204 tests; the 14-case identity re-run is ~15 min of it, the 10-m determinism test ~1.5 min). The e2e `main.py p 0.346 0.424 S Edmund` sweep grew from ~4.5 min (v1.2.0, stopped at the first failure) to ~35 min (40 radii, failed radii cost two attempts) — the owner-accepted cost of the continue policy; the v1.3.1 speed work is the intended remedy.
 
 ## 5. What a reviewer would attack / open
 - The recovered models are validated numerically (residual, box, positivity, smoothness) but have no independent physical oracle -- same standing as every other S+Si result (`CLAUDE.md`, item 4).
