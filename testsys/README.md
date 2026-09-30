@@ -208,9 +208,10 @@ shoot → h5/csv/figure output), just not all 18 compositions of it.
    `error_code` is 0 in all 201,633 margot + 272,442 genova rows). The
    `error_code = 1` path is dead too: `src/libCore.py:142-144` sets
    `err = True` on negative chi, but `src/shootp.py:131` hard-codes
-   `err0 = False` and returns that instead. Not fixed here
-   (constraint: no `src/` edits); flagged for `lars-eriksson`/
-   `kai-fischer`.
+   `err0 = False` and returns that instead. **Fixed in v1.2.0** (PR #5):
+   `(chi_li<0).any()` and the `err` flag are restored, and `error_code`
+   now takes the values 0-6 listed in the top-level README; locked by
+   `testsys/unit/test_dead_checks.py` and `test_error_codes.py`.
 3. **`isnow` classification knife-edge (2 vs 3)** -- `src/shootp.py`'s
    `isnow=3` ("deep snow + layers") vs `isnow=2` ("deep snow")
    distinction hinges on `abs(adiabat_T - liquidus_T) < 1e-8` at one

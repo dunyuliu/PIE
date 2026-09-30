@@ -64,7 +64,7 @@ sbatch TACC.LS6.parallel.run.slurm
   (Zenodo 10.5281/zenodo.16929504). v1.1.0: first tested baseline (testsys,
   CI, rules, citation) with `src/` byte-identical to v1.0.5.
 - v1.0.2/v1.0.3 were zipped externally but never tagged; don't tag them.
-- v1.1.1: scipy interp2d port (runs on current scipy). Next: v1.2.0 error codes / logging (items 15-16), then v1.3.0 solver behaviour fixes (item 17).
+- v1.1.1: scipy interp2d port. v1.2.0: error codes, clean exits, solver log. Next: v1.3.0 solver behaviour fixes (item 17).
 
 ## Known correctness caveats
 

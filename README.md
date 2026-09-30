@@ -53,6 +53,26 @@ published-paper parity check against Zenodo-archived output, and a
 known-environment note (`/usr/bin/python3` needs `PYTHONNOUSERSITE=1`
 for subprocess runs -- see that file).
 
+## Outputs and error codes
+
+Each run writes, per light-element setting, `pMetaData_<chi_Si>.csv` (one row
+per inner-core radius attempted) and `solverLog_<chi_Si>.jsonl` (Newton
+iterations and failure context). The `error_code` column:
+
+| code | meaning |
+|---|---|
+| 0 | converged |
+| 1 | Newton hit maxit |
+| 2 | singular Jacobian |
+| 3 | non-finite shoot (NaN, singular sparse solve, grid index) |
+| 4 | light-element fraction outside its admissible range |
+| 5 | inner-core radius reached the core-mantle boundary |
+| 6 | Si above the liquidus table's maximum (by design) |
+
+A failure ends that radius sweep, as in earlier versions, but is now recorded
+instead of silently truncating the output (before v1.2.0, `error_code` was
+always 0).
+
 ## Citation
 
 If you use PIE, please cite:

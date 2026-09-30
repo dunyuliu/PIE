@@ -2,6 +2,13 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
 
+* v1.2.0; 20260930; failures are recorded instead of silently dropped. Converged outputs unchanged (all published-parity tests identical); output additions only.
+    1. No more sys.exit() or uncaught crashes in the present-day solve: mynewtonSys and shoot_mercmodel raise SolverError; driverp.py records it per radius and stops that sweep at the same point as before (bugs B1, B2).
+    2. error_code column now meaningful (schema unchanged): 0 converged, 1 Newton maxit, 2 singular Jacobian, 3 non-finite shoot (NaN, SuperLU singular, getk2 index), 4 chi outside admissible range, 5 ricb >= rcmb, 6 Si above liquidus max (by design). Previously always 0. Restored the discarded err flag and the (chi_li<0).any() check (B3).
+    3. New per-run structured solver log solverLog_<chi_Si>.jsonl next to the pMetaData csv: Newton iterations and failure context (item 15).
+    4. Dependencies: root requirements.txt with exact pins, contract test keeping it equal to testsys/requirements.txt; rule 3b (exact pins).
+    5. testsys: truth anchors (homogeneous sphere, S+Si limits, Margot fit, liquidus table) and v1.0.3 regression history; placeholder for Steinbruegge et al. 2020 values.
+    6. docs: README launcher filename fixed; Steinbruegge code assessed as an independent anchor (docs/notes/steinbruegge_anchor_2026-09-30.md).
 * v1.1.1; 20260929; scipy compatibility patch. Converged outputs unchanged.
     1. Port src/coreEos.py meltingDataFromFile from scipy interp2d (removed in scipy 1.14) to RectBivariateSpline(kx=3, ky=3, s=0): same FITPACK fit and evaluation, bit-for-bit on the pinned environment (testsys/unit/test_melting_interp_port.py).
     2. CI: new fast-latest job on Python 3.12 with current numpy/scipy (pins stripped); pinned job unchanged.
