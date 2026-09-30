@@ -7,6 +7,22 @@ Compared to its predecesor present-day model ([GitHub repo](https://github.com/g
 Si %wt is currently assumed to be a constant throughout the core, while S %wt are adjusted according to liqudius properties, variable over the core radius. 
 
 # Quickstart guide
+
+Install exact-pinned dependencies once (see `requirements.txt`; target
+interpreter per `CLAUDE.md`/`PROJECT_RULES.md` rule 3 -- `/usr/bin/python3`
+on most hosts, or a pinned project venv where that interpreter is broken,
+e.g. `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`):
+```
+pip install -r requirements.txt
+```
+
+All commands below run from `src/` (outputs are written to `./results/`,
+relative to the current directory when the script runs):
+```
+cd src
+mkdir -p results
+```
+
 ## Monte Carlo simulation on CMR2:
 ```
 python monteCarlo.run.py
@@ -18,12 +34,6 @@ will generate a suite of Mercury present-day interior models fitting a set of CM
 python scheduler.py CMR2 CMC
 ```
 where CMR2 and CMC, for Margot et al. constraints, are 0.346 and 0.424, respectively. The scheduler.py will loop over cases (S, Si, S+Si), liquidus equation (Steinbruegge, Edmund), and in particular for the case with S+Si, Si%wt from 0% to 15% in 1% increment. 
-
-Please create folder ./results
-```
-mkdir results
-```
-and figures and datasets will be stored under ./results/. 
 
 # Large ensemble Monte Carlo simulation
 To produce a large ensemble of interior models that samples a normal distribution from a CMR2 with its STD, supercomputuers such as Lonestar6 at TACC provides LAUNCHER computing module to run serial jobs in parallel.
