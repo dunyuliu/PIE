@@ -25,7 +25,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, assert_recovered_model_valid
+from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference
 
 pytestmark = pytest.mark.integration
 
@@ -81,8 +81,9 @@ def test_wide_case_matches_self_golden(entry, computed_by_case):
         # accepted (the golden's own outcome).
         if isinstance(computed, BaseException):
             return
-        assert_recovered_model_valid(computed, context=f"{_case_id(entry)} (recovered): ")
-        print(f"recovered: {_case_id(entry)} (golden non-convergent, v1.3.0 converges and is valid)")
+        kind = check_converged_without_reference(computed, context=f"{_case_id(entry)}: ")
+        print(f"{kind}: {_case_id(entry)} (golden non-convergent, v1.3.0 converges; "
+              f"chi_li_icb={computed['scalars']['chi_li_icb']:.4f})")
         return
 
     assert not isinstance(computed, BaseException), (

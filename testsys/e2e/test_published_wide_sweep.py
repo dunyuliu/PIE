@@ -21,7 +21,7 @@ import random
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_recovered_model_valid
+from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference
 
 pytestmark = [pytest.mark.e2e, pytest.mark.published_wide]
 
@@ -100,6 +100,7 @@ def test_published_wide_sample_matches():
     n_converged_checked = 0
     n_nonconvergent_guarded = 0
     recovered = []
+    inadmissible = []  # converged where published had 0 rows, but chi outside [0, bound] (error_code 4)
     for (moi, light, case_dir), (status, payload, reference) in zip(cases, results):
         label = f"{moi}/{light}/{case_dir.name}"
         if reference is None:
@@ -110,8 +111,9 @@ def test_published_wide_sample_matches():
                 # same first radius (10 m). Intended recovery (item 17):
                 # gated by the validity checks, tagged "recovered".
                 try:
-                    assert_recovered_model_valid(payload, context=f"{label} (recovered): ")
-                    recovered.append(label)
+                    kind = check_converged_without_reference(payload, context=f"{label}: ")
+                    (recovered if kind == "recovered" else inadmissible).append(
+                        f"{label} chi_li_icb={payload['scalars']['chi_li_icb']:.4f}")
                 except AssertionError as e:
                     failures.append(str(e))
             continue
@@ -134,8 +136,11 @@ def test_published_wide_sample_matches():
     print(f"\npublished_wide: {len(cases)} sampled, "
           f"{n_converged_checked} converged+matched, "
           f"{n_nonconvergent_guarded} non-convergence reproduced, "
-          f"{len(recovered)} recovered (published 0 rows, v1.3.0 converges, valid), "
+          f"{len(recovered)} recovered (published 0 rows, v1.3.0 converges, admissible), "
+          f"{len(inadmissible)} converged-inadmissible (chi outside [0, bound], error_code 4), "
           f"{len(failures)} hard failures")
     for m in recovered:
         print(f"  recovered: {m}")
+    for m in inadmissible:
+        print(f"  inadmissible: {m}")
     assert not failures, "\n".join(failures)

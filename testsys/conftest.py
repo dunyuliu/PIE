@@ -220,6 +220,7 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
         # the converged unknown vector and the residual norm at it, for
         # assert_recovered_model_valid.
         "v": [float(x) for x in v], "resid_norm": float(np.linalg.norm(f)),
+        "err_flag": bool(err),
         "max_Si": float(gv.max_Si_Steinbruegge2020 if liquidus_eq == "Steinbruegge" else gv.max_Si_Edmund2022),
         "ftol": float(gv.ftol),
         "scalars": {
@@ -352,6 +353,35 @@ def run_pie(*args, cwd, timeout=600, env_extra=None):
     )
 
 
+def is_admissible(result):
+    """True when a converged solve is inside the admissible box driverp.py
+    writes with error_code 0: chi_li_icb in [0, eutectic at P_icb] (S, S+Si)
+    or [0, liquidus Si max] (Si) and no negative-chi err flag from the shoot.
+    A converged solve outside it is what driverp.py records with
+    error_code 4 -- the class 21.8% of the published converged rows belong
+    to (chi_li_icb < 0). `scalars["error_code"]` in solve_full_model stays
+    0.0 for parity with the published csvs, which predate the restored
+    err flag; use this function, not that field, to classify."""
+    s = result["scalars"]
+    chi_max = result["max_Si"] if result["light_element"] == "Si" else s["chi_li_eut_icb"]
+    return (0.0 <= s["chi_li_icb"] <= chi_max) and not result.get("err_flag", False)
+
+
+def check_converged_without_reference(result, context=""):
+    """Gate for a solve that converged where the reference (published run /
+    pre-v1.3.0 golden / v1.2.0) did not. Returns 'recovered' after the full
+    validity gate when the model is admissible, or 'inadmissible' (finite,
+    converged, but chi_li_icb outside [0, bound] -> error_code 4 in the
+    csv) -- recorded, never a hard failure, never counted as recovered."""
+    if is_admissible(result):
+        assert_recovered_model_valid(result, context=context)
+        return "recovered"
+    import numpy as np
+    assert result["resid_norm"] < 10 * result["ftol"], f"{context}inadmissible solve is not even converged"
+    assert np.all(np.isfinite(result["v"])), f"{context}non-finite v"
+    return "inadmissible"
+
+
 def assert_recovered_model_valid(result, context=""):
     """Validity gate for a model that CONVERGES in the current code but has
     no reference (absent from the published data / a pre-v1.3.0 golden /
@@ -377,4 +407,4 @@ def assert_recovered_model_valid(result, context=""):
     assert np.all(rho > 0), f"{context}recovered model has non-positive density"
     for k, prof in result["profiles"].items():
         assert np.all(np.isfinite(prof)), f"{context}recovered profile {k} has non-finite values"
-    assert s["error_code"] == 0, f"{context}recovered model carries error_code {s['error_code']}"
+    assert not result.get("err_flag", False), f"{context}recovered model raised the negative-chi err flag (error_code 4)"

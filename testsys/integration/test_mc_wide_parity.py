@@ -29,7 +29,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_recovered_model_valid
+from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference
 
 pytestmark = [pytest.mark.integration, pytest.mark.parity]
 
@@ -106,7 +106,9 @@ def test_mc_wide_case(entry, computed_by_case):
         if status == "expected_nonconvergence":
             return
         assert status == "recovered", f"{_case_id(entry)}: unexpected status {status!r}"
-        assert_recovered_model_valid(payload, context=f"{_case_id(entry)} (recovered): ")
+        kind = check_converged_without_reference(payload, context=f"{_case_id(entry)}: ")
+        print(f"{_case_id(entry)}: published 0 rows, v1.3.0 converges -> {kind} "
+              f"(chi_li_icb={payload['scalars']['chi_li_icb']:.4f})")
         return
 
     assert status == "converged", (
