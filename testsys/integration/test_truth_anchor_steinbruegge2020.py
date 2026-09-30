@@ -29,6 +29,37 @@ row, not a silent gap) -- picking it up requires one of:
   (b) the human supplying the specific published value(s) to check
       against directly.
 
+Update 2026-09-29 (conductor session): the CrossRef abstract for this
+DOI (`curl https://api.crossref.org/works/10.1029/2020GL089895`,
+verified directly, not via a subagent's unverified claim) IS readable
+without a paywall and gives the paper's title ("Challenges on Mercury's
+Interior Structure Posed by the New Measurements of its Obliquity and
+Tides", Steinbruegge et al., Geophysical Research Letters 48(3), 2021)
+plus two quantitative abstract-level constraints:
+  - normalized moment of inertia factor MoI = 0.333 +/- 0.005
+    (their input constraint, from an obliquity measurement -- NOT a
+    PIE-model prediction, since CMR2 is an input to scheduler.py, not
+    an output; asserting PIE reproduces its own input would be
+    tautological, not a truth anchor)
+  - inner core radius mandatorily > 600 km (their model's OUTPUT/
+    conclusion, given that MoI)
+The `> 600 km` inner core radius claim IS a genuine candidate
+truth-anchor assertion (an independent output, not an echoed input) --
+but wiring it in requires confirming which PIE output field it
+corresponds to. This repo's `pMetaData*.csv` has both `ricb` (held
+fixed at 10 m in every sampled row seen this session -- looks like the
+innermost integration start point, not a solved-for inner-core/outer-
+core boundary) and `rcmb` (~2,000-2,020 km, reads like the core-mantle
+boundary, not the inner-core boundary). Neither obviously IS "inner
+core radius" as Steinbruegge means it (solid/liquid core split) without
+a physicist's read of `src/shootp.py`/`src/driverp.py`'s radius
+convention -- left un-wired rather than guessed at, per the same rule 2
+concern as the original xfail (a wrong-field assertion that happens to
+pass would be worse than this xfail, since it would look verified while
+checking nothing). Full table/figure values (the actual best-fit
+core-radius number, not just the ">600 km" abstract threshold) remain
+paywalled (Wiley 403 on both VoR and AM; no arXiv preprint found).
+
 Opened: 2026-09-29.
 """
 import pytest
