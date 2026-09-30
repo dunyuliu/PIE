@@ -32,8 +32,24 @@ Rows converged by v1.3.0 that v1.2.0 did not produce on this sample (7): `margot
 
 Consequence for the failure-analysis claim "10-m singular-LU crashes are ~2/3 numerical, recovered models are admissible": the line search does turn those crashes into converged solutions, but on this sample the solutions have chi_li_icb < 0, i.e. they are the same class as the 21.8% of published converged rows with negative chi (error_code 4). Whether such rows are "models" is the owner's call (item 18); v1.3.0 records them and tags them, it does not decide.
 
-## 3. Recovery statistics (fresh; 37-case stratified sample, one published run per {MOI x composition x end state x died-at-10-m}, full 40-radius grid)
-TODO-FILL: per failure mode, rows/radii recovered by line search alone (stop policy) vs line search + continue policy (warm+cold), n and Clopper-Pearson 95% CI; adaptive-continuation measurement (report only); runtime per sweep v1.2.0 vs v1.3.0.
+## 3. Recovery statistics (fresh, this branch; line search + continue-after-failure; Clopper-Pearson 95% CIs; `recovery_stats.py` in the scratch copy, table `recovery_stats.txt`)
+
+### 3.1 Invariant sample (14 published draws, radii capped at v1.2.0 rows + 2) -- PARTIAL evidence, small n
+"Radii beyond the stop" = radii the v1.2.0/v1.0.5 sweep never reached. A converged radius is **admissible** when chi_li_icb is in [0, bound] and the shoot raised no negative-chi flag (otherwise it is written with error_code 4 and counted as "inadmissible").
+
+| published class | cases | radii beyond stop | converged (CI95) | admissible (CI95) | inadmissible (chi<0) | remaining failures |
+|---|---|---|---|---|---|---|
+| singular-LU crash at 10 m | 5 | 10 | 6 (0.26–0.88) | 0 (0.00–0.31) | 6 | 4 CHI_OUTSIDE_ADMISSIBLE_BOX |
+| det(J)==0 at 10 m | 2 | 2 | 0 (0.00–0.84) | 0 | 0 | 2 CHI_OUTSIDE_ADMISSIBLE_BOX |
+| Newton maxit at 10 m (Si) | 1 | 2 | 0 (0.00–0.84) | 0 | 0 | 2 CHI_OUTSIDE_ADMISSIBLE_BOX |
+| Newton maxit, later radius | 3 | 2 | 1 (0.01–0.99) | 1 (0.01–0.99) | 0 | 1 NEWTON_MAXIT |
+| **total** | 14 | 16 | 7 (0.20–0.70) | **1 (0.00–0.30)** | 6 | 9 |
+
+Cases with at least one admissible recovered radius: 1/14 (CI95 0.00–0.34). The 6 "inadmissible" conversions are the 10-m singular-LU class of S / S+Si models: the line search turns the NaN crash into a converged root with chi_li_icb = -0.018 … -0.036 -- consistent with the failure analysis (those models sit at the low-CMR2 edge where the constraints want less than zero sulfur). Whether error_code-4 rows count as models is item 18's question, not the solver's.
+Runtime (contended host, load 40–60, 8 workers, `OMP_NUM_THREADS=1`): converged radius median 26 s (n=91); a failed radius costs a warm and a cold attempt, median 88 s (n=9). The 14-case invariant run took 878 s wall vs 237 s for the v1.2.0 fixture on the same sample (the extra radii and the failed-radius double attempts).
+
+### 3.2 37-case full-grid measurement (one published run per {MOI x composition x end state x died-at-10-m}, 40 radii, continue policy, plus the report-only adaptive-halving probe; and a line-search-only / stop-policy pass)
+Running in the background at PR time (resumable: `generate_sweeps.py --partial-dir`); results will be posted as a PR comment / follow-up notes commit. Numbers above are the evidence the PR ships with and are explicitly partial.
 
 ## 4. Gate results
 TODO-FILL: `testsys/run.py all` counts and runtime on the committed tree; fast tiers in a pins-stripped venv.
