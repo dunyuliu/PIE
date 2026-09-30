@@ -128,11 +128,12 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     nc        = 51 # discretize the liquid core into nc grids. 
     h         = (rcmb-ricb)/(nc-1) # grid size
     
-    err0 = False
     rc,yc,rhof,chi_li, err = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,v[4],scale,param)
-    #print(err)
-    #if err.any() == 1:
-    #   err0 = True
+    # Restore the err flag libCore.getchi_li_grun sets (chi_li went
+    # negative mid-shoot) instead of discarding it into a hard-coded
+    # err0=False (docs/audits/AUDIT_2026-09-29_buglist.md B3;
+    # src/libCore.py:142-144 sets it, this used to throw it away).
+    err0 = bool(np.any(err))
     
     # rc is radius array from ricb -> rcmb with grid size h.
     # Calculate moments of inertia:
@@ -222,7 +223,30 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     # Calculate k2 and xi
     rhoml       = rhom/rhomean
 
-    k2,xi       = getk2(ricb,rcmb,rhoml,sols,solf,param,scale)
+    # getk2 can raise IndexError (ricb=10 m => nrs=0 makes its fluid
+    # loop wrap k+nrs-1 to -1 at k=0, reading the CMB end / g[399],
+    # docs/audits/AUDIT_2026-09-29_buglist.md B5 -- the index math
+    # itself is item 17's scope, NOT fixed here) or propagate a
+    # SolverError from getpotvsr's SuperLU singular-matrix guard
+    # (libCore.py). Both used to crash the whole process uncaught
+    # (item 16); caught here and turned into a recorded, per-radius
+    # SolverError instead.
+    try:
+        k2,xi   = getk2(ricb,rcmb,rhoml,sols,solf,param,scale)
+    except SolverError:
+        raise
+    except (IndexError, ValueError, RuntimeError) as e:
+        raise SolverError(
+            ErrorCode.NONFINITE_SHOOT,
+            'getk2 failed: %r' % (e,),
+            context={'exception': repr(e), 'ricb': ricb, 'rcmb': rcmb},
+        ) from e
+    if not (np.isfinite(k2) and np.isfinite(xi)):
+        raise SolverError(
+            ErrorCode.NONFINITE_SHOOT,
+            'getk2 returned non-finite k2/xi',
+            context={'k2': k2, 'xi': xi, 'ricb': ricb, 'rcmb': rcmb},
+        )
 
         
     # adiabatic temp gradient at CMB
@@ -251,7 +275,8 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     return f, r, yy, fout, err0
 
 def mynewtonSys(Jfun,x0,varargin,
-                xtol=5e-5,ftol=5e-5,maxit=15,verbose=False):
+                xtol=5e-5,ftol=5e-5,maxit=15,verbose=False,
+                log_path=None,log_context=None):
     """
      newtonSys  Newton's method for systems of nonlinear equations.
     
@@ -274,12 +299,33 @@ def mynewtonSys(Jfun,x0,varargin,
             x = newtonSys('JFun',x0,[],[],[],arg1,arg2) passes arg1 and arg2 to
             'JFun', while using the default values for xtol, ftol, and verbose
     
-     Output:  x = solution vector;  x is returned after k iterations if 
-                  tolerances are met, or after maxit iterations if 
+     Output:  x = solution vector;  x is returned after k iterations if
+                  tolerances are met, or after maxit iterations if
                   tolerances are not met.
+
+    Failure handling (PATHWAY_FORWARD.md items 15/16): a singular
+    Jacobian (exact det(J)==0, or numerically singular in np.linalg.inv)
+    or hitting maxit without meeting xtol/ftol used to call sys .exit(),
+    killing the whole process (docs/audits/AUDIT_2026-09-29_buglist.md
+    B1). Both now raise SolverError (a SystemExit subclass, so an
+    uncaught call still stops as loudly as before) carrying an
+    ErrorCode and the full per-iteration history (v, |f|, |dx|,
+    det(J)); src/driverp.py catches it per radius instead of letting it
+    reach the interpreter. This only changes what happens AFTER a
+    failure is detected -- the Newton step itself (dx = J^-1 f, x = x -
+    dx) is unchanged (that is item 17's scope, not this one's).
+
+    log_path/log_context: when log_path is given, one JSON record
+    (iterate history + final status) is appended to it via
+    libCore.write_solver_log -- see src/globalvar.py's
+    pSolverLogFileName and item 15. log_context is merged into that
+    record as-is (e.g. {'ricb': ..., 'k_radius': ...} from the caller)
+    so a log line can be tied back to which radius produced it. Both
+    default to None (no logging), so every existing call site
+    (testsys/unit/test_solver.py's toy Jacobians, the integration
+    fixtures) is unaffected.
     """
 
-    
     xeps = xtol
     feps = ftol #   %  Smallest tols are 5*eps
 
@@ -289,27 +335,68 @@ def mynewtonSys(Jfun,x0,varargin,
     if Jfun == 'J_mercmodel_nosic': x0.pop(1)
     x = x0
     k = 0        #  Initial guess and current number of iterations
-    
-    
+    history = []
+
+    def _flush_log(status):
+        if log_path is None:
+            return
+        record = {'kind': 'newton_solve', 'Jfun': Jfun,
+                  'status': int(status), 'status_name': ErrorCode(status).name,
+                  'n_iterations': k, 'history': history}
+        if log_context:
+            record.update(log_context)
+        write_solver_log(log_path, record)
+
     while k <= maxit:
       start = time.time()
       k = k + 1
-      J,f = eval(Jfun)(x,varargin)   #   Returns Jacobian matrix and f vector
-      if np.linalg.det(J) == 0:
+      try:
+          J,f = eval(Jfun)(x,varargin)   #   Returns Jacobian matrix and f vector
+      except SolverError as e:
+          e.context.setdefault('newton_history', history)
+          e.context.setdefault('newton_iterations', k)
+          _flush_log(e.error_code)
+          raise
+      detJ = np.linalg.det(J)
+      if detJ == 0:
         print('Zero Determinant of J. Exit ... ...')
-        sys.exit()
-      dx = np.dot(np.linalg.inv(J),f)
+        history.append({'k': k, 'v': np.asarray(x).tolist(),
+                         'normf': float(np.linalg.norm(f)), 'normdx': None,
+                         'detJ': float(detJ)})
+        _flush_log(ErrorCode.SINGULAR_JACOBIAN)
+        raise SolverError(ErrorCode.SINGULAR_JACOBIAN,
+                           'Zero determinant of J at Newton iteration %d' % k,
+                           context={'k': k, 'v': np.asarray(x).tolist(),
+                                    'detJ': float(detJ), 'newton_history': history})
+      try:
+          dx = np.dot(np.linalg.inv(J),f)
+      except np.linalg.LinAlgError as e:
+        history.append({'k': k, 'v': np.asarray(x).tolist(),
+                         'normf': float(np.linalg.norm(f)), 'normdx': None,
+                         'detJ': float(detJ)})
+        _flush_log(ErrorCode.SINGULAR_JACOBIAN)
+        raise SolverError(ErrorCode.SINGULAR_JACOBIAN,
+                           'Numerically singular J at Newton iteration %d (%r)' % (k, e),
+                           context={'k': k, 'v': np.asarray(x).tolist(),
+                                    'detJ': float(detJ), 'newton_history': history}) from e
       x = x - dx
-      if verbose:     
+      history.append({'k': k, 'v': np.asarray(x).tolist(),
+                       'normf': float(np.linalg.norm(f)), 'normdx': float(np.linalg.norm(dx)),
+                       'detJ': float(detJ)})
+      if verbose:
           end = time.time()
           print(k,np.linalg.norm(f),np.linalg.norm(dx),end-start)
       if (np.linalg.norm(f) < feps) or (np.linalg.norm(dx) < xeps):
+          _flush_log(ErrorCode.CONVERGED)
           return x
 
     print('Solution not found within tolerance after_',k,'_iterations\n')
     print('Exiting the code')
-    sys. exit()
-	
+    _flush_log(ErrorCode.NEWTON_MAXIT)
+    raise SolverError(ErrorCode.NEWTON_MAXIT,
+                       'Newton solver did not converge within maxit=%d iterations' % maxit,
+                       context={'maxit': maxit, 'newton_history': history})
+
 def J_mercmodel(v,args):
     """
       computes the Jacobian and function evaluation for our 

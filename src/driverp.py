@@ -22,7 +22,16 @@ def driverp(param, rs):
     icb_sulfur       = np.zeros(len(ricb))
     mantle_density   = np.zeros(len(ricb))
     error_code       = np.zeros(len(ricb))
-    
+
+    # Structured per-run solver log (PATHWAY_FORWARD.md item 15): create
+    # model_path up front (main.py already does this before calling
+    # driverp(), so this is normally a no-op) so every radius, including
+    # the first, gets its Newton iterate history logged next to the
+    # run's own pMetaData csv/h5 outputs.
+    if not os.path.isdir(model_path):
+        os.makedirs(model_path, exist_ok=True)
+    log_path = model_path + pSolverLogFileName
+
     for k in range(len(ricb)):
         print('Finding solutions for inner core radius = ' + str(round(rs[k],2)) + ' ... ...')
         #param['CMR2'] = mois[moi_index]
@@ -31,21 +40,60 @@ def driverp(param, rs):
         # for a certain inner core radius, normalized, ricb[k] in rs, rhocr (crust thickness), rh (radius of crust-mantle boundary),
         # and initial guesses v0, try to solve for v.
         # The Newton method calls J_mercmodel, which calculates the Jacobian and f of the system given initial v0 guesses.
-        # J_mercmodel calls shoot_mercmodel to build J and f. 
-        
-        v             = lc.mynewtonSys('J_mercmodel', v0, [ricb[k],rhocr,rh,param,scale], xtol=xtol, ftol=ftol, maxit=maxit, verbose=False)
-    
-        if v is None: break
-    
+        # J_mercmodel calls shoot_mercmodel to build J and f.
+
+        # mynewtonSys used to return None on failure (checked by the
+        # `if v is None: break` below) but actually always either
+        # returns a solution or calls sys.exit() -- "v is None" could
+        # never fire (docs/audits/AUDIT_2026-09-29_buglist.md B1). It
+        # now raises lc.SolverError instead of exiting the process; this
+        # try/except IS the fix for that dead check -- it stops the
+        # sweep at the same point a maxit/singular-J failure always did,
+        # but via a caught, recorded exception instead of killing the
+        # whole run.
+        try:
+            v = lc.mynewtonSys('J_mercmodel', v0, [ricb[k],rhocr,rh,param,scale],
+                                xtol=xtol, ftol=ftol, maxit=maxit, verbose=False,
+                                log_path=log_path,
+                                log_context={'k_radius': int(k), 'ricb_m': float(rs[k])})
+        except lc.SolverError as e:
+            error_code[k] = e.error_code
+            lc.write_solver_log(log_path, {
+                'kind': 'radius_failure', 'stage': 'mynewtonSys',
+                'k_radius': int(k), 'ricb_m': float(rs[k]),
+                'error_code': int(e.error_code), 'error_name': e.error_code.name,
+                'message': e.message, 'context': e.context,
+            })
+            print('Newton solve failed at ricb=%r m: %s (%s)' %
+                  (rs[k], e.error_code.name, e.message))
+            break
+
         # Set initial guess for next as previous solution.
-        v0=v 
-      
-        # final solution
-        [f,r,yy, fout, err] = lc.shoot_mercmodel(v,ricb[k],rhocr,rh,param,scale)
+        v0=v
+
+        # final solution. shoot_mercmodel can also raise lc.SolverError
+        # (getk2's IndexError/non-finite result, or a SuperLU singular
+        # matrix from libCore.getpotvsr -- both used to crash the whole
+        # process uncaught, docs/audits/AUDIT_2026-09-29_buglist.md
+        # B2/B5/A1) -- caught here the same way, so a bad radius stops
+        # the sweep instead of the process.
+        try:
+            [f,r,yy, fout, err] = lc.shoot_mercmodel(v,ricb[k],rhocr,rh,param,scale)
+        except lc.SolverError as e:
+            error_code[k] = e.error_code
+            lc.write_solver_log(log_path, {
+                'kind': 'radius_failure', 'stage': 'shoot_mercmodel',
+                'k_radius': int(k), 'ricb_m': float(rs[k]),
+                'error_code': int(e.error_code), 'error_name': e.error_code.name,
+                'message': e.message, 'context': e.context,
+            })
+            print('shoot_mercmodel failed at ricb=%r m: %s (%s)' %
+                  (rs[k], e.error_code.name, e.message))
+            break
         print(err)
         if err == True:
-            error_code[k] = 1
-        
+            error_code[k] = ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+
         nr=len(r)
         #output: r= radial points of integration (non-dimensional)
         #yy(:,0) = pressure vs radius (non-dimensional)
@@ -80,8 +128,18 @@ def driverp(param, rs):
         chi_li_icb = v[4]
         chi_li_cmb = chi_li[-1]
         rcmb       = r[-1]
-    
-        r_2        = np.append(r,[rh*scale['a'],rm])# total radius profile in meters     
+
+        # Physical-limit check (PATHWAY_FORWARD.md item 16): the solved
+        # cmb radius must lie strictly outside the requested inner-core
+        # radius. Recorded only -- not fatal, not fed back into the
+        # solve (that backtracking behaviour is item 17's scope) -- so
+        # a converged case's numeric outputs are unaffected either way.
+        if rs[k] >= rcmb:
+            error_code[k] = ErrorCode.RICB_GE_RCMB
+            print('ricb (%r m) >= solved rcmb (%r m): outside physical domain. '
+                  'Error code %d.' % (rs[k], rcmb, ErrorCode.RICB_GE_RCMB))
+
+        r_2        = np.append(r,[rh*scale['a'],rm])# total radius profile in meters
         rho1_2     = np.append(rho1,[rhom,rhocr]) # total density profile from center to surface.
         moi        = lc.get_moi(r_2,rho1_2,rhomean) # compute moment of inertia?
         ccc        = lc.get_ccc(r_2,rho1_2,rhomean) 
@@ -108,12 +166,15 @@ def driverp(param, rs):
             
         isnow = vis.plot_isnow(ricb[k]*scale['a'],r,rh*scale['a'],rm,T1,P1,chi_li,rho1,chi_li_in,moi,cmc,mass,k,param, isnow)
          
-        if chi_li.any()<0: 
-            error_code[k] = 2 # Final light element %wt negative.
+        # `chi_li.any()<0` compared a bool (.any()'s return) to 0, always
+        # False (docs/audits/AUDIT_2026-09-29_buglist.md B3); this is the
+        # element-wise check it was named for.
+        if (chi_li<0).any():
+            error_code[k] = ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX # Final light element %wt negative.
             print('Final Light element %wt solution is negative. ... ...')
-            print('Error code 2. ... ...')
-            print('Label error_tag to be TRUE ... ...')    
-            print('Drop the model. ... ...')            
+            print('Error code %d. ... ...' % ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX)
+            print('Label error_tag to be TRUE ... ...')
+            print('Drop the model. ... ...')
             #break # if light element is negative, say sulfer, break the code.
     
         Pcmb=P1[-1]

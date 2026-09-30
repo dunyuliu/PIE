@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import sys
+import enum
 n = len(sys.argv)
 print(n)
 if n!=6 and n!=7:
@@ -67,3 +68,42 @@ MFe                         = 55.845
 xtol                        = 1.e-6 # tol
 ftol                        = 1.e-6
 maxit                       = 12 # maximum number of iterations
+
+# Error-code table (PATHWAY_FORWARD.md items 15/16). One authoritative
+# enum used by shootp.py/libCore.py/driverp.py instead of ad hoc ints,
+# so a per-radius `error_code` (written to the pMetaData csv, unchanged
+# schema) and the structured solver log (pSolverLogFileName below) agree
+# on what each value means.
+class ErrorCode(enum.IntEnum):
+    CONVERGED                  = 0  # Newton converged within xtol/ftol
+    NEWTON_MAXIT                = 1  # Newton hit maxit without meeting xtol/ftol
+    SINGULAR_JACOBIAN           = 2  # det(J)==0, or J numerically singular in np.linalg.inv
+    NONFINITE_SHOOT             = 3  # NaN/Inf or an uncaught IndexError/RuntimeError
+                                     # (SuperLU singular matrix, getk2 index wrap-around)
+                                     # while shooting/building A, rho, or g
+    CHI_OUTSIDE_ADMISSIBLE_BOX  = 4  # chi_li (S or Si %wt) went negative or above the
+                                     # eutectic/liquidus bound during the solve
+    RICB_GE_RCMB                = 5  # inner-core radius reached/exceeded the solved cmb
+                                     # radius -- outside the model's physical domain
+    SI_ABOVE_LIQUIDUS_MAX       = 6  # chi_Si_icb above the liquidus table's max Si%wt --
+                                     # an intentional, by-design stop, not a solver bug
+
+ERROR_CODE_DESCRIPTIONS = {
+    ErrorCode.CONVERGED:                 "converged",
+    ErrorCode.NEWTON_MAXIT:              "Newton solver: maxit reached without convergence",
+    ErrorCode.SINGULAR_JACOBIAN:         "Newton solver: singular Jacobian",
+    ErrorCode.NONFINITE_SHOOT:           "shoot: non-finite result or uncaught exception (A/rho/g)",
+    ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX:"chi_li outside admissible box (negative or > eutectic)",
+    ErrorCode.RICB_GE_RCMB:              "ricb >= rcmb: outside physical domain",
+    ErrorCode.SI_ABOVE_LIQUIDUS_MAX:     "chi_Si_icb above liquidus max Si%wt (by design)",
+}
+
+# Structured per-run solver log (PATHWAY_FORWARD.md item 15): one JSONL
+# file per (CMR2, CMC, light_element, liquidus_eq, chi_Si_icb) run, next
+# to the run's own pMetaData csv/h5 outputs (same model_path, same
+# chi_Si_icb-suffixed naming convention as pMetaDataFileName/
+# presentDataName above). One JSON object per line: either a per-radius
+# Newton solve record (iterate history: v, |f|, |dx|, det(J)) or a
+# failure-context record (non-finite counts in A/rho/g, chi_li vs
+# eutectic/admissible box) -- see src/libCore.py's write_solver_log.
+pSolverLogFileName          = 'solverLog_'+"{:.2f}".format(chi_Si_icb)+'.jsonl'
