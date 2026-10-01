@@ -8,7 +8,7 @@ import sys
 import os
 import json
 from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import inv
+from scipy.sparse.linalg import inv, spsolve
 from scipy.constants import G
 from scipy.constants import R as RGas
 from globalvar import *
@@ -353,7 +353,11 @@ def getpotvsr(nr,bigGnd,rnd,rhond,gnd):
     # whole process. Caught here and re-raised as a SolverError so
     # src/driverp.py's per-radius try/except can record it and move on.
     try:
-        b = inv(A)*rhs
+        # v1.3.2 perf fix (docs/notes/perf_v1.3.2.md): inv(A) solved for
+        # A's FULL dense inverse (ndim unit-rhs back-substitutions) just
+        # to multiply it by ONE rhs. spsolve(A, rhs) is the same SuperLU
+        # factorization, one back-substitution, same b, ~40x faster here.
+        b = spsolve(A, rhs)
     except RuntimeError as e:
         n_nonfinite_rho = int(np.sum(~np.isfinite(rhond)))
         n_nonfinite_g = int(np.sum(~np.isfinite(gnd)))

@@ -480,7 +480,11 @@ def mynewtonSys(Jfun,x0,varargin,
                 'Singular Jacobian at Newton iteration %d (cond(J)=%g > %g)' % (k, condJ, cond_max),
                 condJ=condJ)
       try:
-          dx = np.dot(np.linalg.inv(J),f)
+          # v1.3.2 perf fix (docs/notes/perf_v1.3.2.md): same anti-pattern
+          # as getpotvsr's old inv(A)*rhs -- inv(J)@f formed J's full
+          # inverse just to multiply it once by f. np.linalg.solve(J, f)
+          # solves J dx = f directly, same dx to roundoff, J unchanged.
+          dx = np.linalg.solve(J,f)
       except np.linalg.LinAlgError as e:
           history.append({'k': k, 'v': np.asarray(x).tolist(), 'normf': normf,
                           'normdx': None, 'detJ': detJ, 'condJ': condJ, 'alpha': None})
