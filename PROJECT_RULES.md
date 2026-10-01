@@ -327,10 +327,8 @@ a correctness/safety rule about shared-machine courtesy, not a performance
 rule.
 
 **How to apply**: `testsys/conftest.py`'s `pie_workers()`/`pool_workers()`
-(landed on branch `phase2b/xdist-pie-workers`, not yet merged) is the
-enforcement mechanism once merged — it derives the single `PIE_WORKERS` cap
-that both xdist and every in-test process pool read, so the two never double
-up. The knox `xargs` launcher recipe in README's "Large ensemble Monte Carlo
-simulation" section (also on `phase2b/xdist-pie-workers`) is the other
-consumer of the same knob.
+is the enforcement mechanism — it derives the single `PIE_WORKERS` cap that
+both xdist and every in-test process pool read, so the two never double up.
+The knox `xargs` launcher recipe in README's "Large ensemble Monte Carlo
+simulation" section is the other consumer of the same knob.
 
