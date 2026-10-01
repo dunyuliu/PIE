@@ -143,11 +143,14 @@ def test_libcore_no_longer_calls_bare_sys_exit():
 
 
 def test_libcore_getpotvsr_wraps_the_superlu_inversion():
+    # v1.3.2: the single-rhs solve is spsolve(A, rhs), not inv(A)*rhs
+    # (perf fix, docs/notes/perf_v1.3.2.md) -- same SuperLU machinery,
+    # same try/except; the line text changed, so this check follows it.
     text = (SRC / "libCore.py").read_text()
-    idx = text.index("b = inv(A)*rhs")
+    idx = text.index("b = spsolve(A, rhs)")
     # the try/except must be the code immediately governing this line,
     # not merely present somewhere else in the file.
-    window = text[max(0, idx - 200):idx]
+    window = text[max(0, idx - 400):idx]
     assert "try:" in window
 
 

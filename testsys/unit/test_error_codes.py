@@ -323,14 +323,20 @@ def test_getchi_li_grun_does_not_raise_when_si_within_bounds(sys_argv_p, globalv
 # (docs/audits/AUDIT_2026-09-29_buglist.md B2, libCore.py:266)
 # ---------------------------------------------------------------------
 def test_getpotvsr_wraps_superlu_singular_matrix(libcore, globalvar, monkeypatch):
+    # v1.3.2: the single-rhs linear solve is spsolve(A, rhs), not
+    # inv(A)*rhs (perf fix, docs/notes/perf_v1.3.2.md) -- same SuperLU
+    # machinery underneath, same try/except governing the call, so the
+    # monkeypatch target moves from `inv` to `spsolve` but the protection
+    # being tested (a SuperLU singular-matrix RuntimeError becomes a
+    # SolverError) is unchanged.
     nr = 400
     rnd = np.linspace(1e-3, 1.0, nr)
     rhond = np.full(nr, 5.0)
     gnd = np.linspace(0.01, 1.0, nr)
 
-    def _raise_singular(A):
+    def _raise_singular(A, rhs):
         raise RuntimeError("Factor is exactly singular")
-    monkeypatch.setattr(libcore, "inv", _raise_singular)
+    monkeypatch.setattr(libcore, "spsolve", _raise_singular)
 
     with pytest.raises(libcore.SolverError) as exc_info:
         libcore.getpotvsr(nr, 1.0, rnd, rhond, gnd)
@@ -340,16 +346,15 @@ def test_getpotvsr_wraps_superlu_singular_matrix(libcore, globalvar, monkeypatch
 
 
 def test_getpotvsr_raises_on_nonfinite_solution(libcore, globalvar, monkeypatch):
+    # v1.3.2: spsolve(A, rhs) returns the solution vector `b` directly
+    # (no `* rhs` matvec needed, unlike inv(A)*rhs) -- the nonfinite-
+    # solution guard this test exercises is on `b` itself.
     nr = 400
     rnd = np.linspace(1e-3, 1.0, nr)
     rhond = np.full(nr, 5.0)
     gnd = np.linspace(0.01, 1.0, nr)
 
-    class _NanResult:
-        def __mul__(self, other):
-            return np.full(2 * nr - 1, np.nan)
-
-    monkeypatch.setattr(libcore, "inv", lambda A: _NanResult())
+    monkeypatch.setattr(libcore, "spsolve", lambda A, rhs: np.full(2 * nr - 1, np.nan))
 
     with pytest.raises(libcore.SolverError) as exc_info:
         libcore.getpotvsr(nr, 1.0, rnd, rhond, gnd)
