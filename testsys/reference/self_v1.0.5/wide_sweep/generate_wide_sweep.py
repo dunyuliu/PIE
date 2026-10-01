@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / "testsys"))
 sys.path.insert(0, str(ROOT / "src"))
 os.chdir(ROOT / "src")
 
-from conftest import solve_full_model  # noqa: E402
+from conftest import solve_full_model, pool_workers  # noqa: E402
 
 MOI_CONFIGS = [(0.346, 0.426), (0.333, 0.443)]  # Margot, Genova
 COMPOSITIONS = [
@@ -52,7 +52,7 @@ def main():
             for light, liq, chi_si in COMPOSITIONS
             for ricb_m in RADII_M]
     t0 = time.time()
-    with cf.ProcessPoolExecutor(max_workers=min(32, os.cpu_count() or 4)) as ex:
+    with cf.ProcessPoolExecutor(max_workers=pool_workers(32)) as ex:
         results = list(ex.map(_job, jobs))
     print(f"{len(jobs)} cases in {time.time()-t0:.1f}s; "
           f"{sum(r['converged'] for r in results)} converged")

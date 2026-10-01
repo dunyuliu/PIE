@@ -25,7 +25,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference
+from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference, pool_workers
 
 pytestmark = pytest.mark.integration
 
@@ -63,7 +63,7 @@ def computed_by_case():
     case; ~18-20 s each, so ~20-25 s wall time with 12 workers rather
     than ~4 min serial) and return {case_id: result_or_exception}."""
     entries = _golden_entries()
-    with cf.ProcessPoolExecutor(max_workers=min(12, os.cpu_count() or 4)) as ex:
+    with cf.ProcessPoolExecutor(max_workers=pool_workers(12)) as ex:
         computed = list(ex.map(_solve_entry, entries))
     return {_case_id(e): (e, c) for e, c in zip(entries, computed)}
 

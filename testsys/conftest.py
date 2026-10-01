@@ -56,6 +56,56 @@ if str(SRC) not in sys.path:
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 
+# Defensive default, not a test input: src/globalvar.py reads sys.argv[1:6]
+# at IMPORT time (code_mode, CMR2, CMC, light_element, liquidus_eq). Every
+# real test path overwrites sys.argv via _set_argv()/import_src() before
+# solving anything. But under pytest-xdist, a ProcessPoolExecutor result
+# can get unpickled on the CONTROLLER process's background listener THREAD
+# (reconstructing a class instance defined in globalvar/libCore), which
+# imports globalvar for the first time in a process whose sys.argv is
+# xdist's own launch argv (too short) -- crashing with an unrelated
+# IndexError far from any test. Padding here (once, at conftest.py's own
+# import, before any xdist worker or thread can race it) makes that first
+# import succeed no matter which thread does it; _set_argv always replaces
+# these values before any test-visible solve.
+if len(sys.argv) < 6:
+    sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
+
+
+def pie_workers():
+    """Single knob for how many OS processes PIE's own tests/tools may run
+    at once on a SHARED machine (PROJECT_RULES.md: leave headroom for
+    other users' jobs). One env var, `PIE_WORKERS`, drives both pytest-xdist
+    (`testsys/run.py -n`) and every in-test `ProcessPoolExecutor` pool --
+    never both at once: `pool_workers()` below collapses a pool to 1 when
+    already running inside an xdist worker, so parallelism never multiplies
+    (xdist workers x pool size).
+
+    Default (unset): max(4, floor(free_cores / 2)), free_cores = nproc - 1 -
+    (1-minute load average), capped at 24. Pins to 4 if the load/core
+    numbers are unavailable (e.g. inside some CI sandboxes).
+    """
+    env = os.environ.get("PIE_WORKERS")
+    if env:
+        return max(1, int(env))
+    try:
+        cpu = os.cpu_count() or 4
+        load1 = os.getloadavg()[0]
+        free_cores = max(0, cpu - 1 - load1)
+        return min(24, max(4, int(free_cores // 2)))
+    except (OSError, AttributeError):
+        return 4
+
+
+def pool_workers(cap):
+    """Workers for an in-test ProcessPoolExecutor, capped by `cap` (the
+    pool's own prior hard-coded ceiling) and by pie_workers(). Forced to 1
+    inside an xdist worker process so only ONE level of parallelism is ever
+    active at a time (see pie_workers()'s docstring)."""
+    if os.environ.get("PYTEST_XDIST_WORKER"):
+        return 1
+    return max(1, min(cap, pie_workers()))
+
 
 def _set_argv(code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb=None):
     argv = ["main.py", code_mode, str(CMR2), str(CMC), light_element, liquidus_eq]

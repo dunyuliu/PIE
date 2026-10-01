@@ -58,6 +58,9 @@ SRC = pathlib.Path(__file__).resolve().parents[2] / "src"
 sys.path.insert(0, str(REF))
 import generate_sweeps  # noqa: E402
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from conftest import pool_workers  # noqa: E402
+
 EXTRA_RADII = 2
 PINNED = {"numpy": "1.21.5", "scipy": "1.8.0"}
 
@@ -73,7 +76,7 @@ def _recovered_fixture():
 
 @pytest.fixture(scope="module")
 def current():
-    return generate_sweeps.generate(SRC, workers=min(8, os.cpu_count() or 4), policy="continue",
+    return generate_sweeps.generate(SRC, workers=pool_workers(8), policy="continue",
                                     extra_radii=EXTRA_RADII, verbose=False)
 
 
