@@ -99,12 +99,23 @@ def pie_workers():
 
 def pool_workers(cap):
     """Workers for an in-test ProcessPoolExecutor, capped by `cap` (the
-    pool's own prior hard-coded ceiling) and by pie_workers(). Forced to 1
-    inside an xdist worker process so only ONE level of parallelism is ever
-    active at a time (see pie_workers()'s docstring)."""
-    if os.environ.get("PYTEST_XDIST_WORKER"):
-        return 1
-    return max(1, min(cap, pie_workers()))
+    pool's own prior hard-coded ceiling) and by pie_workers(). Total
+    concurrent processes stay bounded at ~pie_workers() machine-wide: this
+    DIVIDES the budget across active xdist workers rather than collapsing
+    to 1 -- collapsing to 1 was measured to turn one module (a 14-case
+    sequential sweep with its own pool, `test_v1_2_0_invariant.py`) into a
+    15-minute serial long-pole that ate the whole xdist win (PIE_WORKERS=8,
+    -n 8 + --dist=loadscope pins that whole module to ONE worker; a pool of
+    1 inside it means its 14 cases run one at a time instead of in
+    parallel with each other, same total work, no speedup). Dividing
+    instead means that worker still gets a real pool (pie_workers() //
+    worker_count, at least 1), while the total across all workers never
+    exceeds pie_workers() x 1 pool each at full division -- i.e. the
+    multiplication risk this exists to prevent is still bounded, just not
+    by brute-force collapse."""
+    n_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "0") or "0")
+    budget = pie_workers() // n_workers if n_workers > 1 else pie_workers()
+    return max(1, min(cap, budget))
 
 
 def _set_argv(code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb=None):

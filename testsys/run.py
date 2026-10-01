@@ -89,7 +89,18 @@ def main():
     except (AttributeError, OSError):
         pass
 
-    workers = n_arg if n_arg is not None else str(pie_workers())
+    # Default xdist worker count is SMALLER than PIE_WORKERS, not equal to
+    # it: several modules share a module-scoped ProcessPoolExecutor pool
+    # (conftest.py:pool_workers()), capped by PIE_WORKERS // n_xdist_workers
+    # so the TOTAL stays bounded. If n_xdist_workers == PIE_WORKERS, that
+    # division is always 1 -- no in-test parallelism left, and the one
+    # module with real internal work (test_v1_2_0_invariant.py, a 14-case
+    # sweep) becomes a fully-serial long-pole that erases the whole xdist
+    # win (measured: 421s at -n 4 + PIE_WORKERS//4=4-wide pools vs 760s
+    # serial vs still ~750s at -n 8 + PIE_WORKERS//8=1-wide pools -- same
+    # total process budget, very different wall time). max(2, //4) leaves
+    # each worker a real pool while still spreading across modules.
+    workers = n_arg if n_arg is not None else str(max(2, pie_workers() // 4))
     marker_expr = " or ".join(a for a in args if a != "all")
     cmd = [sys.executable, "-m", "pytest", here, "-m", marker_expr, "-v"]
     if workers not in ("0", "1"):
@@ -103,7 +114,7 @@ def main():
         # runs once. (Found by running this under -n 8: 8 processes each
         # independently recomputing the same first case.)
         cmd += ["-n", workers, "--dist=loadscope"]
-    print("+", " ".join(cmd), f"(PIE_WORKERS={workers})")
+    print("+", " ".join(cmd), f"(xdist -n {workers}, PIE_WORKERS={pie_workers()})")
     import subprocess
     return subprocess.call(cmd, cwd=repo_root)
 
