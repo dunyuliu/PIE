@@ -51,7 +51,7 @@ for CMR2 in CMR2_list:
           print('Light el = ', light)
           print('Liquidus eq = ', liquidus)
           print('Chi_li_icb = ', chi_li_icb)
-          cmd = 'python main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus + ' ' + str(chi_li_icb)
+          cmd = sys.executable + ' main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus + ' ' + str(chi_li_icb)
           os.system(cmd)
 
 for CMR2 in CMR2_list:
@@ -63,5 +63,5 @@ for CMR2 in CMR2_list:
         print('CmC = ', str(CMC))
         print('Light el = ', light)
         print('Liquidus eq = ', liquidus)
-        cmd = 'python main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus
+        cmd = sys.executable + ' main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus
         os.system(cmd)

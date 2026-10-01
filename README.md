@@ -51,6 +51,27 @@ sbatch TACC.LS6.parallel.run.slurm
 # The example run here takes less than 2 hours.
 ```
 
+### On a shared machine without Slurm (e.g. knox)
+
+Same `commands_launcher` file (each line already carries an explicit seed
+and the pinned interpreter), run directly with `xargs` instead of LAUNCHER
+-- capped and niced so other users' jobs on the same box keep headroom
+(see `PROJECT_RULES.md`'s shared-machine rule):
+
+```
+cd src
+python TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
+nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
+```
+
+Resumable: each line (`monteCarlo.run.py <seed>`) skips its own CMR2/CMC
+draw if `results/CMR2_*_CMC_*_S+Si_Edmund/pMetaData_*.csv` for that draw
+already exists, so re-running the same `commands_launcher` after a
+partial/interrupted ensemble only does the missing work. `PIE_WORKERS`
+defaults to the same cap `testsys/run.py` uses (`max(4, floor(free
+cores/2))`); set it explicitly on a loaded box (check `uptime`/`who`
+first).
+
 ## Testing
 
 ```
