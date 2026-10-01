@@ -21,7 +21,7 @@ import random
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference
+from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference, pool_workers
 
 pytestmark = [pytest.mark.e2e, pytest.mark.published_wide]
 
@@ -93,7 +93,7 @@ def _job(case):
 
 def test_published_wide_sample_matches():
     cases = _sample_dirs()
-    with cf.ProcessPoolExecutor(max_workers=min(32, os.cpu_count() or 4)) as ex:
+    with cf.ProcessPoolExecutor(max_workers=pool_workers(32)) as ex:
         results = list(ex.map(_job, cases))
 
     failures = []

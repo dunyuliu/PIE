@@ -25,7 +25,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference
+from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference, pool_workers
 
 pytestmark = pytest.mark.e2e
 
@@ -67,7 +67,7 @@ def _solve_entry(entry):
 @pytest.fixture(scope="module")
 def computed_by_case():
     entries = _golden_entries()
-    with cf.ProcessPoolExecutor(max_workers=min(36, os.cpu_count() or 4)) as ex:
+    with cf.ProcessPoolExecutor(max_workers=pool_workers(36)) as ex:
         computed = list(ex.map(_solve_entry, entries))
     return {_case_id(e): (e, c) for e, c in zip(entries, computed)}
 

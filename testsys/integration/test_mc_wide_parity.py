@@ -29,7 +29,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference
+from conftest import solve_full_model, assert_scalars_match, check_converged_without_reference, pool_workers
 
 pytestmark = [pytest.mark.integration, pytest.mark.parity]
 
@@ -88,7 +88,7 @@ def _job(entry):
 @pytest.fixture(scope="module")
 def computed_by_case():
     entries = _manifest()
-    with cf.ProcessPoolExecutor(max_workers=min(24, os.cpu_count() or 4)) as ex:
+    with cf.ProcessPoolExecutor(max_workers=pool_workers(24)) as ex:
         computed = list(ex.map(_job, entries))
     return {_case_id(e): (e, c) for e, c in zip(entries, computed)}
 

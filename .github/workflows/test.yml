@@ -39,6 +39,7 @@ jobs:
         env:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
+          PIE_WORKERS: '4'  # matches this runner's 4 cores (PROJECT_RULES.md)
         run: python3 testsys/run.py unit contract integration
 
   fast-latest:
@@ -64,6 +65,7 @@ jobs:
         env:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
+          PIE_WORKERS: '4'  # matches this runner's 4 cores (PROJECT_RULES.md)
         run: python3 testsys/run.py unit contract integration
 
   e2e-cli-smoke:
