@@ -3,8 +3,8 @@ usage: recovery_stats.py  -> uses the invariant run (14 cases) + any finished 37
 import json, glob, collections, sys
 import numpy as np
 from scipy.stats import beta
-S = "/tmp/claude-16759/-home-utig5-dliu-PIE/9c4a8cf5-0ff3-4504-be1f-683a9c776a0a/scratchpad/"
-W = "/home/utig5/dliu/PIE/.claude/worktrees/v1.3.0-line-search/"
+S = "<scratch>/"
+W = "<worktree>/"
 
 
 def cp(k, n, a=0.05):

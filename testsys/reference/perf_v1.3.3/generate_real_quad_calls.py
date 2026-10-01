@@ -24,7 +24,7 @@ coreEos._gk21_or_quad's per-call fallback is mandatory, not optional).
 Regenerate with:
 
     PYTHONNOUSERSITE=1 MPLBACKEND=Agg PYTHONWARNINGS=ignore \
-        /home/utig5/dliu/PIE/.venv/bin/python3 \
+        .venv/bin/python3 \
         testsys/reference/perf_v1.3.3/generate_real_quad_calls.py
 
 (run from the repo root; edit ROOT below if your checkout differs).

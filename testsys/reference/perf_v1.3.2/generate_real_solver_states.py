@@ -1,6 +1,6 @@
 import sys, os
 sys.path[:] = [p for p in sys.path if "/.local/" not in p]
-SRC = "/tmp/claude-16759/-home-utig5-dliu-PIE/9c4a8cf5-0ff3-4504-be1f-683a9c776a0a/scratchpad/wt-mira/src"
+SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "src")  # repo src/
 os.chdir(SRC)
 sys.path.insert(0, SRC)
 sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
@@ -70,7 +70,7 @@ v = lc.mynewtonSys('J_mercmodel', param["v0"],
                     [ricb_nd, param["rhocr"], param["rh"], param, scale],
                     xtol=gv.xtol, ftol=gv.ftol, maxit=gv.maxit, verbose=False)
 
-out = "/tmp/claude-16759/-home-utig5-dliu-PIE/9c4a8cf5-0ff3-4504-be1f-683a9c776a0a/scratchpad/prof/real_states.npz"
+out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "real_solver_states.npz")
 save_kwargs = {}
 for i, (Ai, rhsi) in enumerate(zip(captured_A, captured_rhs)):
     save_kwargs[f"A{i}_data"] = Ai.data
