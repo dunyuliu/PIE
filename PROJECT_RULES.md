@@ -19,6 +19,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 12. A living status board, prioritised and re-checked on a schedule.
 13. Land through one gated PR at a time; release in one sequence; state the grant.
 14. Every paper that uses PIE output records its Zenodo DOIs and a matching git tag.
+15. Shared machines: cap PIE's parallelism to leave headroom for others.
 
 ---
 
@@ -307,4 +308,29 @@ no v1.0.5 tag.
 
 **How to apply**: `grep -c 10.1029/2025JE009368 CITATION.cff README.md` is
 non-zero for both; each paper's code DOI maps to a tag (`git tag`).
+
+---
+
+## 15. Shared machines: cap PIE's parallelism to leave headroom for others
+
+Shared machines: cap PIE's parallelism to leave headroom for others
+(PIE_WORKERS default max(4, ⌊free cores/2⌋), nice 10, one BLAS thread per
+worker); never signal, renice or kill a process PIE didn't start; long runs
+are resumable and stop cleanly; check `uptime`/`who` before a large run.
+
+**Rationale**: moving testsys from serial to pytest-xdist + ProcessPoolExecutor
+pools on knox (a shared 64-core box also running other users' ML training
+jobs) first ran xdist at `-n` equal to the full `PIE_WORKERS` budget, which
+collapsed every in-test pool down to 1 worker — safe with respect to not
+overloading the shared box, but it silently erased the whole speedup. This is
+a correctness/safety rule about shared-machine courtesy, not a performance
+rule.
+
+**How to apply**: `testsys/conftest.py`'s `pie_workers()`/`pool_workers()`
+(landed on branch `phase2b/xdist-pie-workers`, not yet merged) is the
+enforcement mechanism once merged — it derives the single `PIE_WORKERS` cap
+that both xdist and every in-test process pool read, so the two never double
+up. The knox `xargs` launcher recipe in README's "Large ensemble Monte Carlo
+simulation" section (also on `phase2b/xdist-pie-workers`) is the other
+consumer of the same knob.
 
