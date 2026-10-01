@@ -112,12 +112,28 @@ class TestVolumeVectorisesExactly:
     EXACTLY the same values as calling it once per scalar point -- not
     just 'looks vectorizable'. This is the precondition _gk21_panel
     relies on to call `func` once on all 21 GK21 abscissae instead of 21
-    separate Python-level calls."""
+    separate Python-level calls.
+
+    This is the exact assertion that broke CI run 36881055265's
+    fast-latest job during the PR #15 attempt ("AssertionError: fccFe:
+    volume(array) != elementwise volume(scalar)"), with max abs diff
+    ~8.3e-17 -- CubicSpline's array-call vs scalar-per-point-call is not
+    bit-associative off the pinned environment. Confirmed via `gh run
+    view <id> --log` that the PR-head run (36879868704, green) and the
+    failing merge-SHA run (36881055265, red) resolved IDENTICAL package
+    versions (numpy==2.5.3, scipy==1.18.1, pandas==3.0.6): this is
+    CPU/SIMD-dependent floating-point nondeterminism across ephemeral
+    GitHub-hosted runners, not a pip-resolution difference, and not
+    reproducible on demand on any single fixed host -- see
+    docs/notes/perf_v1.3.3.md. So, like the class below, this assertion
+    is exact ONLY on the pinned environment; off it we bound the
+    divergence instead of requiring exact equality."""
 
     def test_array_call_matches_elementwise_scalar_calls(self, eos_objects,
                                                            real_calls):
         rng = np.random.default_rng(42)
         idx = rng.choice(len(real_calls["a"]), size=50, replace=False)
+        max_reldiff = 0.0
         for name, eosobj in eos_objects.items():
             for i in idx:
                 a, b, T = (float(real_calls["a"][i]),
@@ -127,10 +143,37 @@ class TestVolumeVectorisesExactly:
                 vec = eosobj.volume(xs, T)
                 scalar = np.array([eosobj.volume(x, T) for x in xs])
                 assert vec.shape == scalar.shape == (21,)
-                assert np.array_equal(vec, scalar), (
-                    f"{name}: volume(array) != elementwise volume(scalar) "
-                    f"at a={a} b={b} T={T}"
-                )
+                if _on_pinned_env():
+                    assert np.array_equal(vec, scalar), (
+                        f"{name}: volume(array) != elementwise volume"
+                        f"(scalar) at a={a} b={b} T={T} on the pinned "
+                        f"environment (numpy {PINNED['numpy']}/scipy "
+                        f"{PINNED['scipy']})"
+                    )
+                else:
+                    d = np.abs(vec - scalar)
+                    rel = d / np.maximum(np.abs(scalar), 1e-300)
+                    max_reldiff = max(max_reldiff, float(rel.max()))
+        if not _on_pinned_env():
+            # Reuses GK21_PORTABLE_RTOL rather than inventing a second
+            # magic number: this is the SAME root cause (CubicSpline
+            # array-vs-scalar non-associativity in
+            # eosAndersonGrueneisen.volume) the constant was already
+            # calibrated against -- the ~8.3e-17 absolute divergence
+            # measured on CI run 36881055265, against volume values of
+            # O(1) (see docs/notes/perf_v1.3.3.md), i.e. a relative
+            # divergence of ~8.3e-17, ~1e5x inside this bound. On this
+            # host's resolved numpy/scipy (see docs/notes/perf_v1.3.3.md
+            # for the exact versions), the measured max_reldiff was
+            # exactly 0.0 -- the nondeterminism is CPU/SIMD-dependent
+            # across ephemeral runners and does not reproduce on every
+            # host, so we keep the documented bound rather than
+            # tightening it to today's (possibly lucky) zero.
+            assert max_reldiff <= GK21_PORTABLE_RTOL, (
+                f"volume(array) vs elementwise volume(scalar) exceeded "
+                f"the portable rtol bound off the pinned environment: "
+                f"max reldiff {max_reldiff!r} > {GK21_PORTABLE_RTOL}"
+            )
 
 
 # ---------------------------------------------------------------------

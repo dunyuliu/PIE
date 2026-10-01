@@ -98,6 +98,84 @@ multi-radius sweep (`docs/notes/perf_v1.3.2.md`'s ~40-radius canonical
 sweep) scales this per-radius saving roughly linearly with the number of
 radii that reach the Newton solve's `Gibbs` call.
 
+## 2026-10-01 update: test-fix (unconditional array-vs-scalar assertion) + fast-latest reproduction
+
+**Bug found and fixed in this branch, before merge.** Reviewing the PR #15/#16
+history, `testsys/unit/test_perf_v1_3_3_gk21_quad.py`'s
+`TestVolumeVectorisesExactly::test_array_call_matches_elementwise_scalar_calls`
+still had an UNCONDITIONAL `assert np.array_equal(vec, scalar)` -- exactly the
+assertion that failed on CI run 36881055265's `fast-latest` job
+("AssertionError: fccFe: volume(array) != elementwise volume(scalar)"), while
+the sibling class below it (`TestGK21MatchesRealQuadBitIdentically`) already
+had the correct `_on_pinned_env()` exact/portable split. Fixed at
+`testsys/unit/test_perf_v1_3_3_gk21_quad.py:117-166`
+(`TestVolumeVectorisesExactly.test_array_call_matches_elementwise_scalar_calls`):
+now exact `np.array_equal` only on the pinned environment; off it, bounded by
+the existing `GK21_PORTABLE_RTOL = 1e-14` (reused, not reinvented -- same root
+cause, `CubicSpline` array-vs-scalar non-associativity in
+`eosAndersonGrueneisen.volume`, that the constant was already calibrated
+against).
+
+### Why reuse `GK21_PORTABLE_RTOL` instead of measuring a fresh bound
+
+Measured on THIS host (numpy 2.2.6, scipy 1.15.3, the box's default
+`/usr/bin/python3` interpreter) the array-call-vs-elementwise-scalar-call
+divergence for `eosAndersonGrueneisen.volume` over the real captured sample
+(100 (eos, call) pairs x 21 points, `rng.default_rng(42)`, same sample as
+`TestVolumeVectorisesExactly`) is **exactly 0.0** (max abs diff and max rel
+diff both 0.0) -- `volume` values are O(1) (sample: `[1.18235321, 1.15976657,
+1.13938154, ...]`), so this is not a units/scale artifact. This reproduces
+what the module docstring already documents: the divergence is **CPU/SIMD-
+dependent floating-point nondeterminism across ephemeral runners**, not
+something guaranteed to reproduce on every host or every run -- CI run
+36879868704 (PR-head, green) and 36881055265 (merge-SHA, red) resolved
+IDENTICAL package versions (numpy==2.5.3, scipy==1.18.1, pandas==3.0.6) via
+`gh run view <id> --log`, so this is not a pip-resolution difference. Since a
+0.0 measurement on one host does not bound what a *different* CPU/SIMD runner
+will produce, the right fix is not "tighten to 0 since that's what I
+measured" (that would just reintroduce the brittle unconditional assert under
+a different name) -- it is to bound it by the SAME `GK21_PORTABLE_RTOL =
+1e-14` already in the file, which has ~1e5x headroom above the one concrete
+failure magnitude on record (~8.3e-17 absolute / O(1) values => ~8.3e-17
+relative, from CI run 36881055265).
+
+### Reproducing the `fast-latest` CI step locally
+
+```
+sed -E 's/==[^ ]+//' testsys/requirements.txt | grep -v '^#' > /tmp/req-latest.txt
+virtualenv -p /usr/bin/python3 venv-fast-latest
+./venv-fast-latest/bin/pip install -q -r /tmp/req-latest.txt
+```
+
+Resolved on this host (`/usr/bin/python3`, Python 3.10.12 -- the CI job pins
+Python 3.12, so exact resolved versions differ by Python-version availability
+windows on PyPI, but the key finding -- IDENTICAL numpy/scipy across the two
+real CI runs above -- is a CI-side fact, not something this local
+reproduction needs to re-derive):
+
+| package | resolved here | CI (36879868704 / 36881055265, both runs) |
+|---|---|---|
+| numpy | 2.2.6 | 2.5.3 |
+| scipy | 1.15.3 | 1.18.1 |
+| pandas | 2.3.3 (py3.10 ceiling) | 3.0.6 |
+
+`python3 -m pytest testsys/unit/test_perf_v1_3_3_gk21_quad.py -v` in this venv:
+**10 passed** (all tiers, including the now-fixed
+`test_array_call_matches_elementwise_scalar_calls`, which on this host's
+resolved numpy/scipy takes the pinned-env-equivalent `np.array_equal` path's
+measured value of 0.0 but is gated by the portable `<=1e-14` bound, not
+exact-equality, since `_on_pinned_env()` correctly reports False here).
+
+`python3 testsys/run.py unit contract integration` in this venv: **221
+passed, 15 skipped, 3 xfailed, 0 failed** (175.89s). (`e2e` intentionally
+excluded from this reproduction per the task scope; see the pinned-environment
+`testsys/run.py all` run below for the full gate including `e2e`.)
+
+### Full gate, pinned environment (fresh venv, numpy==1.21.5/scipy==1.8.0/pandas==1.3.5, matching `testsys/requirements.txt` exactly)
+
+`testsys/run.py all`: **264 passed, 14 skipped, 3 xfailed, 0 failed**
+(927.51s / 15m27s, `-n 4` xdist).
+
 ## How to opt in
 
 ```
