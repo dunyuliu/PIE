@@ -118,6 +118,30 @@ guess, one cold start from that guess is tried. Only code 6 (Si above the
 liquidus cap, radius-independent, by design) ends a composition, with a
 single row. Before v1.3.0 the first failure ended the composition.
 
+## Performance options
+
+`PIE_FAST_QUAD=1` (env var, default **off**) opts `coreEos.py`'s
+`eosAndersonGrueneisen.Gibbs` into a vectorised 21-point Gauss-Kronrod
+(GK21) evaluation of its `scipy.integrate.quad` call, falling back to the
+real `scipy.integrate.quad` per call whenever QUADPACK's own single-panel
+accept test (replicated from `dqagse.f`) would reject it. Measured ~4x
+faster per call on this box's pinned environment (see
+`docs/notes/perf_v1.3.3.md` for the full timing table).
+
+Default (`PIE_FAST_QUAD` unset or `0`) is the unconditional
+`scipy.integrate.quad` call -- **identical to pre-v1.3.3 behaviour on
+every environment**. `PIE_FAST_QUAD=1` is bit-identical to default on the
+pinned environment (`numpy==1.21.5`, `scipy==1.8.0`) but is NOT
+bit-identical on every environment: `eosAndersonGrueneisen.volume`'s
+`CubicSpline` does not return exactly the same values for a vectorised
+array call vs one-scalar-call-per-point on newer numpy/scipy (floating-
+point non-associativity in `CubicSpline`'s own vectorized-vs-scalar code
+path), so the max relative difference is bounded at **<=1e-14** rather
+than exactly 0 off the pinned environment
+(`testsys/unit/test_perf_v1_3_3_gk21_quad.py`). Set `PIE_FAST_QUAD=1` only
+if you have verified that bound is acceptable for your use (it is far
+below the solver's own convergence tolerance, `ftol=xtol=1e-6`).
+
 ## Outputs and error codes
 
 Each run writes, per light-element setting, `pMetaData_<chi_Si>.csv` and
