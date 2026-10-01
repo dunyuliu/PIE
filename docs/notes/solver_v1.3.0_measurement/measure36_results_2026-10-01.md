@@ -3,7 +3,7 @@
 Resumed from the 2026-09-30 pause (`MANIFEST.json`), against current `main`
 src/ (git SHA `b0d5ecb`, post v1.3.1/v1.3.2/v1.3.3 — all perf-only, bit-identical
 gated, do not affect this measurement's physics). Pinned env
-(`/home/utig5/dliu/PIE/.venv/bin/python3`, numpy 1.21.5/scipy 1.8.0).
+(`.venv/bin/python3`, numpy 1.21.5/scipy 1.8.0).
 
 Command (recorded in `MANIFEST.json`'s `resumed` block):
 ```

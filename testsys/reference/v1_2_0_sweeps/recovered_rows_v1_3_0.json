@@ -1,6 +1,6 @@
 {
 "provenance": {
-"src": "/home/utig5/dliu/PIE/.claude/worktrees/v1.3.0-line-search/src",
+"src": "<worktree>/src",
 "git_sha": "7378273",
 "policy": "continue",
 "adaptive": false,

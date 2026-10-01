@@ -11,7 +11,7 @@ changing any control flow.
 Regenerate with:
 
 ```
-PYTHONNOUSERSITE=1 MPLBACKEND=Agg /home/utig5/dliu/PIE/.venv/bin/python3 \
+PYTHONNOUSERSITE=1 MPLBACKEND=Agg .venv/bin/python3 \
     testsys/reference/perf_v1.3.2/generate_real_solver_states.py
 ```
 
