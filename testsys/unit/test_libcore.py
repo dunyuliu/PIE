@@ -70,6 +70,40 @@ def test_get_mass_core_scales_with_pi_not_without_it(libcore):
     assert abs(ratio - 1 / np.pi) > 0.5  # nowhere near the pre-fix answer
 
 
+def test_get_mass_core_distinguishes_old_normalized_bug_at_finite_r0(libcore):
+    # item 25 (zofia-kaminska milestone audit finding on PR #24/216d322):
+    # both tests above use r[0]~1e-3, the PR's own "harmless" case where
+    # r[0]**3 is tiny under EITHER formula, so they can't actually tell
+    # the fixed first term apart from the pre-fix one
+    # (rho[0]*r[0]**3/r[-1]**3, copy-pasted from get_mass_norm's
+    # normalized-fraction convention, dimensionally inconsistent with the
+    # absolute shell masses summed after it). Here r[0] is 30% of r[-1] --
+    # a finite inner-core-sized radius, not an infinitesimal seed point --
+    # so the two formulas diverge by ~5.7%, nowhere near float tolerance.
+    r_core = 732_000.0   # m, ~30% of a Mercury-sized total radius
+    r_total = 2_440_000.0  # m
+    rho_core = 7000.0     # kg/m3
+    rho_mantle = 3400.0    # kg/m3
+    n = 3000
+    r = np.concatenate(([r_core], np.linspace(r_core, r_total, n)[1:]))
+    rho = np.concatenate(([rho_core], np.full(n - 1, rho_mantle)))
+
+    mass = libcore.get_mass_core(r, rho)
+
+    # Independent oracle for the SHELL terms (i=1..n-1): straight
+    # (4/3)*pi*rho*(r_i^3 - r_{i-1}^3), identical in both old and new
+    # code -- only the first term (the inner-core sphere itself) differs.
+    shell_mass = np.sum(rho[1:] * (4.0 / 3.0) * np.pi * (r[1:] ** 3 - r[:-1] ** 3))
+    mass_new_expected = rho_core * (4.0 / 3.0) * np.pi * r_core ** 3 + shell_mass
+    mass_old_buggy = rho_core * r_core ** 3 / r_total ** 3 + shell_mass
+
+    assert mass == pytest.approx(mass_new_expected, rel=1e-9)
+    # The pre-fix formula sits ~5.7% away -- far outside any float
+    # tolerance, so this also fails loudly if the old bug ever returns.
+    assert mass != pytest.approx(mass_old_buggy, rel=1e-3)
+    assert abs(mass / mass_old_buggy - 1.0) > 0.05
+
+
 # ---------------------------------------------------------------------
 # get_moi: a UNIFORM-density sphere has moment-of-inertia factor
 # C/(M R^2) = 0.4 exactly -- the textbook solid-sphere result, and
