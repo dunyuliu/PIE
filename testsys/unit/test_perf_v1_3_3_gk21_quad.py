@@ -1,22 +1,26 @@
 """Differential/perf tests for the v1.3.3 performance port (PATHWAY_FORWARD.md
 perf item, docs/notes/perf_v1.3.3.md): eosAndersonGrueneisen.Gibbs's
-`integrate.quad` call (src/coreEos.py) can OPT IN (PIE_FAST_QUAD=1,
-default OFF) to a vectorised single-GK21-panel evaluation
-(`coreEos._gk21_panel` / `coreEos._gk21_or_quad`) that replicates
-QUADPACK's dqk21.f (21-point Gauss-Kronrod rule) and dqagse.f's own
-single-panel accept test bit-for-bit, falling back to the real
-`scipy.integrate.quad` per call whenever that accept test fails.
+`integrate.quad` call (src/coreEos.py) uses, by DEFAULT since the owner's
+2026-10-02 ruling (PIE_FAST_QUAD defaults to True; an explicit
+PIE_FAST_QUAD=0 is the escape hatch), a vectorised single-GK21-panel
+evaluation (`coreEos._gk21_panel` / `coreEos._gk21_or_quad`) that
+replicates QUADPACK's dqk21.f (21-point Gauss-Kronrod rule) and
+dqagse.f's own single-panel accept test bit-for-bit, falling back to the
+real `scipy.integrate.quad` per call whenever that accept test fails.
 
-This ships opt-in, NOT as the default: on the pinned environment
-(numpy==1.21.5, scipy==1.8.0) GK21 is exactly bit-identical to real quad,
-but a prior attempt at shipping this as the default broke CI's
-fast-latest job (current numpy/scipy) with an ~8.3e-17 difference, traced
-to eosAndersonGrueneisen.volume's CubicSpline not being bit-identical
-between a vectorised array call and one-scalar-call-per-point on
-non-pinned numpy/scipy. So this test file has two tiers: exact-equality
-tests that only make sense (and only run meaningfully) on the pinned
-environment, and a portable relative-diff-bound test that runs and
-asserts on ANY environment including fast-latest.
+On the pinned environment (numpy==1.21.5, scipy==1.8.0) GK21 is exactly
+bit-identical to real quad. A first attempt at shipping this as the
+default (PR #15) broke CI's fast-latest job (current numpy/scipy) with an
+~8.3e-17 difference, traced to eosAndersonGrueneisen.volume's CubicSpline
+not being bit-identical between a vectorised array call and
+one-scalar-call-per-point on non-pinned numpy/scipy; the owner's
+2026-10-02 ruling is that this bounded (not eliminated) divergence is
+acceptable, so default-on ships with that divergence bounded by
+GK21_PORTABLE_RTOL rather than papered over. So this test file has two
+tiers: exact-equality tests that only make sense (and only run
+meaningfully) on the pinned environment, and a portable relative-diff-
+bound test that runs and asserts on ANY environment including
+fast-latest.
 
 Profiling (cProfile, canonical Margot-fit radius, CMR2=0.346/CMC=0.424, S,
 Edmund) found integrate.quad at ~6.4s of a 9.6s single-radius solve:
@@ -262,7 +266,7 @@ class TestGK21MatchesRealQuadBitIdentically:
                 f"bound off the pinned environment: max reldiff "
                 f"{max_reldiff!r} > {GK21_PORTABLE_RTOL}"
             )
-        coreEos.PIE_FAST_QUAD = False  # restore module default for other tests
+        coreEos.PIE_FAST_QUAD = True  # restore module default for other tests
 
 
 # ---------------------------------------------------------------------
@@ -341,58 +345,79 @@ def test_gk21_or_quad_is_faster_than_real_quad(coreEos, eos_objects,
 
 
 # ---------------------------------------------------------------------
-# 7. Default behaviour is unchanged: no flag set -> real quad, not GK21
+# 7. Default behaviour is GK21-on: no flag set -> GK21, not a silent
+#    fallback to quad (owner's 2026-10-02 ruling flips this default)
 # ---------------------------------------------------------------------
 
-class TestDefaultBehaviourIsUnchanged:
-    """GK21 is opt-in; the whole point of v1.3.3 is that default behaviour
-    (PIE_FAST_QUAD unset) is IDENTICAL to pre-v1.3.3 on every environment,
-    not just the pinned one. These tests prove the default actually takes
-    the quad path, not merely that quad and GK21 happen to agree."""
+class TestDefaultBehaviourIsGK21On:
+    """Since the 2026-10-02 ruling, GK21 is the default; PIE_FAST_QUAD=0 is
+    the explicit escape hatch back to pre-v1.3.3 real-quad-only behaviour.
+    These tests prove the default actually takes the GK21 path, not merely
+    that quad and GK21 happen to agree."""
 
-    def test_module_default_flag_is_off(self, coreEos):
-        assert coreEos.PIE_FAST_QUAD is False, (
-            "coreEos.PIE_FAST_QUAD must default to False -- GK21 is "
-            "opt-in, not the default"
+    def test_module_default_flag_is_on(self, coreEos):
+        assert coreEos.PIE_FAST_QUAD is True, (
+            "coreEos.PIE_FAST_QUAD must default to True -- GK21 is the "
+            "default integrator, PIE_FAST_QUAD=0 is the escape hatch"
         )
 
-    def test_env_var_unset_resolves_to_off(self):
+    def test_env_var_truth_table(self):
         """Re-import coreEos fresh (not the module-scoped fixture, which
-        may have been mutated by other tests in this file) with
-        PIE_FAST_QUAD deliberately absent from the environment, and
-        confirm the module-level constant it reads at import time is
-        False."""
+        may have been mutated by other tests in this file) for each of
+        unset / "1" / "0", and pin the exact truth table: unset->True,
+        "1"->True, "0"->False. Only an explicit "0" is the escape hatch;
+        unsetting the variable must NOT be read as off."""
         had_old = "PIE_FAST_QUAD" in os.environ
         old = os.environ.get("PIE_FAST_QUAD", None)
-        if had_old:
-            del os.environ["PIE_FAST_QUAD"]
         try:
-            fresh = import_src("coreEos")
-            assert fresh.PIE_FAST_QUAD is False
+            if had_old:
+                del os.environ["PIE_FAST_QUAD"]
+            assert import_src("coreEos").PIE_FAST_QUAD is True, (
+                "PIE_FAST_QUAD unset must resolve to True (default on)"
+            )
+            os.environ["PIE_FAST_QUAD"] = "1"
+            assert import_src("coreEos").PIE_FAST_QUAD is True
+            os.environ["PIE_FAST_QUAD"] = "0"
+            assert import_src("coreEos").PIE_FAST_QUAD is False, (
+                'PIE_FAST_QUAD="0" must resolve to False (explicit escape '
+                "hatch)"
+            )
         finally:
             if had_old:
                 os.environ["PIE_FAST_QUAD"] = old
+            elif "PIE_FAST_QUAD" in os.environ:
+                del os.environ["PIE_FAST_QUAD"]
 
-    def test_gibbs_takes_quad_path_by_default(self, coreEos, eos_objects,
+    def test_gibbs_takes_gk21_path_by_default(self, coreEos, eos_objects,
                                                real_calls):
-        """With PIE_FAST_QUAD left at its module default (False), Gibbs()
-        must call scipy.integrate.quad -- not _gk21_panel/_gk21_or_quad --
-        confirmed by monkeypatching _gk21_or_quad to raise if invoked."""
-        assert coreEos.PIE_FAST_QUAD is False
+        """With PIE_FAST_QUAD left at its module default (True), Gibbs()
+        must call _gk21_or_quad -- not fall back to real
+        scipy.integrate.quad -- confirmed by monkeypatching the real
+        scipy.integrate.quad to raise if invoked on the default path (not
+        the other way around: proving we no longer silently fall back to
+        quad, which is the actual risk of this default flip)."""
+        assert coreEos.PIE_FAST_QUAD is True
         eosobj = eos_objects["fccFe"]
         b, T = float(real_calls["b"][0]), float(real_calls["T"][0])
         p = b * eosobj.pMax
 
+        from scipy import integrate
+
         def _boom(*a, **k):
             raise AssertionError(
-                "default path (PIE_FAST_QUAD unset) called _gk21_or_quad "
-                "-- opt-in flag is not actually defaulting to off"
+                "default path (PIE_FAST_QUAD unset) called real "
+                "scipy.integrate.quad -- default is silently falling back "
+                "instead of taking the GK21 path"
             )
 
-        orig = coreEos._gk21_or_quad
-        coreEos._gk21_or_quad = _boom
+        orig = integrate.quad
+        integrate.quad = _boom
         try:
-            # Must not raise: default path never reaches _gk21_or_quad.
+            # Must not raise: default path never reaches real quad (the
+            # per-call dqagse accept-test fallback inside _gk21_or_quad
+            # is exercised elsewhere, e.g. test
+            # test_direct_sweep_shows_single_panel_is_not_universal; this
+            # (p, T) pair is one of the real captured single-panel calls).
             eosobj.Gibbs(p, T)
         finally:
-            coreEos._gk21_or_quad = orig
+            integrate.quad = orig

@@ -117,29 +117,31 @@ _GK21_WGK = (
 
 # PIE_FAST_QUAD (module-level env flag, same convention as
 # PIE_WORKERS/PIE_LAUNCHER_SEED_BASE elsewhere in this codebase): DEFAULT
-# OFF. This is an OPT-IN perf path, not the default: on the pinned
+# ON as of the owner's 2026-10-02 ruling (see CHANGELOG.md). On the pinned
 # environment (numpy==1.21.5, scipy==1.8.0) it is bit-identical to real
 # scipy.integrate.quad (testsys/unit/test_perf_v1_3_3_gk21_quad.py's
 # differential test shows max diff 0.0 on 237057 real captured (p, T)
 # calls spanning S/Si/S+Si x Edmund/Steinbruegge x small-ricb/canonical-ricb
-# radii), BUT a prior shipped-as-default attempt at this same change broke
-# CI's fast-latest job (current numpy/scipy, Python 3.12) with an ~8.3e-17
-# difference: eosAndersonGrueneisen.volume's CubicSpline does not return
+# radii). Off the pinned environment (CI's fast-latest job, current
+# numpy/scipy), eosAndersonGrueneisen.volume's CubicSpline does not return
 # bit-identical values for a vectorised array call vs one-scalar-call-per-
-# point on non-pinned numpy/scipy (floating-point non-associativity in
-# CubicSpline's own vectorized-vs-scalar code path, not a bug in this
-# port's GK21 logic) -- see docs/notes/perf_v1.3.3.md. The owner's ruling:
-# ship opt-in only, default OFF on every environment, so default behaviour
-# (no flag set) is identical to pre-v1.3.3 on every environment, not just
-# the pinned one. PIE_FAST_QUAD=1 opts in to the vectorised GK21 fast path
-# (falling back to real scipy.integrate.quad per call whenever
+# point (floating-point non-associativity in CubicSpline's own vectorized-
+# vs-scalar code path, not a bug in this port's GK21 logic -- see
+# docs/notes/perf_v1.3.3.md for the ~8.3e-17 absolute divergence measured
+# on CI run 36881055265 during the FIRST default-on attempt, PR #15,
+# reverted as PR #16). That divergence is bounded, not eliminated, by
+# GK21_PORTABLE_RTOL=1e-14 below -- it does not disqualify default-on, it
+# is simply the known, bounded cost of it off the pinned environment.
+# PIE_FAST_QUAD unset now means ON (the vectorised GK21 fast path,
+# falling back to real scipy.integrate.quad per call whenever
 # _gk21_or_quad's replicated dqagse.f accept test fails -- see that
-# function's docstring); PIE_FAST_QUAD unset or "0" is the unconditional
-# real scipy.integrate.quad call, unchanged from pre-v1.3.3 behaviour.
-# Read once at import time -- a test that needs the opposite path within
-# one process calls _gk21_or_quad directly rather than monkeypatching this
+# function's docstring); only an EXPLICIT PIE_FAST_QUAD=0 is the escape
+# hatch back to the unconditional real scipy.integrate.quad call (pre-
+# v1.3.3 behaviour). Read once at import time -- a test that needs the
+# opposite path within one process calls _gk21_or_quad directly, or sets
+# PIE_FAST_QUAD=0 before import, rather than monkeypatching this
 # module-level constant after other code has already captured it.
-PIE_FAST_QUAD = os.environ.get("PIE_FAST_QUAD", "0") == "1"
+PIE_FAST_QUAD = os.environ.get("PIE_FAST_QUAD", "1") != "0"
 
 
 def _gk21_panel(func, a, b):
@@ -367,10 +369,12 @@ class eosAndersonGrueneisen:
             a = self.p0/self.pMax
             b = p/self.pMax
             if PIE_FAST_QUAD:
-                # v1.3.3 perf opt-in (default OFF -- see _gk21_or_quad's
-                # docstring and testsys/unit/test_perf_v1_3_3_gk21_quad.py
-                # for why this is NOT bit-identical to the quad path below
-                # and therefore ships opt-in, not as the default).
+                # v1.3.3 perf path, DEFAULT ON since the 2026-10-02 ruling
+                # (see _gk21_or_quad's docstring and
+                # testsys/unit/test_perf_v1_3_3_gk21_quad.py for why this
+                # is NOT bit-identical to the quad path below off the
+                # pinned environment, and PIE_FAST_QUAD=0 for the escape
+                # hatch back to the quad path).
                 Gp = _gk21_or_quad(lambda x: self.volume(x,T), a, b)
             else:
                 Gp = integrate.quad(lambda x: self.volume(x,T), a, b)[0]
