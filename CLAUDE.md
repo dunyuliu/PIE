@@ -28,12 +28,18 @@ python scheduler.py CMR2 CMC        # single case, e.g. 0.346 0.424 (Margot fit)
 python monteCarlo.run.py            # Monte Carlo ensemble around a mean CMR2/STD
 ```
 
-Large ensembles on TACC Lonestar6:
+Batches and large ensembles (knox or TACC Lonestar6), resumable, one
+manifest -- `src/robust_runner.py` (item 22; README "Large ensemble Monte
+Carlo simulation"):
 
 ```bash
-python src/TACC.LS6.create.parallel.launcher.py   # README says TACC.create.parallel.launcher.py — wrong, see PROJECT_RULES.md rule 11
-sbatch TACC.LS6.parallel.run.slurm
+python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
+python3 src/robust_runner.py run mc.csv                    # knox, PIE_WORKERS-capped
+python3 src/robust_runner.py run mc.csv --backend tacc     # LS6: then cd src && sbatch TACC.LS6.parallel.run.slurm
 ```
+
+Legacy: `src/TACC.LS6.create.parallel.launcher.py` + `monteCarlo.run.py`
+(its resume check treats a killed draw as finished -- README).
 
 ## Layout
 
