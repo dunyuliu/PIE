@@ -131,4 +131,18 @@ def test_mc_wide_case(entry, computed_by_case):
     # {2, 3}, is still gated to exact equality via assert_scalars_match.
     if {payload["isnow"], reference["isnow"]} == {2.0, 3.0}:
         payload = dict(payload, isnow=reference["isnow"])
-    assert_scalars_match(payload, reference, rtol=1e-4, context=f"{_case_id(entry)}: ")
+    # check_error_code=False: this manifest's reference rows come from
+    # the published Zenodo dataset (predates PATHWAY_FORWARD.md item 16's
+    # error-code table entirely -- its own 'error_code' column, if
+    # present, is not a real classification). Since item 23(a),
+    # solve_full_model's computed error_code is derived from THIS solve's
+    # own status (testsys/conftest.py::solve_full_model) and correctly
+    # reads 4 (CHI_OUTSIDE_ADMISSIBLE_BOX) for the ~22% of converged rows
+    # that are admissible-box violations (is_admissible's own docstring)
+    # -- comparing that against a reference that predates the concept
+    # entirely is not a regression check, it would just fail every such
+    # row. Every other categorical field (isnow/isnowcmb) and all
+    # continuous fields are still gated to the reference exactly as
+    # before.
+    assert_scalars_match(payload, reference, rtol=1e-4, context=f"{_case_id(entry)}: ",
+                          check_error_code=False)

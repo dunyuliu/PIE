@@ -66,8 +66,11 @@ def test_matches_published_s_plus_si_case(case, h5_name, CMR2, CMC, chi_si, ricb
 
     computed = solve_full_model(CMR2, CMC, "S+Si", "Edmund", ricb_m, chi_Si_icb=chi_si)
 
+    # check_error_code=False: reference_scalars comes from the published
+    # Zenodo h5 (predates PATHWAY_FORWARD.md item 16's error-code table)
+    # -- see test_mc_wide_parity.py's identical carve-out for the reason.
     assert_scalars_match(computed["scalars"], reference_scalars, rtol=1e-4,
-                          context=f"{case}/{h5_name}: ")
+                          context=f"{case}/{h5_name}: ", check_error_code=False)
     assert_profiles_match(computed["profiles"], reference_profiles,
                            rtol=1e-3, atol=1e-6, interpolate=True,
                            context=f"{case}/{h5_name}: ")

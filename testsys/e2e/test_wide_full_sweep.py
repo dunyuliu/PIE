@@ -93,8 +93,14 @@ def test_wide_case_matches_self_golden(entry, computed_by_case):
     assert not isinstance(computed, BaseException), (
         f"{_case_id(entry)}: golden says convergent, fresh solve raised {computed!r}"
     )
+    # check_error_code=False: entry["scalars"] is the self-golden
+    # reference in testsys/reference/self_v1.0.5/wide_sweep/, generated
+    # BEFORE PATHWAY_FORWARD.md item 23(a) fixed solve_full_model's
+    # error_code derivation -- every stored entry reads 0.0 regardless of
+    # actual admissibility, so it cannot be compared exactly (see
+    # test_mc_wide_parity.py's identical carve-out).
     assert_scalars_match(computed["scalars"], entry["scalars"], rtol=1e-4,
-                          context=f"{_case_id(entry)}: ")
+                          context=f"{_case_id(entry)}: ", check_error_code=False)
     assert_profiles_match(computed["profiles"], entry["profiles"],
                            rtol=1e-3, atol=1e-6, interpolate=False,
                            context=f"{_case_id(entry)}: ")

@@ -128,7 +128,11 @@ def test_published_wide_sample_matches():
         if {payload["isnow"], reference["isnow"]} == {2.0, 3.0}:
             payload = dict(payload, isnow=reference["isnow"])  # see mc_wide test
         try:
-            assert_scalars_match(payload, reference, rtol=1e-4, context=f"{label}: ")
+            # check_error_code=False: reference is a published Zenodo
+            # row, predates PATHWAY_FORWARD.md item 16's error codes --
+            # see test_mc_wide_parity.py's identical carve-out.
+            assert_scalars_match(payload, reference, rtol=1e-4, context=f"{label}: ",
+                                  check_error_code=False)
             n_converged_checked += 1
         except AssertionError as e:
             failures.append(str(e))
