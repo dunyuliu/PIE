@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np # loading numpy. 
-from globalvar import * # loading global variables. 
-from planet_input import * # loading planet, which produces initial model input.
+import numpy as np # loading numpy.
+from globalvar import (
+    CMR2,
+    compiled_data_file,
+    contourcond,
+    csvfiles_path,
+    presentday_columns,
+) # loading global variables actually used below.
 from drivere import * # loading drivere, which does the main computation for evolution model.
 from driverp import * # loading driverp, which does the main computation for presentDay model.
 import csv # for writing and using csv files -- added 6/27/2022

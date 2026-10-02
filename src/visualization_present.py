@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
-from globalvar import *
+from globalvar import chi_Si_icb, liquidus_eq, model_path, presentFigureName
 import os, stat
 import shutil
 
