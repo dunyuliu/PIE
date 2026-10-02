@@ -8,13 +8,23 @@ Si %wt is currently assumed to be a constant throughout the core, while S %wt ar
 
 # Quickstart guide
 
-Install exact-pinned dependencies once (see `requirements.txt`; target
-interpreter per `CLAUDE.md`/`PROJECT_RULES.md` rule 3 -- `/usr/bin/python3`
-on most hosts, or a pinned project venv where that interpreter is broken,
-e.g. `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`):
+**Required environment**: Python 3.12 with the exact pins in
+`requirements.txt` (PROJECT_RULES.md rule 3b/3c) -- this is the one
+supported environment, not a suggestion; anything else (a different Python,
+unpinned/"latest" packages) is unsupported and untested here.
+
+One-command setup with [`uv`](https://docs.astral.sh/uv/) (absolute path
+shown because `uv` is not on default `PATH` on most hosts):
 ```
-pip install -r requirements.txt
+~/.local/bin/uv venv --python 3.12 .venv
+~/.local/bin/uv pip install --python .venv/bin/python3.12 -r requirements.txt
 ```
+
+Fallback (no `uv`): any Python 3.12 interpreter, `pip install -r
+requirements.txt`. On a PEP 668 "externally managed" system Python you may
+need a venv first (`python3.12 -m venv .venv && .venv/bin/pip install -r
+requirements.txt`) -- see `testsys/conftest.py`'s module docstring for why a
+bare `pip install --user` fallback is handled explicitly in the test harness.
 
 All commands below run from `src/` (outputs are written to `./results/`,
 relative to the current directory when the script runs):
@@ -96,14 +106,12 @@ skipped as if finished. Prefer `robust_runner.py`.
 ## Testing
 
 ```
-/usr/bin/python3 testsys/run.py            # fast tiers: unit + contract + integration, ~3-5 min
-/usr/bin/python3 testsys/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~11 min
+.venv/bin/python3.12 testsys/run.py            # fast tiers: unit + contract + integration, ~3-5 min
+.venv/bin/python3.12 testsys/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~14 min
 ```
 
-See [`testsys/README.md`](testsys/README.md) for tier definitions, the
-published-paper parity check against Zenodo-archived output, and a
-known-environment note (`/usr/bin/python3` needs `PYTHONNOUSERSITE=1`
-for subprocess runs -- see that file).
+See [`testsys/README.md`](testsys/README.md) for tier definitions and the
+published-paper parity check against Zenodo-archived output.
 
 ## Solver
 

@@ -50,7 +50,16 @@ import pytest
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 
-sys.path[:] = [p for p in sys.path if "/.local/" not in p]
+# Narrowed to "/.local/lib/" (2026-10-02, py312 migration): the bare
+# "/.local/" substring also matches the uv-managed interpreter's OWN
+# stdlib path (~/.local/share/uv/python/cpython-3.12.../lib/python3.12),
+# which has nothing to do with the pip --user site-packages this filter
+# exists to drop -- a blanket match there stripped the interpreter's own
+# stdlib out of sys.path and broke every import (e.g. `pdb`). pip --user
+# installs always land under ".local/lib/pythonX.Y/site-packages", so
+# "/.local/lib/" still catches the case this was written for. See
+# testsys/unit/test_conftest_syspath_filter.py for both directions.
+sys.path[:] = [p for p in sys.path if "/.local/lib/" not in p]
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
