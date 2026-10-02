@@ -1,4 +1,23 @@
-**UNAUDITED — not for coauthor communication, not an erratum, pending independent audit (recommend priya-nair or equivalent)**
+**UNAUDITED — not for coauthor communication, not an erratum, pending owner review**
+
+**Correction, 2026-10-02 (priya-nair audit):** independent re-derivation from the raw
+`testsys/reference/v1_2_0_sweeps/v130_measure36.json` found the "16 (41%), margot S+Si 0.05"
+concentration claim in §2/§6 and its per-composition table undercounted by one case: margot
+S+Si 0.05 has a THIRD admissible-recovery case (`crash_stderr/later`, 1 row) the original table
+missed, alongside the two `newton_maxit` cases (10+6 rows). Corrected below: **17/39 (43.6%)**,
+not 16/39 (41%); genova S+Si 0.10 corrected 2->4 and a phantom "margot Si 3" line (an
+accidental duplicate of genova Si) removed from the per-composition table. All other audited
+numbers (39/892 admissible-row rate and its Clopper-Pearson CI95 3-6%; 16/37 cases-with-recovery
+and its CI95 27-61%; the 74/23/3% newton_maxit/crash_stderr/detJ0 split; the CMR2
+above-published-mean comparison; the missing-isnow finding; the order-of-magnitude row-count
+bound) independently reproduced exactly and are unchanged. Open from the audit, not resolved
+here: the 474,075-row published denominator traces to a `src/shootp.py` docstring claim, not to
+a committed census script reading the Zenodo CSV directly — needs its own provenance artifact;
+whether `newton_maxit/10m` and `newton_maxit/later` are genuinely distinct MC draws (CMR2 differs
+only at the 4th decimal) is unresolved. The qualitative conclusion (pooled rate not
+representative, dominated by one branch, do not scale flatly) is unaffected and, if anything,
+strengthened by the correction. This remains UNAUDITED-for-coauthor-communication regardless;
+the audit checked arithmetic only, it did not clear this note for external use.
 
 # Item 18 "quantify" step — joining the 36/37-case recovery measurement to the published grid
 
@@ -53,15 +72,18 @@ underlying statistical thinness; see §4.
 
 ## 2. What the fresh re-derivation shows that the rolled-up table does not: extreme concentration
 
-Of the 39 admissible rows, **16 (41%) come from a single MOI x composition pair**
-(margot S+Si 0.05, CMR2 ~ 0.3536-0.3537, split across its `newton_maxit/10m` case (10 admissible
-rows) and its `newton_maxit/later` case (6 admissible rows) — almost certainly the same physical
-branch sampled at two failure-mode labels). The `newton_maxit` failure mode alone supplies 29/39 (74%)
-of all admissible recoveries; `crash_stderr` supplies 9/39 (23%); `detJ0` supplies 1/39 (3%) — even
-though `crash_stderr` and `detJ0` dominate the raw *count* of affected draws (§1 table, and
-`failure_analysis_2026-09-28.md` §2). Per-composition admissible counts (from §0's re-derivation):
-margot S 1, margot Si 3 (genova, not margot — see raw table), margot S+Si 0.05 16, margot S+Si 0.10 5,
-genova S 4, genova Si 3, genova S+Si 0.05 5, genova S+Si 0.10 2.
+Of the 39 admissible rows, **17 (43.6%) come from a single MOI x composition pair**
+(margot S+Si 0.05, CMR2 ~ 0.3536-0.3537, split across three cases: `newton_maxit/10m` (10
+admissible rows), `newton_maxit/later` (6 admissible rows), and `crash_stderr/later` (1 admissible
+row) — the two `newton_maxit` cases are plausibly the same physical branch sampled at two
+failure-mode labels, though this is not independently confirmed (their CMR2 differs only at the
+4th decimal, 0.35368 vs 0.35356 — see §5); the `crash_stderr/later` case's contribution is a
+separate failure mode and not part of that same-branch question). The `newton_maxit` failure mode
+alone supplies 29/39 (74%) of all admissible recoveries; `crash_stderr` supplies 9/39 (23%);
+`detJ0` supplies 1/39 (3%) — even though `crash_stderr` and `detJ0` dominate the raw *count* of
+affected draws (§1 table, and `failure_analysis_2026-09-28.md` §2). Per-composition admissible
+counts (from §0's re-derivation, corrected 2026-10-02): margot S 1, margot S+Si 0.05 17, margot
+S+Si 0.10 5, genova S 4, genova Si 3, genova S+Si 0.05 5, genova S+Si 0.10 4 (sums to 39).
 
 **Consequence: the pooled 39/892 (4%, CI95 3-6%) and 16/37 (43%, CI95 27-61%) rates are not a
 homogeneous property of the affected population — they are dominated by one recovering branch.**
@@ -144,6 +166,12 @@ to PIE per `CLAUDE.md`/`PATHWAY_FORWARD.md` item 18's standing instruction.
   `newton_maxit/later`) are genuinely distinct draws rather than two labels on the same one.
 - **Mode C (IndexError, geometric limit) is excluded from scope**, inherited from item 17/18's framing,
   not re-justified here.
+- **The 474,075-row published denominator (§6) has no committed independent provenance artifact** —
+  it traces to a `src/shootp.py` docstring claim, not a census script reading the Zenodo CSV directly
+  (priya-nair audit, 2026-10-02); needs one before further reliance.
+- **No regression test locks in the 39/892/16-37/74-23-3%/17-of-39 counts** against
+  `testsys/reference/v1_2_0_sweeps/v130_measure36.json` — a fixture test here would have caught the
+  §2 table error mechanically (priya-nair audit, 2026-10-02); route to iris-vermeulen.
 - **No number here should be read as a percentage-point snow-fraction correction.** The only quantities
   computed to more than order-of-magnitude precision are population counts (§1, cross-checked via the
   1024-identity) and the fresh 39/892/16-37 re-derivation (§0); everything downstream of those is
@@ -155,8 +183,9 @@ to PIE per `CLAUDE.md`/`PATHWAY_FORWARD.md` item 18's standing instruction.
   cross-checked).
 - Admissible-recovery rate: **39/892 radii (4%, CI95 3-6%)**; **16/37 draws (43%, CI95 27-61%)** gain
   >=1 admissible row — both fresh re-derivations, matching the posted summary exactly.
-- **41% of all admissible recoveries concentrate in one MOI x composition pair** (margot S+Si 0.05) —
-  the pooled rate is not representative of the other 7 sampled compositions, several of which recovered
+- **43.6% (17/39) of all admissible recoveries concentrate in one MOI x composition pair** (margot
+  S+Si 0.05, across three cases, one of them a distinct failure mode — see §2 correction) — the
+  pooled rate is not representative of the other 7 sampled compositions, several of which recovered
   zero admissible rows.
 - Snow-fraction before/after: **before** is the inherited published census (table in §3); **after
   cannot be computed** — `isnow` is not in the measurement's output schema. Row-count impact is bounded
