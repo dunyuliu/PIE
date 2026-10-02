@@ -36,27 +36,51 @@ python scheduler.py CMR2 CMC
 where CMR2 and CMC, for Margot et al. constraints, are 0.346 and 0.424, respectively. The scheduler.py will loop over cases (S, Si, S+Si), liquidus equation (Steinbruegge, Edmund), and in particular for the case with S+Si, Si%wt from 0% to 15% in 1% increment. 
 
 # Large ensemble Monte Carlo simulation
-To produce a large ensemble of interior models that samples a normal distribution from a CMR2 with its STD, supercomputuers such as Lonestar6 at TACC provides LAUNCHER computing module to run serial jobs in parallel.
+
+`src/robust_runner.py` runs any list of present-day jobs on knox (local)
+or TACC Lonestar6 from one manifest file (PATHWAY_FORWARD.md item 22).
+One job = one `main.py p CMR2 CMC light_element liquidus_eq [chi_Si_icb]`
+call.
 
 ```
-python TACC.LS6.create.parallel.launcher.py
-# create a command_launcher file that contains X number of lines of commands.
-# command_launcher will be used by LAUNCHER module on TACC LS6.
-# X is specified in variable total_CPU in the file.
+# 1. manifest: write it by hand (CSV columns CMR2,CMC,light_element,
+#    liquidus_eq,chi_Si_icb[,seed]; chi_Si_icb only for S+Si), or generate
+#    the seeded Monte Carlo ensemble (same draw as monteCarlo.run.py,
+#    same compositions as scheduler.py: S+Si x 16 chi_Si_icb, S, Si):
+python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 
-sbatch TACC.LS6.parallel.run.slurm
-# submit a parallel job requesting 8 computing nodes with a total of 1024 CPU cores,
-#   in this example, that uses LAUNCHER to run all the 1024 models in parallel.
+# 2a. knox / any shared box: PIE_WORKERS-capped pool, nice 10, 1 BLAS thread/job
+python3 src/robust_runner.py run mc.csv
 
-# The example run here takes less than 2 hours.
+# 2b. Lonestar6: writes src/commands_launcher (pending jobs only), then the
+#     existing slurm script runs it under LAUNCHER
+python3 src/robust_runner.py run mc.csv --backend tacc
+cd src && sbatch TACC.LS6.parallel.run.slurm
 ```
 
-### On a shared machine without Slurm (e.g. knox)
+- **Resume**: re-run the same command. A job counts as done only when its
+  sentinel `results/<model dir>/.runner_done_<chi>.json` exists, written
+  after `main.py` exits 0 and its csv reads back. A killed job's partial
+  csv does not count (`main.py` writes the csv header before the sweep).
+  `--force` re-runs finished jobs.
+- **Status**: `src/results/runner_status.jsonl` (`--status-log`), one
+  `start` and one `end` record per attempt. A finished job's status is an
+  `ErrorCode` name (README "Outputs and error codes"): `CONVERGED` if every
+  radius converged, else the most frequent failure code, with per-code row
+  counts. A job that never finished is `PROCESS_CRASHED` or
+  `INCOMPLETE_OUTPUT`. Exit code 0 only if every job attempted finished.
+- **Provenance** (every record and every sentinel): git SHA and whether
+  `src/` was dirty, `requirements.txt` pins and the versions actually
+  installed, host, interpreter, run id, start/end time.
+- **Workers**: `PIE_WORKERS`, default `max(4, floor(free cores/2))`, the
+  same formula as `testsys/conftest.py` (PROJECT_RULES.md rule 15); check
+  `uptime`/`who` first and set it explicitly on a loaded box.
+- The ricb grid is not a manifest field: it is fixed in `src/main.py`.
 
-Same `commands_launcher` file (each line already carries an explicit seed
-and the pinned interpreter), run directly with `xargs` instead of LAUNCHER
--- capped and niced so other users' jobs on the same box keep headroom
-(see `PROJECT_RULES.md`'s shared-machine rule):
+### Legacy recipes
+
+`src/TACC.LS6.create.parallel.launcher.py` writes a `commands_launcher`
+of 1024 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or, on knox:
 
 ```
 cd src
@@ -64,13 +88,10 @@ python TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
 nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
 ```
 
-Resumable: each line (`monteCarlo.run.py <seed>`) skips its own CMR2/CMC
-draw if `results/CMR2_*_CMC_*_S+Si_Edmund/pMetaData_*.csv` for that draw
-already exists, so re-running the same `commands_launcher` after a
-partial/interrupted ensemble only does the missing work. `PIE_WORKERS`
-defaults to the same cap `testsys/run.py` uses (`max(4, floor(free
-cores/2))`); set it explicitly on a loaded box (check `uptime`/`who`
-first).
+Its resume check is weaker than the runner's: `monteCarlo.run.py` skips a
+draw if the draw's `S+Si` `pMetaData_*.csv` exists, but `main.py` creates
+that csv (header row) before the sweep starts, so a draw killed mid-run is
+skipped as if finished. Prefer `robust_runner.py`.
 
 ## Testing
 
