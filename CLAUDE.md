@@ -12,13 +12,11 @@ is serial Python under `src/`. No compiled component, no MPI, no conda.
 
 ## Environment
 
-- Use **`/usr/bin/python3`**, not whatever `python3` resolves to first on
-  `PATH` — the default on this box is a venv missing `h5py`
-  (`read_plot_datah5.py` needs it). Verify: `/usr/bin/python3 -c "import
-  h5py"`.
-- No conda for this project.
-- Dependencies (no manifest exists yet — `PATHWAY_FORWARD.md` item 8):
-  `numpy`, `scipy`, `pandas`, `matplotlib`, `h5py`.
+Environment setup (interpreter, Python version, dependencies) is in flux as of
+this date. See README.md's Quickstart/install section for the current 
+authoritative guidance (target interpreter, dependency pins, venv setup if needed).
+See also `PROJECT_RULES.md` rule 3 (exact-pin enforcement) and `requirements.txt`
+(runtime deps, single source of truth).
 
 ## Running
 
@@ -60,20 +58,25 @@ Legacy: `src/TACC.LS6.create.parallel.launcher.py` + `monteCarlo.run.py`
   evolution branch parked under item 11; do not extend or delete it.
 - `historical_versions/` — frozen zip/tar snapshots of prior versions.
   Read-only (`PROJECT_RULES.md` rule 7).
-- `testsys/`, `.github/` — owned by a separate, concurrent effort building the
-  tiered test suite (unit/contract/integration/e2e) and CI. Do not create or
-  edit anything here from this working context.
 - `CHANGELOG.md` — per-release change list; git tags are the version source of truth
   (`PROJECT_RULES.md` rule 1a). `update_log` is the frozen pre-v1.0.5 dev log;
   it gets no new entries.
 
-## Version state (as of 2026-09-29)
+## Version state (as of 2026-10-02)
 
 - v1.0.5 (tag on `683a51d`): the code archived with Dunnigan et al. 2026
   (Zenodo 10.5281/zenodo.16929504). v1.1.0: first tested baseline (testsys,
   CI, rules, citation) with `src/` byte-identical to v1.0.5.
 - v1.0.2/v1.0.3 were zipped externally but never tagged; don't tag them.
-- v1.1.1: scipy interp2d port. v1.2.0: error codes, clean exits, solver log. v1.3.0: bounded line-search Newton, getk2 nrs=0 fix, continue-after-failure sweeps, failure rows in the csv (item 17; `docs/notes/solver_v1.3.0.md`).
+- v1.1.1 (2026-09-29): scipy interp2d port to RectBivariateSpline.
+- v1.2.0 (2026-09-30): error codes, clean exits, solver log, dependency manifest.
+- v1.3.0 (2026-09-30): bounded line-search Newton, getk2 nrs=0 fix, 
+  continue-after-failure sweeps, failure rows in csv (PATHWAY_FORWARD.md item 17).
+- v1.3.1 (2026-10-01): pytest-xdist parallelism, no physics change (patch).
+- v1.3.2 (2026-10-01): linear-solve performance (spsolve over inv), no algorithm change (patch).
+- v1.3.3 (2026-10-01): opt-in vectorised GK21 quadrature (PIE_FAST_QUAD, default off, patch).
+- v1.4.0 (2026-10-02): robust-runner feature, src/ import narrowing (items 9, 22), 
+  test-coverage/doc hardening (items 23, 18, 25).
 
 ## Known correctness caveats
 
