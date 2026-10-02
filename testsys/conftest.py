@@ -273,6 +273,30 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
     chi_li_eut_icb = 0.11 + 0.187 * np.exp(-0.065 * Picb * 1e-9)
     chi_li_eut_cmb = 0.11 + 0.187 * np.exp(-0.065 * Pcmb * 1e-9)
 
+    # error_code: derived from THIS solve's own status, mirroring
+    # src/driverp.py's per-radius classification line-for-line (same
+    # ErrorCode table, item 16) -- NOT a hard-coded 0.0. driverp.py's
+    # sweep applies these three checks in this exact order, each later
+    # one overwriting the previous: (1) the `err` flag shoot_mercmodel
+    # returns (negative chi_li_icb at the trial root) ->
+    # CHI_OUTSIDE_ADMISSIBLE_BOX; (2) the solved rcmb must lie strictly
+    # outside the requested ricb -> RICB_GE_RCMB; (3) a negative value
+    # ANYWHERE in the converged chi_li profile -> CHI_OUTSIDE_ADMISSIBLE_BOX
+    # (final, highest priority, same as driverp.py's closing check).
+    # A genuinely admissible, physically-valid converged solve still
+    # gets CONVERGED (0) here, same as before this fix -- so every
+    # existing admissible-case comparison against published/golden data
+    # (which predates item 16's error codes and is also implicitly 0 in
+    # that case) is unaffected; only the previously-impossible non-zero
+    # path is now reachable.
+    error_code = gv.ErrorCode.CONVERGED
+    if err:
+        error_code = gv.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+    if ricb_m >= rcmb:
+        error_code = gv.ErrorCode.RICB_GE_RCMB
+    if (chi_li < 0).any():
+        error_code = gv.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+
     return {
         "CMR2": CMR2, "CMC": CMC, "light_element": light_element,
         "liquidus_eq": liquidus_eq, "ricb_m": ricb_m,
@@ -295,7 +319,7 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
             "Pcmb": float(Pcmb), "chi_li_eut_icb": float(chi_li_eut_icb),
             "chi_li_eut_cmb": float(chi_li_eut_cmb), "ricb": float(r_phys[0]),
             "rcmb": float(rcmb), "core_mass": float(core_mass),
-            "chi_li_icb": float(chi_li_icb), "error_code": 0.0,
+            "chi_li_icb": float(chi_li_icb), "error_code": float(int(error_code)),
         },
         "profiles": {
             "r": r_phys.tolist(), "rho": rho_phys.tolist(),
@@ -306,14 +330,30 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
     }
 
 
-def assert_scalars_match(computed, reference, rtol=1e-4, context=""):
+def assert_scalars_match(computed, reference, rtol=1e-4, context="",
+                          check_error_code=True):
     """Compare a `solve_full_model()`-shaped `scalars` dict against a
     reference dict with the same keys. Categorical fields (isnow,
     isnowcmb, error_code) compared for EXACT equality -- they are
     discrete classification labels, not continuous quantities.
     `not (diff > bound)`, never `diff <= bound`: a NaN diff must FAIL,
-    not silently pass a comparison NaN always evaluates False for."""
+    not silently pass a comparison NaN always evaluates False for.
+
+    `check_error_code=False`: `error_code` is derived from THIS solve's
+    own status (PATHWAY_FORWARD.md item 23a, `solve_full_model` in this
+    file) -- a reference generated/published BEFORE item 16 added error
+    codes cannot carry a real one and always reads 0 regardless of
+    whether that row is actually admissible, so comparing it against
+    such a reference is comparing a real classification against a
+    field the reference literally cannot represent, not a regression
+    check. Callers against a pre-item-16 reference (e.g.
+    test_mc_wide_parity.py's published Zenodo rows) pass this False and
+    say so; every other caller (a reference this repo generated WITH
+    the current error-code logic) keeps the default and gets the exact
+    check."""
     for field in CATEGORICAL_FIELDS:
+        if field == "error_code" and not check_error_code:
+            continue
         c, r = computed[field], reference[field]
         assert c == pytest.approx(r, abs=1e-9), (
             f"{context}{field}: categorical field must match EXACTLY "
@@ -432,9 +472,12 @@ def is_admissible(result):
     or [0, liquidus Si max] (Si) and no negative-chi err flag from the shoot.
     A converged solve outside it is what driverp.py records with
     error_code 4 -- the class 21.8% of the published converged rows belong
-    to (chi_li_icb < 0). `scalars["error_code"]` in solve_full_model stays
-    0.0 for parity with the published csvs, which predate the restored
-    err flag; use this function, not that field, to classify."""
+    to (chi_li_icb < 0). `scalars["error_code"]` in solve_full_model is
+    derived from this solve's own status (PATHWAY_FORWARD.md item 23a) and
+    will itself read 4 for such a row; published reference csvs predate the
+    restored err flag and always carry error_code 0 regardless, so compare
+    admissibility with this function, not a raw equality against a
+    reference row's error_code field."""
     s = result["scalars"]
     chi_max = result["max_Si"] if result["light_element"] == "Si" else s["chi_li_eut_icb"]
     return (0.0 <= s["chi_li_icb"] <= chi_max) and not result.get("err_flag", False)
