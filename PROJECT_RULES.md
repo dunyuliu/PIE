@@ -18,6 +18,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 11. Docs move with the code, in the same change.
 12. A living status board, prioritised and re-checked on a schedule.
 13. Land through one gated PR at a time; release in one sequence; state the grant.
+13a. The stranger-clone check runs in an isolated, from-scratch environment.
 14. Every paper that uses PIE output records its Zenodo DOIs and a matching git tag.
 15. Shared machines: cap PIE's parallelism to leave headroom for others.
 
@@ -284,16 +285,50 @@ which are not tracked as extracted files).
 
 Release sequence: one PR per release; `testsys/run.py all` green locally,
 counts pasted in the PR; green CI on the PR head; merge; green CI on the
-merge SHA; add a `CHANGELOG.md` entry and bump `CITATION.cff` `version:` (in the PR); annotated tag `vX.Y.Z` on
-the merge SHA; `gh release create vX.Y.Z --verify-tag --latest`. State the
-grant (who authorised the release, when) in the PR. `v1.0.5` is tagged on
-`683a51d`, the exact code archived for Dunnigan et al. 2026 (rule 14);
-`v1.1.0` is the first tested baseline.
+merge SHA; add a `CHANGELOG.md` entry and bump `CITATION.cff` `version:` (in the PR); a stranger-clone
+verification (rule 13a) must have written and the release agent must have
+read back a `clone: PASS <sha>` line before the next step is taken; only then
+annotated tag `vX.Y.Z` on the merge SHA; `gh release create vX.Y.Z
+--verify-tag --latest`. State the grant (who authorised the release, when) in
+the PR. `v1.0.5` is tagged on `683a51d`, the exact code archived for
+Dunnigan et al. 2026 (rule 14); `v1.1.0` is the first tested baseline.
 `v1.0.2`/`v1.0.3` were never tagged in git — do not retroactively tag them;
 treat their zipped/tarred copies as historical record only (rule 7).
 
 **How to apply**: do not tag ahead of a green testsys run; do not skip the
 GitHub release step after tagging.
+
+**Incident (2026-10-02, v1.4.0)**: the release agent launched the
+stranger-clone verification (clone fresh, follow README, run the documented
+first command) in the background, then created the annotated tag and ran
+`gh release create` while that clone was still running — it later checked in
+and found the clone had in fact passed, but the tag and release predated the
+confirmation. A release is not gated by a check that is merely running; it is
+gated by a check whose result has been read.
+
+### 13a. The stranger-clone check runs in an isolated, from-scratch environment
+
+The clone-verification step (rule 13) must build its own virtualenv from the
+repo's dependency manifest inside the fresh clone, under `env -i` (or
+equivalent: no inherited `PATH`/`PYTHONPATH`/site-packages from the invoking
+shell), never reuse packages already installed in the ambient shell. It must
+record the dependency versions actually resolved and diff them against the
+pinned manifest (rule 3b) as part of its pass/fail evidence, and it must write
+the literal log line `clone: PASS <sha>` on success or `clone: FAIL <reason>`
+on failure — this is the line rule 13 requires the release agent to read back
+before tagging. No tag or `gh release create` runs until that line exists and
+has been read.
+
+**Incident (2026-10-02, v1.4.0)**: the clone-verification step ran in the
+invoking shell and resolved h5py 3.12.1 from the host's already-installed
+packages, not the pinned h5py 3.6.0 in `requirements.txt` — so it proved the
+host's ambient packages happen to work, not that a bare clone following the
+README actually produces a working environment. That is the entire point of
+the stranger-clone gate, and an ambient-shell clone cannot prove it.
+
+**How to apply**: the clone step's evidence block names the venv path, the
+`env -i` invocation, the resolved vs. pinned versions, and the `clone:
+PASS|FAIL` line, pasted into the release PR.
 
 ---
 
