@@ -120,16 +120,19 @@ yet green, or landed across multiple modules in one change with the gate run
 only at the end, is not verified — it is asserted.
 
 **Rationale**: `src/` today imports by `from globalvar import *`, `from
-libCore import *`, `from planet_input import *` (six files:
+libCore import *`, `from planet_input import *` (files:
 `main.py`, `drivere.py`, `driverp.py`, `shoote.py`, `shootp.py`,
-`main_abbey_plot.py`, `summaryPlot.py`, `visualization_evolution.py`,
-`visualization_present.py`, `libCore.py` itself, `test.py`,
-`TEST_visualization_evolution.py`), plus known-dead/scratch files
-(`src/test.py`, `src/TEST_visualization_evolution.py`,
-`src/main_abbey_plot.py`) and a flat layout with no package structure. Fixing
-any of this without a gate that can actually observe a broken numerical
-result is exactly how a star-import removal silently drops a name one file
-depended on.
+`summaryPlot.py`, `visualization_evolution.py`,
+`visualization_present.py`, `libCore.py` itself,
+`TEST_visualization_evolution.py`) and a flat layout with no package
+structure. (`src/test.py` and `src/main_abbey_plot.py`, formerly listed here
+as dead/scratch files, were confirmed unreferenced and broken on current
+`src/` and deleted in item 9's dead-file triage slice;
+`TEST_visualization_evolution.py` was confirmed NOT dead — `src/drivere.py`
+imports it — so it stays, pending the same star-import cleanup as the rest
+of this list.) Fixing any of this without a gate that can actually observe a
+broken numerical result is exactly how a star-import removal silently drops
+a name one file depended on.
 
 **How to apply**: `testsys/run.py all` (or the closest tier that exists at
 the time) is run and recorded green immediately before the refactor starts

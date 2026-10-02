@@ -44,17 +44,20 @@ Legacy: `src/TACC.LS6.create.parallel.launcher.py` + `monteCarlo.run.py`
 ## Layout
 
 - `src/` — all source, flat (no package/subdir structure yet).
-  `main.py`/`main_abbey_plot.py` are entry points; `driverp.py`/`shootp.py`
+  `main.py` is the entry point; `driverp.py`/`shootp.py`
   drive the present-day model, `drivere.py`/`shoote.py` the evolution model
   (under development); `libCore.py` + `coreEos.py` hold the physics;
   `globalvar.py`/`planet_input.py` hold shared state, imported with
   `from x import *` throughout — a known refactor target (`PATHWAY_FORWARD.md`
   item 9), not yet started, and not safe to touch until `testsys/` is green
   (`PROJECT_RULES.md` rule 3a).
-- `src/test.py`, `src/TEST_visualization_evolution.py`,
-  `src/main_abbey_plot.py` are dead/scratch files pending triage
-  (`PATHWAY_FORWARD.md` item 9) — do not extend them; do not delete them
-  either without checking they're truly unused first.
+- `src/test.py` and `src/main_abbey_plot.py` were dead/scratch files pending
+  triage (`PATHWAY_FORWARD.md` item 9); confirmed unreferenced anywhere in
+  `src/`/`testsys/` and broken when run on current `src/` (undefined names
+  from stale `globalvar.py`/`planet_input.py` APIs), so both were deleted.
+  `src/TEST_visualization_evolution.py` was triaged the same way but kept —
+  `src/drivere.py` imports it, so it is not dead, just part of the
+  evolution branch parked under item 11; do not extend or delete it.
 - `historical_versions/` — frozen zip/tar snapshots of prior versions.
   Read-only (`PROJECT_RULES.md` rule 7).
 - `testsys/`, `.github/` — owned by a separate, concurrent effort building the
