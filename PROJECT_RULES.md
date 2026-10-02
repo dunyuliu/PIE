@@ -8,6 +8,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 3. Gate every stage; pass before moving on.
 3a. A refactor of `src/` runs testsys green before and after, one module at a time.
 3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`.
+3c. The pinned dependency manifest is the one supported environment; unpinned is a canary, never a gate.
 4. Only fresh runs are evidence.
 5. One calibrated definition of "pass" — never invent a metric.
 6. Every result carries its provenance.
@@ -152,7 +153,11 @@ Every Python dependency manifest in this repo — `requirements.txt`,
 `testsys/requirements.txt`, and any future one — pins exact versions
 (`pkg==x.y.z`); no ranges, no unpinned lines. Changing a pin ships together
 with a green `/usr/bin/python3 testsys/run.py all` run under the new version,
-in the same commit/PR, not a follow-up.
+in the same commit/PR, not a follow-up — and, for anything bitwise/tolerance-
+sensitive (rule 5's regression anchors, Monte Carlo output), a documented
+numeric diff between the old-pin and new-pin runs, not just a pass/fail count.
+Only once both land does the new pin set become the one supported
+environment rule 3c requires.
 
 **Rationale**: `testsys/requirements.txt` already did this by convention
 (all exact pins) with no rule saying so.
@@ -164,6 +169,37 @@ unpinned lines; caught in review before merge, not by any gate.
 PR #3) is the mechanical enforcement — fails on an unpinned line in any
 manifest, or on root and `testsys/` disagreeing about a shared package's
 version.
+
+---
+
+## 3c. The pinned dependency manifest is the one supported environment; unpinned is a canary, never a gate
+
+Rule 3b's manifests (`requirements.txt`, `testsys/requirements.txt`, kept in
+lockstep) define THE supported environment for PIE — there is exactly one.
+An unpinned or "latest-package" install is not a lighter-weight alternative a
+contributor can expect to work; it is explicitly unsupported. Any CI job that
+installs against unpinned or newer-than-pinned dependencies (e.g.
+`fast-latest`) exists only as an early-warning canary: it must be configured
+non-blocking (its failure does not gate merge or release) and must say so in
+its own workflow comment. Replacing the pin set itself follows rule 3b's own
+gate — the full test tier green on the new pins plus the documented old-vs-new
+numeric diff — not a lighter bar because an unpinned job happened to pass.
+
+**Rationale**: an unpinned environment passing is evidence the code tolerates
+whatever versions happened to resolve today, not evidence the supported
+environment works — conflating the two turns a canary into a second,
+uncalibrated gate (rule 5).
+
+**Incident (2026-10-02)**: a mid-campaign request asked to validate both a
+pinned and an unpinned/pins-stripped environment for the same PR, then was
+reversed by the project owner specifically because PIE does not support
+unpinned environments — the ambiguity this rule closes so it isn't
+re-litigated next time.
+
+**How to apply**: a CI job touching unpinned/newer dependencies carries a
+leading comment stating it is a non-blocking canary and is not listed as a
+required check in branch protection; a PR or release is never blocked, held,
+or re-scoped on that job's result.
 
 ---
 
