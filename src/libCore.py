@@ -11,8 +11,25 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv, spsolve
 from scipy.constants import G
 from scipy.constants import R as RGas
-from globalvar import *
-from planet_input import *
+# Explicit imports (not `from globalvar import *` / `from planet_input
+# import *`): these are the only globalvar names libCore.py's own
+# functions reference (ErrorCode, chi_Si_icb, liquidus_eq,
+# max_Si_Edmund2022, max_Si_Steinbruegge2020); nothing from
+# planet_input is used here at all. Binding semantics are identical to
+# the star-import (a name copied into this module's namespace at
+# import time), so this changes no behaviour -- see
+# testsys/unit/test_libcore.py. Two call sites (`solver.py`,
+# `planet_input.py`) previously got additional globalvar names
+# transitively through libCore's own `import *`; planet_input.py now
+# imports globalvar directly instead of relying on that (see its own
+# import block).
+from globalvar import (
+    ErrorCode,
+    chi_Si_icb,
+    liquidus_eq,
+    max_Si_Edmund2022,
+    max_Si_Steinbruegge2020,
+)
 
 # Added by Tilio. 20220614.
 TmFeS     = eos.meltingDataFromFile("TmFeSmelt.dat")
@@ -138,7 +155,7 @@ def reorder_el(v,chi_Si_constant,param):
     elif el == 'Si':
         tmp = {'Si':v, 'S':0}
     elif el == 'S+Si':
-        tmp = {'Si':chi_Si_icb, 'S':v}
+        tmp = {'Si':chi_Si_constant, 'S':v}
     return tmp
 
 def getCoreLiquidus(el1,el2,P,param,To):
@@ -393,7 +410,7 @@ def get_mass_norm(r,rho,rho_mean):
     return ssum
 
 def get_mass_core(r,rho):
-    ssum = rho[0]*r[0]**3/r[-1]**3
+    ssum = rho[0]*(4./3.)*np.pi*r[0]**3
     for i in range(1,len(r)):
         ssum = ssum + rho[i]*(4./3.)*np.pi*(r[i]**3-r[i-1]**3)
     return ssum

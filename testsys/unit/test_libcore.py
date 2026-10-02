@@ -136,6 +136,23 @@ def test_reorder_el_s_plus_si_uses_module_level_chi_si_icb(libcore_ssi):
     assert libcore_ssi.reorder_el(0.03, 0.07, param) == {"Si": 0.07, "S": 0.03}
 
 
+def test_reorder_el_s_plus_si_uses_argument_not_global(libcore_ssi):
+    # Regression test for the reorder_el('S+Si') bug (PATHWAY_FORWARD.md
+    # item 12b): the branch used to read the module-level chi_Si_icb
+    # global instead of its own chi_Si_constant argument. The fixture
+    # above can't catch this because every real call site happens to
+    # pass chi_Si_icb itself as the argument, making global and argument
+    # identical (0.07 == 0.07) -- a bug there is unobservable.
+    #
+    # Here the global (chi_Si_icb=0.07, set via the libcore_ssi fixture)
+    # and the argument (chi_Si_constant=0.03) are deliberately DIFFERENT.
+    # Pre-fix code returns {"Si": 0.07, ...} (the global); post-fix code
+    # returns {"Si": 0.03, ...} (the argument) -- this assertion only
+    # holds for the fixed code.
+    param = {"li_el": "S+Si"}
+    assert libcore_ssi.reorder_el(0.03, 0.03, param) == {"Si": 0.03, "S": 0.03}
+
+
 # ---------------------------------------------------------------------
 # Liquidus formulas (TmFeSSi / TmFeSSi_Steinbruegge2020): physical
 # behaviour checks -- monotonic increase with pressure, and the x->0
