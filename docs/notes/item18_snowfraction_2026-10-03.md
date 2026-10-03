@@ -26,7 +26,7 @@ Method: `testsys/pielib.py::solve_full_model(CMR2, CMC, light, liquidus, ricb_m,
 **cold start** at each radius (no warm start from the previous radius, unlike the `measure36`
 sweep harness), 12-worker `ProcessPoolExecutor`. Provenance (`resolve39.json`): git `33c8b0a`
 (origin/main at the time, worktree `item18-snowfraction`), pinned env Python 3.12.15 / numpy 2.5.3 /
-scipy 1.18.1 (`/home/utig5/dliu/PIE/.venv`), host knox (64 cores, load 10.2 at launch --
+scipy 1.18.1 (`the pinned project venv`), host knox (64 cores, load 10.2 at launch --
 **contended**, timing not a measurement), 2026-10-03 16:27 CDT, 3-11 s per solve.
 
 Result: **38/39 converge and are admissible fresh**; converged `v` agrees with the `measure36`

@@ -1,7 +1,7 @@
 {
  "n_csv_files": 36864,
  "total_rows": 474075,
- "zenodo": "/home/staff/dliu/shared_dataset/zenodo.16459292/extracted/PIE",
+ "zenodo": "~/shared_dataset/zenodo.16459292/extracted/PIE",
  "per_composition": {
   "margot/S+Si_0.00": {
    "liquidus": [
