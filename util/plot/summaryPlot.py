@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os, sys
+# util/plot/ -> repo root -> src/: board item 28(a) moved this file out of
+# src/, where its sibling imports below (globalvar, drivere, driverp) still
+# live, so src/ must be put on sys.path before those imports resolve.
+_SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src')
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
+
 import numpy as np # loading numpy.
 from globalvar import (
     CMR2,

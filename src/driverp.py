@@ -2,9 +2,41 @@ import numpy as np
 import shootp as lc
 import glob,os,sys
 from globalvar import *
-import visualization_present as vis
 import pandas as pd
 import csv # added 6/30/2022
+
+def _get_vis():
+    """Lazily import visualization_present (board item 28c) and cache it
+    directly in this module's own namespace dict (`globals()`), not via a
+    `sys.modules[__name__]` lookup -- testsys's `import_src` helper evicts
+    `sys.modules['driverp']` as a side effect of re-importing OTHER src/
+    modules for a different CMR2/light_element (see testsys/conftest.py),
+    so a already-held reference to this module's own `globals()` is the
+    only reliable self-reference here, independent of that cache state.
+    """
+    if 'vis' not in globals():
+        util_plot_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'util', 'plot')
+        if util_plot_dir not in sys.path:
+            sys.path.insert(0, util_plot_dir)
+        import visualization_present as vis_module
+        globals()['vis'] = vis_module
+    return globals()['vis']
+
+
+def __getattr__(name):
+    """PEP 562 lazy module attribute (board item 28c): `vis`
+    (visualization_present, moved to util/plot/ by item 28a) used to be a
+    plain module-level `import visualization_present as vis`, giving
+    driverp.py a hard import-time dependency on plotting code. It is now
+    imported only on first access to `driverp.vis` -- by driverp() itself
+    (see below) or by a caller/test reaching in to monkeypatch it -- and
+    cached in the module namespace exactly like a normal import, so
+    behaviour when plotting actually runs is unchanged.
+    """
+    if name == 'vis':
+        return _get_vis()
+    raise AttributeError("module %r has no attribute %r" % (__name__, name))
+
 
 def solve_radius(k, rs_k, ricb_k, v_last, v_cold, rhocr, rh, param, scale, log_path):
     """Newton solve at one inner-core radius with the v1.3.0 start policy.
@@ -68,7 +100,14 @@ def write_failure_row(rs_k, code, start):
 
 def driverp(param, rs):
     # Initiate
-    
+
+    # `_get_vis()` (rather than a bare `import visualization_present as
+    # vis`) returns the same cached module object `driverp.vis` resolves
+    # to from outside, so a test/caller that already monkeypatched
+    # `driverp.vis` before calling driverp() sees that patch, not a fresh
+    # import (board item 28c).
+    vis = _get_vis()
+
     scale       = param['scale']
     rhomean     = param['rhomean']
     rm          = param['rm']
