@@ -43,10 +43,11 @@ if __name__ == "__main__":
     # sys.executable, not bare 'python': this project's .venv is the only
     # interpreter with the exact pins on hosts where the bare `python3` on
     # PATH is broken (see CLAUDE.md, PATHWAY_FORWARD.md knox note).
-    # scheduler.py referenced by absolute path (board item 28e: this file
-    # now lives inside the installed pie/ package, not a flat src/ dir
-    # that happens to be the caller's cwd, so a bare 'scheduler.py' would
-    # only resolve by accident).
+    # scheduler.py referenced by absolute path (board item 28b: this file
+    # lives in util/run/, alongside scheduler.py, not inside the installed
+    # `pie` package -- both are operational scripts that call `python -m
+    # pie` rather than package internals -- so a bare 'scheduler.py' would
+    # only resolve by accident if invoked with a different cwd).
     _scheduler = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scheduler.py')
     cmd = sys.executable + ' ' + _scheduler + ' ' + str(round(CMR2,17)) + ' ' + str(round(CMC,17)) + '  >' + log_file
     startTime = time.time()

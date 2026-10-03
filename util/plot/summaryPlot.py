@@ -10,6 +10,7 @@ from pie.globalvar import (
     CMR2,
     compiled_data_file,
     contourcond,
+    contourplot_file,
     csvfiles_path,
     presentday_columns,
 ) # loading global variables actually used below.
@@ -90,13 +91,13 @@ ylabel    = 'Inner Core Radius [km]'
 #ylabel = 'wt % S inner core avg'
 contour_axis  = np.array(df_compiled[contourcond])
 sample    = contour_axis[0]
-#contour_scale = int(np.log10(sample)) # get scale of contour axis values
+contour_scale = int(np.log10(sample)) # get scale of contour axis values
 
 # Now plot
-if contourcond == 'isnow' or contourdond == 'isnowcmb':
+if contourcond == 'isnow' or contourcond == 'isnowcmb':
     cmap = 'cool'
     plt.scatter(xaxis, yaxis, c=contour_axis, marker='o', s=96.0, cmap=cmap)
-else: 
+else:
     minc, maxc = np.min(contour_axis), np.max(contour_axis)
     maxc = maxc + 10**(contour_scale-1) / 2
     cmap = 'gist_rainbow_r'
@@ -125,7 +126,7 @@ X,Y      = np.meshgrid(xticks, yticks)
 Z        = np.transpose(contour_matrix)
 contouraxiscopy = np.sort(contour_axis.copy())
 levels   = np.linspace(contouraxiscopy[0], contouraxiscopy[-1], 50)
-cm       = plt.cm.get_cmap(cmap)
+cm       = matplotlib.colormaps[cmap]  # plt.cm.get_cmap removed in the pinned matplotlib 3.11.2
 #cp = plt.contour(xticks, yticks, Z, levels, colors='black', linestyles='dashed', linewidths=1)
 #plt.clabel(cp, inline=1, fontsize=10)
 if contourcond == 'isnow' or contourcond == 'isnowcmb':  # snow zone condition doesn't need contour scale adjusted

@@ -49,7 +49,12 @@ csvfiles_path               = model_path
 #presentday_data_filename    = 'present_day_' + str(round(CMR2,4)) + '_' + str(round(CMC,4)) + '_'+ str(round(chi_Si_icb,3)) + '.csv'
 pMetaDataFileName           = 'pMetaData_'+"{:.2f}".format(chi_Si_icb)+'.csv'
 compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
-#contourplot_file            = 'plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
+# board item 24: was commented out, leaving util/plot/summaryPlot.py's
+# references to contourplot_file undefined (NameError on every run); given
+# the directory prefix compiled_data_file above already uses, rather than
+# a bare filename that would land in whatever cwd summaryPlot.py is run
+# from.
+contourplot_file            = contour_plotting_path + '/plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
 presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'chi_S_bulk', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code',
                                'start', 'newton_iters', 'resid_norm']  # v1.3.0: appended (format change; see README 'Outputs and error codes')
 contourcond                 = 'isnow'

@@ -18,6 +18,11 @@ pytestmark = pytest.mark.unit
 from pie import robust_runner as rr  # pie is installed via pyproject.toml (board item 28e)
 
 SRC = Path(rr.__file__).resolve().parent
+# monteCarlo.run.py/scheduler.py moved out of pie/ to util/run/ (board item
+# 28b) -- they are operational scripts with no pie-internal imports, unlike
+# robust_runner.py (imported as pie.robust_runner by this test, self-locating
+# its results dir to the package directory); globalvar.py stays read from SRC.
+RUN_SCRIPTS = Path(__file__).resolve().parent.parent.parent / "util" / "run"
 
 
 def test_error_code_is_imported_from_globalvar_not_copied():
@@ -91,12 +96,12 @@ def test_job_status_label_uses_error_code_names():
 def test_mc_jobs_matches_monte_carlo_script_constants_and_scheduler_grid():
     # mc_jobs re-expresses monteCarlo.run.py + scheduler.py as a manifest;
     # pin its defaults to those scripts' literal constants so they can't drift.
-    mc = (SRC / "monteCarlo.run.py").read_text()
+    mc = (RUN_SCRIPTS / "monteCarlo.run.py").read_text()
     assert re.search(r"^meanCMR2 = 0\.346$", mc, re.M)
     assert re.search(r"^stdCMR2  = 0\.014$", mc, re.M)
     assert re.search(r"^CMC0      = 0\.426$", mc, re.M)
     assert "rng.normal(meanCMR2, stdCMR2, 1)" in mc and "CMC = CMC0*meanCMR2/CMR2" in mc
-    assert "np.linspace(0.0, 0.15, 16)" in (SRC / "scheduler.py").read_text()
+    assert "np.linspace(0.0, 0.15, 16)" in (RUN_SCRIPTS / "scheduler.py").read_text()
 
     import numpy as np
     jobs = rr.mc_jobs(2, seed_base=100)
