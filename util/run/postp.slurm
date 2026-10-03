@@ -18,4 +18,8 @@
 
 #${LAUNCHER_DIR}/paramrun
 
-python plotAll.py
+# board item 28(a)/(b): plotAll.py moved to util/plot/ (slice 2), this
+# script to util/run/ (slice 3); plotAll.py itself subprocess-invokes
+# 'summaryPlot.py' by bare relative name, so cwd must be util/plot/ when it
+# runs, regardless of the directory this job was submitted from.
+cd "$(dirname "$0")/../plot" && python plotAll.py
