@@ -32,7 +32,9 @@ to; never refactor unrelated code in the same change.
 
 The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
 `PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a), `update_log` (frozen, see 1a), plus
-`src/`, `historical_versions/` (frozen zips/tars of prior versions, read-only —
+`src/`, `util/` (operational scripts split out of `src/` by the Layout PR,
+board item 28 — `util/plot/`, `util/run/`; relocation of existing scripts, not
+new scope, and no physics code), `historical_versions/` (frozen zips/tars of prior versions, read-only —
 see rule 7), `testsys/` and `.github/` (owned by the testing effort, out of
 scope for this rule book's own writer). `results/` is a run artifact, not
 tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
