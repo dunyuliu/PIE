@@ -64,6 +64,7 @@ import argparse
 import csv
 import dataclasses
 import enum
+import fcntl
 import hashlib
 import json
 import os
@@ -71,6 +72,7 @@ import socket
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 SRC_DIR = Path(__file__).resolve().parent
@@ -394,6 +396,11 @@ def _acquire_lock(path, payload):
     given lock path, even across processes/hosts sharing the same
     filesystem.
 
+    Returns the claimant's unique `token` (truthy str, also recorded in
+    the lock file under key "token") on success, None otherwise. Pass
+    that token back to `_release_lock` so only the lock this caller
+    wrote is ever removed (item 29a).
+
     One reclaim attempt if the existing lock is stale (`_lock_is_stale`,
     same-host dead-pid check only) -- required for resumability: a runner
     SIGKILLed mid-job leaves its lock behind (no `finally` runs), and
@@ -401,22 +408,95 @@ def _acquire_lock(path, payload):
     forever instead of redoing the missing work (caught by
     testsys/integration/test_robust_runner_crash_restart.py). `--force`
     also removes a (possibly non-stale) lock before re-running, same as
-    it already bypasses the done-check."""
+    it already bypasses the done-check.
+
+    The reclaim is atomic (board item 29a): it is done in
+    `_reclaim_stale_lock` under an flock'd per-lock mutex with a
+    re-check of staleness inside, and replaces the stale file via
+    `os.replace` so the lock path is never momentarily absent -- the old
+    remove-then-O_EXCL sequence let two reclaimers both pass the
+    staleness check, after which the slower one's unconditional remove
+    deleted the faster one's fresh lock and both ended up believing they
+    held it."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    for attempt in range(2):
+    payload = dict(payload)
+    payload["token"] = _new_token()
+    body = (json.dumps(payload, default=str) + "\n").encode("utf-8")
+    try:
+        fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    except FileExistsError:
+        # Cheap pre-check outside the mutex so the common "someone else
+        # legitimately holds it" path never touches the reclaim mutex.
+        if _lock_is_stale(path) and _reclaim_stale_lock(path, body):
+            return payload["token"]
+        return None
+    try:
+        os.write(fd, body)
+    finally:
+        os.close(fd)
+    return payload["token"]
+
+
+def _new_token():
+    return "{}:{}:{}".format(socket.gethostname(), os.getpid(), uuid.uuid4().hex)
+
+
+def _reclaim_mutex_path(path):
+    return path.with_name(path.name + ".reclaim")
+
+
+def _reclaim_stale_lock(path, body):
+    """Atomically replace a stale lock at `path` with `body`. True iff this
+    caller now holds the lock.
+
+    Serialised across reclaimers by `flock(LOCK_EX)` on a sibling mutex
+    file (kernel-held: released automatically if the reclaimer dies, so
+    it can never itself go stale). Inside the critical section the
+    staleness check is REPEATED against the current file contents: a
+    second reclaimer that queued behind the winner re-reads the winner's
+    fresh lock (live pid) and backs off. `os.replace` swaps the stale
+    file for ours in one rename, so there is no window in which the lock
+    path is absent for a plain O_EXCL claimant to slip into. Together
+    these make "exactly one claimant" hold even for N reclaimers racing
+    on one dead-pid lock.
+
+    If the filesystem refuses flock (ENOLCK/EOPNOTSUPP on some network
+    mounts), the reclaim is REFUSED -- stated on stderr, not silently
+    downgraded to the racy path (PROJECT_RULES.md rule 2); the operator
+    clears it with `--force`, same as a foreign-host lock."""
+    mutex = _reclaim_mutex_path(path)
+    try:
+        mfd = os.open(str(mutex), os.O_RDWR | os.O_CREAT, 0o644)
+    except OSError as e:
+        print("robust_runner: cannot open reclaim mutex {}: {!r}; not reclaiming "
+              "stale lock {} (use --force)".format(mutex, e, path), file=sys.stderr)
+        return False
+    try:
         try:
-            fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
-        except FileExistsError:
-            if attempt == 0 and _lock_is_stale(path):
-                _release_lock(path)
-                continue
+            fcntl.flock(mfd, fcntl.LOCK_EX)
+        except OSError as e:
+            print("robust_runner: flock unsupported on {}: {!r}; not reclaiming "
+                  "stale lock {} (use --force)".format(mutex, e, path), file=sys.stderr)
             return False
         try:
-            os.write(fd, (json.dumps(payload, default=str) + "\n").encode("utf-8"))
+            if not _lock_is_stale(path):
+                return False  # someone reclaimed it ahead of us (or holder is alive)
+            tmp = path.with_name(path.name + ".{}.tmp".format(uuid.uuid4().hex))
+            fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+            try:
+                os.write(fd, body)
+            finally:
+                os.close(fd)
+            try:
+                os.replace(str(tmp), str(path))
+            except OSError:
+                _release_lock(tmp)
+                raise
+            return True
         finally:
-            os.close(fd)
-        return True
-    return False
+            fcntl.flock(mfd, fcntl.LOCK_UN)
+    finally:
+        os.close(mfd)
 
 
 def _lock_is_stale(path):
@@ -445,11 +525,25 @@ def _lock_is_stale(path):
     return False  # alive
 
 
-def _release_lock(path):
+def _release_lock(path, token=None):
+    """Remove `path`. With `token` given (item 29a: compare-then-delete),
+    remove it ONLY if the file still records that token -- i.e. it is
+    still the lock this caller wrote, not one a reclaimer has since
+    replaced it with. `token=None` is the unconditional form, reserved
+    for `--force` and for clearing scratch files this module itself made.
+    Returns True iff a file was removed."""
+    if token is not None:
+        try:
+            current = json.loads(path.read_text()).get("token")
+        except (OSError, ValueError, AttributeError):
+            return False  # gone, or not ours to judge -- leave it
+        if current != token:
+            return False  # someone else's lock now; never delete it
     try:
         os.remove(str(path))
     except FileNotFoundError:
-        pass
+        return False
+    return True
 
 
 def summarize_error_codes(csv_path):
@@ -574,10 +668,10 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
     lock = lock_path(job, src_dir)
     if force:
         _release_lock(lock)  # --force already bypasses the done-check; a stale lock shouldn't block it
-    claimed = _acquire_lock(lock, {"job_id": job.job_id, "pid": os.getpid(),
-                                   "host": socket.gethostname(), "run_id": run_id,
-                                   "claimed_at": time.time()})
-    if not claimed:
+    token = _acquire_lock(lock, {"job_id": job.job_id, "pid": os.getpid(),
+                                 "host": socket.gethostname(), "run_id": run_id,
+                                 "claimed_at": time.time()})
+    if token is None:
         if status_log is not None:
             status_log.start(job, run_id)
             status_log.end(job, run_id, RunnerStatus.SKIPPED_LOCKED.value, None, 0.0,
@@ -651,7 +745,7 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
                 "duration_s": end - start, "done": done, "n_rows": n_rows,
                 "error_code_counts": counts, "stderr_tail": stderr_tail}
     finally:
-        _release_lock(lock)
+        _release_lock(lock, token)  # compare-then-delete: only the lock we wrote (item 29a)
 
 
 def run_local(jobs, src_dir=SRC_DIR, status_log_path=None, workers=None,
