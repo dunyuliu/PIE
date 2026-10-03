@@ -24,44 +24,46 @@ import numpy as np
 
 #CMC_list  = np.linspace(0.424, 0.462, 6); also add the means of 0.437 and 0.443 from studies.
 # 8 Values : [0.424  0.4316 0.437 0.4392 0.443 0.4468 0.4544 0.462 ]
-CMR2tmp   = sys.argv[1]
-CMCtmp    = sys.argv[2]
 
-CMR2_list = [CMR2tmp] #dCMR2 = 0.004
-CMC_list  = [CMCtmp]
+if __name__ == "__main__":
+    CMR2tmp   = sys.argv[1]
+    CMCtmp    = sys.argv[2]
 
-chi_li_icb_list  = np.linspace(0.0, 0.15, 16)
-light_el_list1    = ['S', 'Si']
-light_el_list2    = ['S+Si']
-#liquidus_eq_list = ['Steinbruegge', 'Edmund']
-liquidus_eq_list = ['Edmund']
+    CMR2_list = [CMR2tmp] #dCMR2 = 0.004
+    CMC_list  = [CMCtmp]
 
-print('SCHEDULER: running model with CMR ', CMR2_list)
-print('SCHEDULER: running model with CMC ', CMC_list)
-print('SCHEDULER: running model with %wt ', chi_li_icb_list)
+    chi_li_icb_list  = np.linspace(0.0, 0.15, 16)
+    light_el_list1    = ['S', 'Si']
+    light_el_list2    = ['S+Si']
+    #liquidus_eq_list = ['Steinbruegge', 'Edmund']
+    liquidus_eq_list = ['Edmund']
 
-for CMR2 in CMR2_list:
-  for CMC in CMC_list: 
-    for light in light_el_list2:
-      for liquidus in liquidus_eq_list:
-        for chi_li_icb in chi_li_icb_list:
-          print('Running the scenario with')
-          print('CMR2 = ', str(CMR2))
-          print('CmC = ', str(CMC))
-          print('Light el = ', light)
-          print('Liquidus eq = ', liquidus)
-          print('Chi_li_icb = ', chi_li_icb)
-          cmd = sys.executable + ' main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus + ' ' + str(chi_li_icb)
-          os.system(cmd)
+    print('SCHEDULER: running model with CMR ', CMR2_list)
+    print('SCHEDULER: running model with CMC ', CMC_list)
+    print('SCHEDULER: running model with %wt ', chi_li_icb_list)
 
-for CMR2 in CMR2_list:
-  for CMC in CMC_list: 
-    for light in light_el_list1:
-      for liquidus in liquidus_eq_list:
-        print('Running the scenario with')
-        print('CMR2 = ', str(CMR2))
-        print('CmC = ', str(CMC))
-        print('Light el = ', light)
-        print('Liquidus eq = ', liquidus)
-        cmd = sys.executable + ' main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus
-        os.system(cmd)
+    for CMR2 in CMR2_list:
+      for CMC in CMC_list:
+        for light in light_el_list2:
+          for liquidus in liquidus_eq_list:
+            for chi_li_icb in chi_li_icb_list:
+              print('Running the scenario with')
+              print('CMR2 = ', str(CMR2))
+              print('CmC = ', str(CMC))
+              print('Light el = ', light)
+              print('Liquidus eq = ', liquidus)
+              print('Chi_li_icb = ', chi_li_icb)
+              cmd = sys.executable + ' main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus + ' ' + str(chi_li_icb)
+              os.system(cmd)
+
+    for CMR2 in CMR2_list:
+      for CMC in CMC_list:
+        for light in light_el_list1:
+          for liquidus in liquidus_eq_list:
+            print('Running the scenario with')
+            print('CMR2 = ', str(CMR2))
+            print('CmC = ', str(CMC))
+            print('Light el = ', light)
+            print('Liquidus eq = ', liquidus)
+            cmd = sys.executable + ' main.py p '+ str(CMR2) + ' ' + str(CMC) + ' ' + light + ' ' + liquidus
+            os.system(cmd)
