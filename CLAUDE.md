@@ -104,14 +104,15 @@ check treats a killed draw as finished -- README).
   test-coverage/doc hardening (items 23, 18, 25).
 - v1.5.0 (2026-10-02): Python 3.10 -> 3.12 + current dependency pins (major dep bump), `uv`-managed venv the one supported environment.
 - v1.5.1 (2026-10-03): `PIE_FAST_QUAD` (GK21 quadrature) defaults ON.
-- v1.6.2 (2026-10-03, this release): `src/` renamed to the installable `pie/`
+- v1.6.0 (2026-10-03, this release): `src/` renamed to the installable `pie/`
   package (item 28e, Breaking on setup/import-path/run-recipe axes but shipped
   as a minor bump under the standing owner grant for v1.x releases); `util/`
   split (`util/plot/`, `util/run/`, item 28) closed out; `summaryPlot.py`
   NameError/typo bugs and `robust_runner.py` lock-race/silent-fallback fixes
   (items 24, 26); `meltingDataFromFile` no-op `np.sort` skip (item 27 partial).
-  Bundles what were drafted as v1.6.0/v1.6.1/v1.6.2 into one tag — see
-  CHANGELOG.md for the per-change breakdown and why.
+  Collapses what were drafted across PRs #52-#59 as three separate entries
+  (v1.6.0/v1.6.1/v1.6.2) into this one tag, the only one actually cut — see
+  CHANGELOG.md for the per-change breakdown (Breaking/Fixed/Performance).
 
 ## Known correctness caveats
 

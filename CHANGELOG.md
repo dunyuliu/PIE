@@ -2,96 +2,108 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
 
-**Release cut v1.6.2 (2026-10-03)**: the v1.6.0/v1.6.1/v1.6.2 entries below
-were written across PRs #52-#59 without an intervening tag (none of v1.6.0 or
-v1.6.1 was ever tagged or released individually) -- this release bundles all
-three into one tag, `v1.6.2`, the only one actually cut. Grant: minor release,
-pre-authorized by the project owner under the standing "unattended-merge
-grant ... for v1.x patch/minor releases" (CHANGELOG v1.4.0 entry below,
-owner-approved 2026-10-02, still in effect); the v1.6.0 entry's packaging
-rename is user-facing and flagged "Breaking" in its own text, but per that
-grant and explicit owner pre-authorization for this release, it ships as a
-minor bump, not a major one -- this is a judgment call the release agent is
-flagging explicitly rather than deciding unilaterally past the grant's scope.
-
-* v1.6.2; 20261003; performance (board item 27, re-profiling pass after the
-  v1.3.3/v1.5.1 GK21 port, PR #55): `pie/coreEos.py:meltingDataFromFile.__call__`
-  skips `np.sort()` when the (already `np.atleast_1d`-built) p/x array has
-  length <= 1 -- a no-op removed, not a numeric change (sorting 0 or 1
-  elements cannot reorder anything), so this is bit-identical BY
-  CONSTRUCTION on every environment, no new flag needed, ships default-on.
-  Re-profiling (cProfile, canonical Margot-fit case, py3.12/numpy==2.5.3/
-  scipy==1.18.1 pinned env) found this wrapper at ~25% of a single-radius
-  solve, ~11 points of which was pure sort/atleast_1d/atleast_2d/array
-  dispatch overhead around a call that is >99% scalar in real use.
-  Measured: single radius 2.72s -> 2.56s (1.06x); 5-radius real sweep
-  18.97s -> 17.96s (1.06x). Differential test
-  (`testsys/unit/test_perf_v1_3_4_melting_sort_skip.py`): max diff 0.0 on
-  real captured solver-state (x, p) pairs, plus a synthetic length>1 case
-  proving real `np.sort` still runs when length > 1. `scipy.optimize.root`
-  (hybrd, ~23% of the solve) and `CubicSpline.__call__` overhead inside
-  `eos`/`volume` (the exact call path GK21's array-vs-scalar divergence
-  came from) were profiled but NOT touched -- an algorithm swap for the
-  former, or any change to the latter's call convention, needs the same
-  scale of differential validation GK21 required and an owner ruling on
-  an acceptable divergence bound; flagged as findings only, see
-  `docs/notes/perf_v1.3.4.md`. PR #57 (board item 27) escalated the hybrd
-  divergence-bound question to the owner; PR #59 records the owner's
-  2026-10-03 clarification that the standing v1.3.3 integrator rule already
-  answers it and declines a further mira-volkov porting campaign for this
-  release (cost/benefit call, see `PATHWAY_FORWARD.md` item 27) -- no code
-  change in #57/#59, board rows only. Gate at merge: `testsys/run.py all` --
-  318 passed (315 + 3 new), 15 skipped, 3 xfailed, 1 failed (the pre-commit
-  `test_src_tree_is_unmodified_by_the_test_suite` hygiene check, resolves
-  on commit, same as v1.3.2's analogous run), 598.56s. (Renumbered from an
-  earlier draft "v1.6.1" to v1.6.2 during the v1.6.2 release cut below: PR
-  #56, below, landed between this perf work and the v1.6.0 packaging
-  change and claimed the v1.6.1 slot instead -- see this release's own Gate
-  for the fresh full-tree count superseding the per-PR numbers above.)
-* v1.6.1; 20261003; board items 28(b)/24/26 (PR #56, no prior CHANGELOG
-  entry -- added here): (a) item 28(b) closed -- `scheduler.py`/
-  `monteCarlo.run.py` moved `pie/` -> `util/run/` (pure operational scripts,
-  no `pie`-internal imports, invoked as `python -m pie`/by path exactly as
-  item 28e's docs describe); `robust_runner.py` deliberately kept in `pie/`
-  (imported as `from pie import robust_runner` by three test files,
-  self-locates its results dir to the package dir, dual-mode
-  importable-and-bare-script by design -- moving it would break that
-  pattern for no functional gain). (b) item 24 fixed -- `pie/globalvar.py`'s
-  `contourplot_file` uncommented and defined (prefixed with
-  `contour_plotting_path` so a bare filename doesn't land in whatever cwd
-  the script runs from) and imported into `util/plot/summaryPlot.py`'s
-  explicit import list; `contour_scale = int(np.log10(sample))` uncommented;
-  `contourdond` typo fixed to `contourcond` (confirmed real, not deliberate,
-  against the file's own later correctly-spelled check); incidental 4th bug
-  found and fixed while adding the regression test -- `plt.cm.get_cmap(cmap)`
-  (removed in matplotlib >=3.9) replaced with `matplotlib.colormaps[cmap]`.
-  (c) item 26 fixed -- `pie/robust_runner.py`'s `run_one_job` gained a
-  per-job atomic (`O_CREAT|O_EXCL`) lock file, claimed first and released in
-  a `finally`, with same-host dead-pid stale-lock reclaim (needed for
-  `testsys/integration/test_robust_runner_crash_restart.py`'s SIGKILL/resume
-  case to still pass); `main.py:124`'s bare `sys.exit()` audited and
-  confirmed unreachable from the runner's actual argument space (left as
-  dead code, not fixed, not asked for); `pie_workers()`'s silent 4-worker
-  fallback on `OSError`/`AttributeError` now prints the exception to stderr
-  before returning 4 (fallback value unchanged, the swallow is fixed).
-  Regression tests, mutation-verified:
-  `testsys/unit/test_summaryplot_contour_bugs.py` (2 cases),
-  `testsys/unit/test_robust_runner_item26.py` (6 cases, including a
-  reproduction of the crash/restart test's exact pre-fix failure when the
-  stale-lock reclaim is reverted). Gate at merge: fresh
-  `testsys/run.py all` before/after on the gated tree (per board item 28's
-  evidence row); `git status --porcelain -- pie util/run` clean; the three
-  `robust_runner`-dependent test files pass unchanged after the move. This
-  release's own fresh full-tree gate count (below) supersedes the per-PR
-  number for the combined tree.
-* **BREAKING** v1.6.0; 20261003; board item 28(e), the owner's launch-mode decision superseding PR #53's "marker only, deferred" framing: `src/` is renamed to `pie/` and is now a real installed Python package (`uv pip install -e .`, new root `pyproject.toml`), not a directory inserted onto `sys.path`. This is a user-facing interface change on three axes, hence "Breaking" rather than a routine minor bump:
-    1. **Setup**: `uv pip install -r requirements.txt` into a bare venv is replaced by `uv pip install -e .` (editable install of the `pie` package); `requirements.txt` remains the pin source of truth (rule 3b) and `pyproject.toml`'s `[project.dependencies]` must match it exactly (new contract test `test_pyproject_dependencies_pin_exact_versions_and_agree_with_requirements`, sibling to the existing root/testsys pin-agreement test in the same file).
-    2. **Import path**: sibling modules (`globalvar`, `libCore`, `shootp`, `shoote`, `solver`, `planet_input`, `driverp`, `drivere`, `coreEos`, `main`, `TEST_visualization_evolution`, `visualization_evolution`) converted from bare top-level imports (`from globalvar import ...`, `import shootp as lc`) to package-relative imports (`from .globalvar import ...`, `from . import shootp as lc`). Callers outside the package (`util/plot/*.py`, `testsys/`) now `import pie` / `from pie import <module>` instead of inserting a directory onto `sys.path`.
-    3. **Run recipes**: the former `cd src && python main.py p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` is replaced by the console entry point `pie p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` or, equivalently, `python -m pie p ...` (`pie/cli.py` + `pie/__main__.py`, both a one-line `runpy.run_module("pie.main", run_name="__main__")` so `pie/main.py`'s own script-style top-level code and package-relative imports are unaffected). `scheduler.py`/`monteCarlo.run.py` (operational scripts, not given their own console entry point) are invoked by path, e.g. `python pie/scheduler.py CMR2 CMC`, and internally now invoke `python -m pie` / an absolute path to `scheduler.py` instead of assuming a flat sibling-script directory. `src/robust_runner.py`'s subprocess invocation moved from a path to `main.py` to `python -m pie`. (Superseded one PR later by PR #56/v1.6.1 above: `scheduler.py`/`monteCarlo.run.py` moved on again, `util/run/` -> their final location.)
-    4. `testsys/conftest.py`'s helper functions (`import_src`, `solve_full_model`, `assert_scalars_match`/`assert_profiles_match`, `pie_workers`/`pool_workers`, `run_pie`, the argv-at-import-time bootstrap) moved to a new `testsys/pielib.py`; `conftest.py` is now a ~15-line stub that only re-exports the three pytest fixtures (pytest requires a conftest.py in testsys/ for fixture discovery and for putting testsys/ on sys.path, which test files' `from pielib import ...` needs). `import_src`/`solve_full_model` now `importlib.import_module("pie.<name>")` instead of inserting `src/` onto `sys.path` and importing the bare name. Test files' `import robust_runner as rr` became `from pie import robust_runner as rr`; `pie/robust_runner.py`'s own `ErrorCode` loader uses `importlib.import_module("pie.globalvar")` rather than a package-relative import, deliberately, because that module must stay runnable both as `python -m pie.robust_runner`-style and as a bare script invoked by file path (the TACC launcher and `testsys/integration/test_robust_runner_crash_restart.py` both do the latter), and a relative import has no `__package__` to resolve against in the latter case. The crash/restart test's fake-`main.py` stand-in became a fake `pie/` package (`__init__.py` + `__main__.py`) under its tmp `fake_src`, shadowing the real installed `pie` via the `cwd`-prepended `sys.path` entry `-m` adds — same mechanism the real `run_one_job` relies on in production.
-    5. `README.md` (Quickstart, Monte Carlo, General run, Large ensemble Monte Carlo, Legacy recipes), `testsys/README.md` (Environment section), `util/plot/read_plot_datah5.py`/`visualization_present.py`/`summaryPlot.py` (dropped their `sys.path` shims back to `src/`), and `.github/workflows/test.yml` (every job's dependency-install step gained `pip install -e .` before `pip install -r testsys/requirements.txt`) updated together, in this same PR, per PROJECT_RULES.md rule 11 (docs move with the code).
-    6. `PROJECT_RULES.md` rule 1's root whitelist updated: `pyproject.toml` added, `src/` renamed to `pie/` in the whitelist entry itself (older rules' prose elsewhere in the file still says `src/`, left as historical narrative, not re-swept).
-    No physics/algorithm change anywhere — `pie/`'s contents are otherwise byte-identical to `src/` modulo the import-statement rewrites above (verified: before/after `testsys/run.py all` counts match, see this PR's own gate evidence).
+* v1.6.0; 20261003; owner correction 2026-10-03: collapses what were
+  drafted across PRs #52-#59 as three separate entries (v1.6.0/v1.6.1/
+  v1.6.2) into this single release -- none of those three was ever tagged
+  individually, so this is the one version actually cut. Grant: minor
+  release, pre-authorized by the project owner under the standing
+  "unattended-merge grant ... for v1.x patch/minor releases" (CHANGELOG
+  v1.4.0 entry below, owner-approved 2026-10-02, still in effect); the
+  packaging rename below is user-facing and breaking on its own terms, but
+  per that grant and explicit owner pre-authorization for this release it
+  ships as a minor bump, not a major one.
+  * **Breaking**: board item 28(e), the owner's launch-mode decision
+    superseding PR #53's "marker only, deferred" framing: `src/` is renamed
+    to `pie/` and is now a real installed Python package
+    (`uv pip install -e .`, new root `pyproject.toml`), not a directory
+    inserted onto `sys.path`. User-facing on three axes:
+    1. **Setup**: `uv pip install -r requirements.txt` into a bare venv is
+       replaced by `uv pip install -e .` (editable install of the `pie`
+       package); `requirements.txt` remains the pin source of truth (rule
+       3b) and `pyproject.toml`'s `[project.dependencies]` must match it
+       exactly (new contract test
+       `test_pyproject_dependencies_pin_exact_versions_and_agree_with_requirements`).
+    2. **Import path**: sibling modules (`globalvar`, `libCore`, `shootp`,
+       `shoote`, `solver`, `planet_input`, `driverp`, `drivere`, `coreEos`,
+       `main`, `TEST_visualization_evolution`, `visualization_evolution`)
+       converted from bare top-level imports (`from globalvar import ...`,
+       `import shootp as lc`) to package-relative imports
+       (`from .globalvar import ...`, `from . import shootp as lc`).
+       Callers outside the package (`util/plot/*.py`, `testsys/`) now
+       `import pie` / `from pie import <module>` instead of inserting a
+       directory onto `sys.path`.
+    3. **Run recipes**: the former
+       `cd src && python main.py p CMR2 CMC light_element liquidus_eq [chi_Si_icb]`
+       is replaced by the console entry point
+       `pie p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` or,
+       equivalently, `python -m pie p ...` (`pie/cli.py` + `pie/__main__.py`,
+       both a one-line `runpy.run_module("pie.main", run_name="__main__")`
+       so `pie/main.py`'s own script-style top-level code and
+       package-relative imports are unaffected). `testsys/conftest.py`'s
+       helper functions moved to a new `testsys/pielib.py` (`conftest.py`
+       is now a ~15-line fixture-only stub); `import_src`/`solve_full_model`
+       now `importlib.import_module("pie.<name>")`. `README.md`,
+       `testsys/README.md`, `util/plot/*.py`, and
+       `.github/workflows/test.yml` updated together in the same PR per
+       rule 11. `PROJECT_RULES.md` rule 1's root whitelist updated
+       (`pyproject.toml` added, `src/` -> `pie/`). No physics/algorithm
+       change anywhere -- `pie/`'s contents are otherwise byte-identical to
+       `src/` modulo the import-statement rewrites (verified: before/after
+       `testsys/run.py all` counts match).
+  * **Fixed** (PR #56, board items 28(b)/24/26): (a) item 28(b) closed --
+    `scheduler.py`/`monteCarlo.run.py` moved `pie/` -> `util/run/` (pure
+    operational scripts, no `pie`-internal imports, invoked as
+    `python -m pie`/by path); `robust_runner.py` deliberately kept in
+    `pie/` (imported as `from pie import robust_runner` by three test
+    files, self-locates its results dir to the package dir, dual-mode
+    importable-and-bare-script by design -- moving it would break that
+    pattern for no functional gain). (b) item 24 fixed --
+    `pie/globalvar.py`'s `contourplot_file` uncommented and defined
+    (prefixed with `contour_plotting_path` so a bare filename doesn't land
+    in whatever cwd the script runs from) and imported into
+    `util/plot/summaryPlot.py`'s explicit import list;
+    `contour_scale = int(np.log10(sample))` uncommented; `contourdond`
+    typo fixed to `contourcond`; incidental 4th bug found and fixed while
+    adding the regression test -- `plt.cm.get_cmap(cmap)` (removed in
+    matplotlib >=3.9) replaced with `matplotlib.colormaps[cmap]`. (c) item
+    26 fixed -- `pie/robust_runner.py`'s `run_one_job` gained a per-job
+    atomic (`O_CREAT|O_EXCL`) lock file, claimed first and released in a
+    `finally`, with same-host dead-pid stale-lock reclaim (needed for
+    `testsys/integration/test_robust_runner_crash_restart.py`'s
+    SIGKILL/resume case to still pass); `main.py:124`'s bare `sys.exit()`
+    audited and confirmed unreachable from the runner's actual argument
+    space (left as dead code, not fixed, not asked for); `pie_workers()`'s
+    silent 4-worker fallback on `OSError`/`AttributeError` now prints the
+    exception to stderr before returning 4. Regression tests,
+    mutation-verified: `testsys/unit/test_summaryplot_contour_bugs.py`
+    (2 cases), `testsys/unit/test_robust_runner_item26.py` (6 cases,
+    including a reproduction of the crash/restart test's exact pre-fix
+    failure when the stale-lock reclaim is reverted).
+  * **Performance** (PR #55, board item 27, re-profiling pass after the
+    v1.3.3/v1.5.1 GK21 port): `pie/coreEos.py:meltingDataFromFile.__call__`
+    skips `np.sort()` when the (already `np.atleast_1d`-built) p/x array
+    has length <= 1 -- a no-op removed, not a numeric change, bit-identical
+    BY CONSTRUCTION on every environment, no new flag needed, ships
+    default-on. Re-profiling (cProfile, canonical Margot-fit case,
+    py3.12/numpy==2.5.3/scipy==1.18.1 pinned env) found this wrapper at
+    ~25% of a single-radius solve, ~11 points of which was pure
+    sort/atleast_1d/atleast_2d/array dispatch overhead around a call that
+    is >99% scalar in real use. Measured: single radius 2.72s -> 2.56s
+    (1.06x); 5-radius real sweep 18.97s -> 17.96s (1.06x). Differential
+    test (`testsys/unit/test_perf_v1_3_4_melting_sort_skip.py`): max diff
+    0.0 on real captured solver-state (x, p) pairs, plus a synthetic
+    length>1 case proving real `np.sort` still runs when length > 1.
+    `scipy.optimize.root` (hybrd, ~23% of the solve) and
+    `CubicSpline.__call__` overhead inside `eos`/`volume` were profiled but
+    NOT touched -- flagged as findings only, see `docs/notes/perf_v1.3.4.md`.
+    PR #57 escalated the hybrd divergence-bound question to the owner; PR
+    #59 records the owner's 2026-10-03 clarification that the standing
+    v1.3.3 integrator rule already answers it and declines a further
+    mira-volkov porting campaign for this release (cost/benefit call, see
+    `PATHWAY_FORWARD.md` item 27) -- no code change in #57/#59, board rows
+    only.
+  Gate (this release, fresh, on the collapsed/renumbered tree): see this
+  entry's own Gate line below, superseding every per-PR count quoted above.
 * v1.5.0; 20261002; dependency MAJOR-version upgrade: pinned environment moved from Python 3.10 (numpy 1.21.5, scipy 1.8.0, pandas 1.3.5, matplotlib 3.5.1, h5py 3.6.0, tables 3.7.0, pytest 6.2.5, pytest-xdist 2.5.0, pyyaml 6.0.1) to Python 3.12 (numpy 2.5.3, scipy 1.18.1, pandas 3.0.6, matplotlib 3.11.2, h5py 3.16.0, tables 3.11.1, pytest 9.1.1, pytest-xdist 3.8.0, pyyaml 6.0.3), resolved with `uv` (PROJECT_RULES.md rule 3b/3c: the pinned manifest is now THE one supported environment, not an option). `pandas==3.0.6` is itself a major bump (unconditional copy-on-write, new default string dtype); a static grep of `read_hdf`/`to_hdf`/`Series`/`DataFrame` usage (`src/driverp.py:271-302`, `src/drivere.py:18-28`, `src/main.py:180`, `src/read_plot_datah5.py:21-27`) found no chained-assignment or `dtype==object` patterns, and the full `testsys/run.py all` tier on the new pins surfaced zero pandas-3.0 regressions needing a code fix.
     1. Bug found and fixed during this migration (not pandas-specific): `testsys/conftest.py:53` and three fixture-regeneration scripts (`testsys/reference/v1_2_0_sweeps/generate_sweeps.py`, `testsys/reference/perf_v1.3.2/generate_real_solver_states.py`, `testsys/reference/perf_v1.3.3/generate_real_quad_calls.py`) filtered `sys.path` on the bare substring `"/.local/"` to drop a stray `pip --user` matplotlib install (see each file's own docstring). Under the new uv-managed Python 3.12 interpreter, the interpreter's OWN stdlib also resolves under `~/.local/share/uv/python/.../lib/python3.12`, so the blanket filter stripped the interpreter's own stdlib out of `sys.path` and broke every test/subprocess invocation (`ModuleNotFoundError: No module named 'pdb'` / `'warnings'`). First narrowed to `"/.local/lib/"` (pip-user-site-packages pattern) with a locking regression test; **superseded same day by owner ruling**: with the pinned venv now the one supported environment (rule 3b/3c), user-site is disabled and apt dist-packages are absent from `sys.path` by construction, so the filter's premise can no longer occur under the required interpreter -- removed entirely (not narrowed) from all four files and from `testsys/run.py`'s `PYTHONNOUSERSITE` re-exec (subprocess e2e runs still set `PYTHONNOUSERSITE=1` out of caution, not re-audited as part of this change). New contract test `testsys/contract/test_gate_runs_in_pinned_venv.py` gates the premise the removal rests on (`site.ENABLE_USER_SITE is False`, no `dist-packages` on `sys.path`, interpreter is 3.12); the now-obsolete narrow-filter regression test `testsys/unit/test_conftest_syspath_filter.py` was deleted rather than kept alongside a filter that no longer exists. `testsys/README.md`'s stale "Environment" section (flagged as a follow-up below) was updated in this same change rather than deferred, since it directly documents the removed workaround. `testsys/contract/test_ci_and_cli.py`'s `test_ci_workflow_pins_python_3_10` was passing only because the workflow file's own migration comment happened to contain the substring `"3.10"` -- not because it checked an actual pin; replaced with `test_ci_workflow_pins_python_3_12`, which parses the workflow YAML and checks every `actions/setup-python` step's `python-version` field directly.
     2. CI (`.github/workflows/test.yml`): the pinned `fast` job (and the opt-in `e2e-cli-smoke`/`e2e-wide-sweep` jobs) moved from `actions/setup-python@v5` 3.10 to 3.12. `fast-latest` gains `continue-on-error: true` and an explicit workflow comment that it is a non-blocking early-warning canary only (PROJECT_RULES.md rule 3c) -- it was already non-required in branch protection, this makes the job config itself say so.
