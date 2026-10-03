@@ -32,7 +32,10 @@ from globalvar import (
 )
 
 # Added by Tilio. 20220614.
-TmFeS     = eos.meltingDataFromFile("TmFeSmelt.dat")
+# Module-relative, not cwd-relative (board item 28g).
+TmFeS     = eos.meltingDataFromFile(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "TmFeSmelt.dat")
+)
 
 
 # --- Error codes / structured logging (PATHWAY_FORWARD.md items 15/16) ---
