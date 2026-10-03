@@ -27,18 +27,25 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-import robust_runner as rr  # src/ is on sys.path via testsys/conftest.py
+from pie import robust_runner as rr  # pie is installed via pyproject.toml (board item 28e)
 
 RUNNER = Path(rr.__file__).resolve()
 
 FAKE_MAIN = textwrap.dedent("""\
-    # Stand-in for src/main.py 'p' mode -- see the test module docstring.
+    # Stand-in for `python -m pie` 'p' mode -- see the test module
+    # docstring. Lives at <fake src>/pie/__main__.py (board item 28e: the
+    # runner now invokes `-m pie`, which resolves "pie" against a cwd-
+    # inserted directory ahead of the real installed package -- see
+    # pie/robust_runner.py:run_one_job), so __file__'s parent is
+    # <fake src>/pie/, one level below where invocations.log/results
+    # should land (<fake src>/, matched by this test module's `_invocations`
+    # and `rr.Job.model_path`).
     import os, sys, time
     from pathlib import Path
 
     _, mode, CMR2, CMC, light, liquidus = sys.argv[:6]
     chi = float(sys.argv[6]) if len(sys.argv) > 6 else 0.0
-    here = Path(__file__).resolve().parent
+    here = Path(__file__).resolve().parent.parent
     with open(here / "invocations.log", "a") as f:
         f.write(CMR2 + "\\n")
 
@@ -65,8 +72,10 @@ FAKE_MAIN = textwrap.dedent("""\
 @pytest.fixture
 def fake_src(tmp_path):
     src = tmp_path / "src"
-    src.mkdir()
-    (src / "main.py").write_text(FAKE_MAIN)
+    pkg = src / "pie"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("")
+    (pkg / "__main__.py").write_text(FAKE_MAIN)
     return src
 
 

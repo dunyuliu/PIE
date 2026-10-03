@@ -1,7 +1,7 @@
 # PIE: Planetary Interior Evolution 
 PIE is a Python-based software to invert Mercury present-day interior structure by matching geodetic, geochemical, and thermodynamic constraints, and simulate evolutions of its interior structure (under development). <br/>
 
-./src/ contains the Python source code to simulate the present-day Mercury inteior structure and its evolution.
+./pie/ contains the Python source code (the installable `pie` package) to simulate the present-day Mercury inteior structure and its evolution.
 Compared to its predecesor present-day model ([GitHub repo](https://github.com/gregorsteinbruegge/MercuryInterior.git)) used in [Steinbruegge et al. (2020)](https://doi.org/10.1029/2020GL089895), two light elements in the core - S and Si - are implemented, based on late thermodynamic liquidus constraints, and iron snow model can be produced. 
 
 Si %wt is currently assumed to be a constant throughout the core, while S %wt are adjusted according to liqudius properties, variable over the core radius. 
@@ -14,10 +14,15 @@ supported environment, not a suggestion; anything else (a different Python,
 unpinned/"latest" packages) is unsupported and untested here.
 
 One-command setup with [`uv`](https://docs.astral.sh/uv/) (absolute path
-shown because `uv` is not on default `PATH` on most hosts):
+shown because `uv` is not on default `PATH` on most hosts). Board item
+28(e): setup is now an editable package install, not a raw
+`pip install -r requirements.txt` into a bare venv -- `pyproject.toml`'s
+pinned `[project.dependencies]` must agree with `requirements.txt`
+(`testsys/contract/test_dependency_pins_match.py`; `requirements.txt`
+remains the source of truth, PROJECT_RULES.md rule 3b):
 ```
 ~/.local/bin/uv venv --python 3.12 .venv
-~/.local/bin/uv pip install --python .venv/bin/python3.12 -r requirements.txt
+~/.local/bin/uv pip install --python .venv/bin/python3.12 -e .
 ```
 
 The pinned, uv-managed venv above is the ONLY supported path (PROJECT_RULES.md
@@ -27,83 +32,89 @@ and untested, and testsys/'s pinned-venv contract test
 (`testsys/contract/test_gate_runs_in_pinned_venv.py`) will fail the gate
 rather than silently accept it.
 
-All commands below run from `src/` (outputs are written to `./results/`,
-relative to the current directory when the script runs):
+`pie` is now an installed package (board item 28e), run as a console
+script or via `-m`, from anywhere -- not a flat `src/` directory you `cd`
+into. Outputs are written to `./results/`, relative to your current
+directory when the command runs:
 ```
-cd src
 mkdir -p results
 ```
 
 ## Monte Carlo simulation on CMR2:
 ```
-python monteCarlo.run.py
+python pie/monteCarlo.run.py
 ```
-will generate a suite of Mercury present-day interior models fitting a set of CMR2 and CMC that are randomly generated from assigned mean CMR2 and its STD.
+will generate a suite of Mercury present-day interior models fitting a set of CMR2 and CMC that are randomly generated from assigned mean CMR2 and its STD. (Run from the repo root -- an editable install means `pie/` is this checkout's own source directory; `monteCarlo.run.py`/`scheduler.py` are operational scripts, not part of the installed console entry point, so they're invoked by path like this, not via `-m`.)
 
 ## General run with specified CMR2 and CMC:
 ```
-python scheduler.py CMR2 CMC
+python pie/scheduler.py CMR2 CMC
 ```
-where CMR2 and CMC, for Margot et al. constraints, are 0.346 and 0.424, respectively. The scheduler.py will loop over cases (S, Si, S+Si), liquidus equation (Steinbruegge, Edmund), and in particular for the case with S+Si, Si%wt from 0% to 15% in 1% increment. 
+where CMR2 and CMC, for Margot et al. constraints, are 0.346 and 0.424, respectively. scheduler.py will loop over cases (S, Si, S+Si), liquidus equation (Steinbruegge, Edmund), and in particular for the case with S+Si, Si%wt from 0% to 15% in 1% increment. Internally it invokes `python -m pie p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` once per composition -- the same entry point the `pie` console script runs:
+```
+pie p 0.346 0.424 S Edmund
+# or, equivalently:
+python -m pie p 0.346 0.424 S Edmund
+```
 
 # Large ensemble Monte Carlo simulation
 
-`src/robust_runner.py` runs any list of present-day jobs on knox (local)
+`pie/robust_runner.py` runs any list of present-day jobs on knox (local)
 or TACC Lonestar6 from one manifest file (PATHWAY_FORWARD.md item 22).
-One job = one `main.py p CMR2 CMC light_element liquidus_eq [chi_Si_icb]`
-call.
+One job = one `python -m pie p CMR2 CMC light_element liquidus_eq
+[chi_Si_icb]` call (board item 28e: formerly `main.py p ...`).
 
 ```
 # 1. manifest: write it by hand (CSV columns CMR2,CMC,light_element,
 #    liquidus_eq,chi_Si_icb[,seed]; chi_Si_icb only for S+Si), or generate
 #    the seeded Monte Carlo ensemble (same draw as monteCarlo.run.py,
 #    same compositions as scheduler.py: S+Si x 16 chi_Si_icb, S, Si):
-python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
+python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 
 # 2a. knox / any shared box: PIE_WORKERS-capped pool, nice 10, 1 BLAS thread/job
-python3 src/robust_runner.py run mc.csv
+python3 pie/robust_runner.py run mc.csv
 
-# 2b. Lonestar6: writes src/commands_launcher (pending jobs only), then the
+# 2b. Lonestar6: writes pie/commands_launcher (pending jobs only), then the
 #     existing slurm script (util/run/, item 28b) runs it under LAUNCHER
-python3 src/robust_runner.py run mc.csv --backend tacc
+python3 pie/robust_runner.py run mc.csv --backend tacc
 sbatch util/run/TACC.LS6.parallel.run.slurm
 ```
 
 - **Resume**: re-run the same command. A job counts as done only when its
   sentinel `results/<model dir>/.runner_done_<chi>.json` exists, written
-  after `main.py` exits 0 and its csv reads back. A killed job's partial
-  csv does not count (`main.py` writes the csv header before the sweep).
-  `--force` re-runs finished jobs.
-- **Status**: `src/results/runner_status.jsonl` (`--status-log`), one
+  after `python -m pie` exits 0 and its csv reads back. A killed job's
+  partial csv does not count (`pie.main` writes the csv header before the
+  sweep). `--force` re-runs finished jobs.
+- **Status**: `<src-dir>/results/runner_status.jsonl` (`--status-log`), one
   `start` and one `end` record per attempt. A finished job's status is an
   `ErrorCode` name (README "Outputs and error codes"): `CONVERGED` if every
   radius converged, else the most frequent failure code, with per-code row
   counts. A job that never finished is `PROCESS_CRASHED` or
   `INCOMPLETE_OUTPUT`. Exit code 0 only if every job attempted finished.
 - **Provenance** (every record and every sentinel): git SHA and whether
-  `src/` was dirty, `requirements.txt` pins and the versions actually
+  `pie/` was dirty, `requirements.txt` pins and the versions actually
   installed, host, interpreter, run id, start/end time.
 - **Workers**: `PIE_WORKERS`, default `max(4, floor(free cores/2))`, the
-  same formula as `testsys/conftest.py` (PROJECT_RULES.md rule 15); check
+  same formula as `testsys/pielib.py` (PROJECT_RULES.md rule 15); check
   `uptime`/`who` first and set it explicitly on a loaded box.
-- The ricb grid is not a manifest field: it is fixed in `src/main.py`.
+- The ricb grid is not a manifest field: it is fixed in `pie/main.py`.
 
 ### Legacy recipes
 
 `util/run/TACC.LS6.create.parallel.launcher.py` (item 28b; writes to
 whatever directory it is run from) writes a `commands_launcher` of 1024
 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or, on knox. Run it
-with `cwd == src/` (where `monteCarlo.run.py` still lives, and where its
+with `cwd == pie/` (where `monteCarlo.run.py` still lives, and where its
 `./results/` output has always landed):
 
 ```
-cd src
+cd pie
 python ../util/run/TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
 nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
 ```
 
 Its resume check is weaker than the runner's: `monteCarlo.run.py` skips a
-draw if the draw's `S+Si` `pMetaData_*.csv` exists, but `main.py` creates
+draw if the draw's `S+Si` `pMetaData_*.csv` exists, but `pie.main` creates
 that csv (header row) before the sweep starts, so a draw killed mid-run is
 skipped as if finished. Prefer `robust_runner.py`.
 
@@ -122,7 +133,7 @@ published-paper parity check against Zenodo-archived output.
 Each present-day model is a 5-unknown shooting problem (P and T at the
 centre, core radius, mantle density, light-element fraction at the
 inner-core boundary) solved by Newton's method with a finite-difference
-Jacobian (`src/shootp.py`, `mynewtonSys`). Since v1.3.0 the Newton step is
+Jacobian (`pie/shootp.py`, `mynewtonSys`). Since v1.3.0 the Newton step is
 bounded (PATHWAY_FORWARD.md item 17; design and measurements in
 `docs/notes/solver_v1.3.0.md`):
 

@@ -13,9 +13,9 @@ import h5py
 import pandas as pd
 import pytest
 
-from conftest import import_src
+from pielib import import_src
 
-SRC = pathlib.Path(__file__).resolve().parents[2] / "src"
+SRC = pathlib.Path(__file__).resolve().parents[2] / "pie"
 
 pytestmark = pytest.mark.contract
 

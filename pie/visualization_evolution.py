@@ -9,12 +9,12 @@ Created on Fri Oct 11 14:52:43 2019
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import shoote as lc
+from . import shoote as lc
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
 from PIL import Image
-from globalvar import *
+from .globalvar import *
 
 #im = Image.open('volcano.png')
 #height = im.size[1]

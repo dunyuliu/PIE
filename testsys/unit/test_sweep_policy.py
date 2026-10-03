@@ -23,7 +23,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-from conftest import import_src
+from pielib import import_src
 
 V0 = [0.8, 1.0, 0.8, 0.7, 0.05]
 

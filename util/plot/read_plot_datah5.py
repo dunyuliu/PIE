@@ -4,18 +4,14 @@
 #   It will plot the results in a normalized way.
  
 import os, sys
-# util/plot/ -> repo root -> src/: board item 28(a) moved this file out of
-# src/, where its sibling imports below (coreEos, planet_input) still live,
-# so src/ must be put on sys.path before those imports resolve.
-_SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src')
-if _SRC_DIR not in sys.path:
-    sys.path.insert(0, _SRC_DIR)
 
 import pandas as pd
 import matplotlib.pyplot as plt
-import coreEos as eos
+# board item 28e: pie is an installed package (`uv pip install -e .`), not
+# a sys.path-inserted directory -- import it like any other package.
+from pie import coreEos as eos
 import numpy as np
-from planet_input import planet
+from pie.planet_input import planet
 
 filename = "./CMR2_0.346_CMC_0.428_S+Si_Steinbruegge/present_Si%wt_0.0_data/550.0_data.h5"
 CMR2 = 0.346

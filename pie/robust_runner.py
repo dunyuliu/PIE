@@ -3,8 +3,9 @@
 
 One runner for knox (local) and TACC Lonestar6, replacing the ad-hoc knox
 `xargs` recipe and the TACC LAUNCHER recipe (README "Large ensemble Monte
-Carlo simulation"). A job is one `main.py p CMR2 CMC light_element
-liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
+Carlo simulation"). A job is one `python -m pie p CMR2 CMC light_element
+liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep
+(board item 28e: the package entry point, formerly `main.py p ...`).
 
 1. Manifest: an explicit CSV, read from a file, never hard-coded:
 
@@ -13,49 +14,50 @@ liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
        0.346,0.424,S+Si,Edmund,0.05,
 
    `chi_Si_icb` is required for S+Si and must be blank otherwise
-   (src/globalvar.py ignores it and uses 0.0 for S/Si). `seed` is
+   (pie/globalvar.py ignores it and uses 0.0 for S/Si). `seed` is
    optional provenance: the RNG seed that drew this row's CMR2/CMC
    (`make-mc-manifest`). The ricb grid is NOT a manifest column: it is
-   fixed in src/main.py (`np.arange(1e1, 2e6, dr)`, dr in globalvar.py)
-   and changing that is a src/ change, out of this runner's scope.
+   fixed in pie/main.py (`np.arange(1e1, 2e6, dr)`, dr in globalvar.py)
+   and changing that is a pie/ change, out of this runner's scope.
 
 2. Resumable: a job is done iff its completion sentinel
    `results/<model dir>/.runner_done_<chi>.json` exists. The sentinel is
-   written (atomic rename) only after main.py exits 0 and its csv reads
-   back with >=1 data row. Not "csv exists": main.py writes the csv
+   written (atomic rename) only after `python -m pie` exits 0 and its csv
+   reads back with >=1 data row. Not "csv exists": pie.main writes the csv
    header before the sweep starts, so a killed job leaves a csv behind.
 
 3. Status: a finished job's status is an `ErrorCode` name from
-   src/globalvar.py (item 16, imported, not copied) -- CONVERGED if every
+   pie/globalvar.py (item 16, imported, not copied) -- CONVERGED if every
    radius converged, else the most frequent failure code -- with the full
    per-code row counts alongside. A job that never finished gets a
    `RunnerStatus` (PROCESS_CRASHED / INCOMPLETE_OUTPUT) instead.
 
 4. Parallelism: `PIE_WORKERS` cap, same formula as
-   testsys/conftest.py:pie_workers() (copied, since production must not
+   testsys/pielib.py:pie_workers() (copied, since production must not
    import testsys; a unit test pins the two together); every job runs
    under `nice -n 10` with one BLAS thread (PROJECT_RULES.md rule 15).
 
 5. Provenance, per job (not per run, so TACC jobs on many hosts are each
-   self-describing): git SHA + whether src/ is dirty, root requirements.txt
+   self-describing): git SHA + whether pie/ is dirty, root requirements.txt
    pins + the versions actually installed, host, interpreter, run_id,
    start/end time. Written to every status-log record and to the sentinel.
 
 6. Backends: `--backend local` runs a capped thread pool, each thread
-   driving one `main.py` subprocess. `--backend tacc` writes
-   src/commands_launcher (the file util/run/TACC.LS6.parallel.run.slurm,
+   driving one `python -m pie` subprocess. `--backend tacc` writes
+   pie/commands_launcher (the file util/run/TACC.LS6.parallel.run.slurm,
    item 28b, already reads) with one `robust_runner.py run-one <manifest>
    --index i` line per not-yet-done job, so TACC jobs get the same status
    records/sentinels.
 
-CLI (run from anywhere; results/ goes under --src-dir, default src/):
+CLI (run from anywhere; results/ goes under --src-dir, default the
+installed `pie` package directory):
 
-    python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
-    python3 src/robust_runner.py run mc.csv                       # knox
-    python3 src/robust_runner.py run mc.csv --backend tacc        # LS6: then
+    python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
+    python3 pie/robust_runner.py run mc.csv                       # knox
+    python3 pie/robust_runner.py run mc.csv --backend tacc        # LS6: then
     (sbatch util/run/TACC.LS6.parallel.run.slurm)
 
-Status log: append-only JSONL, default src/results/runner_status.jsonl
+Status log: append-only JSONL, default <src-dir>/results/runner_status.jsonl
 (`--status-log`), one `start` and one `end` record per job attempt.
 """
 import argparse
@@ -76,36 +78,44 @@ REPO_ROOT = SRC_DIR.parent
 
 
 def _load_error_code():
-    """Import `src/globalvar.py`'s `ErrorCode` enum without re-deriving its
+    """Import `pie/globalvar.py`'s `ErrorCode` enum without re-deriving its
     vocabulary (requirement 3: reuse, don't invent a parallel one).
 
     `globalvar.py` parses `sys.argv` as main.py's (code_mode, CMR2, CMC,
-    ...) at import time -- the obstacle `testsys/conftest.py` also works
+    ...) at import time -- the obstacle `testsys/pielib.py` also works
     around with a placeholder argv. Here the placeholder is ALWAYS
     substituted for the first import (not only when argv is short): this
     runner's own CLI argv (`run m.csv --workers 2 ...`) is long enough to
     pass a length check and then crash on `float(sys.argv[2])`. Only
     ErrorCode is used from the module, which does not depend on argv.
-    `sys.argv`/`sys.path` are restored in `finally`. An already-imported
-    globalvar (e.g. inside main.py or a test) is reused as is.
+    `sys.argv` is restored in `finally`. An already-imported
+    `pie.globalvar` (e.g. inside `pie.main` or a test) is reused as is.
+
+    `importlib.import_module("pie.globalvar")`, not a package-relative
+    `from . import globalvar`: this module is deliberately runnable as a
+    bare script (both the TACC launcher and testsys/integration's
+    crash/restart tests invoke it by file path, `python
+    .../robust_runner.py ...`, not `python -m pie.robust_runner`), and a
+    relative import fails with no `__package__` when a module is executed
+    that way. Resolving by absolute dotted name instead works in both
+    modes, as long as `pie` itself is importable (installed, board item
+    28e) -- which it already must be for `run_one_job` below to invoke
+    `python -m pie`.
     """
     saved_argv = sys.argv[:]
-    saved_path = sys.path[:]
     try:
-        if str(SRC_DIR) not in sys.path:
-            sys.path.insert(0, str(SRC_DIR))
-        if "globalvar" not in sys.modules:
+        if "pie.globalvar" not in sys.modules:
             sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
         # globalvar.py does `print(len(sys.argv))` at import; keep that out
         # of this CLI's machine-readable (JSON) stdout.
         import contextlib
+        import importlib
         import io
         with contextlib.redirect_stdout(io.StringIO()):
-            import globalvar
+            globalvar = importlib.import_module("pie.globalvar")
         return globalvar.ErrorCode
     finally:
         sys.argv[:] = saved_argv
-        sys.path[:] = saved_path
 
 
 ErrorCode = _load_error_code()
@@ -122,7 +132,7 @@ class RunnerStatus(str, enum.Enum):
 
 
 def pie_workers():
-    """Same cap formula as `testsys/conftest.py:pie_workers()`
+    """Same cap formula as `testsys/pielib.py:pie_workers()`
     (PROJECT_RULES.md rule 15) -- duplicated rather than imported, since
     this module runs standalone in production (no `testsys/` on a TACC
     compute node). Keep these two in sync; a contract test diffs them.
@@ -297,8 +307,11 @@ def provenance(repo_root=REPO_ROOT):
     prov["git_sha"] = sha.strip() if sha else None
     if err:
         prov["git_sha_error"] = err
-    porcelain, err = _git(["status", "--porcelain", "--", "src"], repo_root)
-    # A dirty src/ means the SHA alone does not identify the code that ran.
+    porcelain, err = _git(["status", "--porcelain", "--", "pie"], repo_root)
+    # A dirty pie/ means the SHA alone does not identify the code that ran.
+    # Key name (`git_src_dirty`) kept as-is (board item 28e: renaming the
+    # directory is not a reason to also break every provenance record's
+    # field name / every test and sentinel reader of it).
     prov["git_src_dirty"] = bool(porcelain.strip()) if porcelain is not None else None
 
     pins = {}
@@ -468,10 +481,18 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
     python_exe = python_exe or sys.executable
     src_dir = Path(src_dir)
     # job.argv()[0] is the literal 'main.py' placeholder (the sys.argv
-    # shape src/globalvar.py expects); the subprocess uses the real path.
-    cmd = ["nice", "-n", "10", python_exe, str(src_dir / "main.py")] + job.argv()[1:]
-    # results/ is relative to main.py's cwd (globalvar.model_path) and
-    # nothing in src/ creates it (CLAUDE.md "Running").
+    # shape pie/globalvar.py expects); dropped here since `-m pie` supplies
+    # its own argv[0]. Invoked via `-m pie` (board item 28e), not a path to
+    # main.py: pie.main now uses package-relative imports and cannot be run
+    # as a bare script. `python -m pie` resolves "pie" the installed
+    # package regardless of `cwd` -- EXCEPT when `cwd` itself contains a
+    # `pie/` subdirectory, which takes priority on `sys.path` (Python
+    # prepends the invocation cwd for `-m`); testsys/integration's
+    # crash/restart tests rely on exactly that to shadow the real package
+    # with a fake stand-in, see that test module's `fake_src` fixture.
+    cmd = ["nice", "-n", "10", python_exe, "-m", "pie"] + job.argv()[1:]
+    # results/ is relative to pie.main's cwd (globalvar.model_path) and
+    # nothing in pie/ creates it (CLAUDE.md "Running").
     (src_dir / "results").mkdir(exist_ok=True)
 
     if status_log is not None:

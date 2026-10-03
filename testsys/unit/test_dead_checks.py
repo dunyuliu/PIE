@@ -29,7 +29,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-SRC = pathlib.Path(__file__).resolve().parents[2] / "src"
+SRC = pathlib.Path(__file__).resolve().parents[2] / "pie"
 
 
 def _code_only(text):

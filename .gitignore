@@ -2,4 +2,6 @@
 __pycache__/
 .claude/
 .venv/
-src/commands_launcher
+.venv-py312/
+pie/commands_launcher
+*.egg-info/

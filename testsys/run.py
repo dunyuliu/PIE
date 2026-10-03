@@ -9,7 +9,7 @@
     /usr/bin/python3 testsys/run.py all        # every tier, including e2e
     /usr/bin/python3 testsys/run.py -n 8 all   # xdist across test files, 8 workers
                                                 # (default worker count: PIE_WORKERS,
-                                                # see testsys/conftest.py:pie_workers();
+                                                # see testsys/pielib.py:pie_workers();
                                                 # -n 0 or PIE_WORKERS=1 disables xdist)
 
 Sets MPLBACKEND=Agg (headless) and one BLAS thread per worker before
@@ -28,7 +28,7 @@ gates "this is actually running under that interpreter."
 
 Shared-machine note (PROJECT_RULES.md): `-n` drives pytest-xdist only;
 every in-test ProcessPoolExecutor pool reads the SAME `PIE_WORKERS` knob
-via conftest.py's `pool_workers()`, which collapses to 1 inside an xdist
+via pielib.py's `pool_workers()`, which collapses to 1 inside an xdist
 worker so parallelism never multiplies (xdist workers x pool size).
 """
 import os
@@ -84,7 +84,7 @@ def main():
     here = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(here)
     sys.path.insert(0, here)
-    from conftest import pie_workers  # noqa: E402
+    from pielib import pie_workers  # noqa: E402
 
     try:
         os.nice(10)  # shared-machine headroom; children inherit this niceness
@@ -93,7 +93,7 @@ def main():
 
     # Default xdist worker count is SMALLER than PIE_WORKERS, not equal to
     # it: several modules share a module-scoped ProcessPoolExecutor pool
-    # (conftest.py:pool_workers()), capped by PIE_WORKERS // n_xdist_workers
+    # (pielib.py:pool_workers()), capped by PIE_WORKERS // n_xdist_workers
     # so the TOTAL stays bounded. If n_xdist_workers == PIE_WORKERS, that
     # division is always 1 -- no in-test parallelism left, and the one
     # module with real internal work (test_v1_2_0_invariant.py, a 14-case

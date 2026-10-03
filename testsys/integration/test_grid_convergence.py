@@ -58,7 +58,7 @@ own documented pattern.
 import numpy as np
 import pytest
 
-from conftest import import_src
+from pielib import import_src
 
 pytestmark = pytest.mark.integration
 
@@ -72,17 +72,15 @@ def fluid_core_initial_condition():
     odeRK4_snow -- shared across every resolution tested below so the
     ~17 s Newton solve runs once, not 3x."""
     import sys as _sys
+    from pielib import _purge_pie_submodules
     _sys.argv[:] = ["main.py", "p", str(CMR2), str(CMC), "S", "Edmund"]
-    for name in list(_sys.modules):
-        if name in ("globalvar", "planet_input", "libCore", "solver",
-                     "coreEos", "shootp", "driverp"):
-            del _sys.modules[name]
-    import globalvar as gv
+    _purge_pie_submodules()
+    from pie import globalvar as gv
     planet_input = import_src("planet_input", CMR2=CMR2, CMC=CMC,
                                light_element="S", liquidus_eq="Edmund")
-    import shootp as lc
-    import solver
-    import coreEos as eos
+    from pie import shootp as lc
+    from pie import solver
+    from pie import coreEos as eos
     import scipy.integrate
     from scipy.constants import G
 

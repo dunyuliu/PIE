@@ -6,7 +6,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-from conftest import import_src
+from pielib import import_src
 
 
 def test_planet_present_day_sets_requested_cmr2_cmc(sys_argv_p):

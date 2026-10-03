@@ -13,21 +13,21 @@ Modified by dliu since 03/31/2022.dliu.
 import numpy as np
 import time
 import scipy
-import coreEos as eos
+from . import coreEos as eos
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv
 #from scipy.constants import G
 #from scipy.constants import R as RGas
-from globalvar import (
+from .globalvar import (
     ErrorCode, chi_Si_icb, liquidus_eq,
     max_Si_Steinbruegge2020, max_Si_Edmund2022,
 )
-from libCore import (
+from .libCore import (
     G, SolverError, write_solver_log, reorder_el,
     getCoreLiquidus, getpotvsr, get_mass_core,
     get_mass_norm, get_moi, get_ccc,
 )
-from solver import (
+from .solver import (
     odeRK4_snow, rhs_PTrhog_solid_snow, rhs_fluid_snow,
     simpsonDat, rhs_Pgz,
 )

@@ -54,12 +54,12 @@ import pytest
 pytestmark = pytest.mark.integration
 
 REF = pathlib.Path(__file__).resolve().parent.parent / "reference" / "v1_2_0_sweeps"
-SRC = pathlib.Path(__file__).resolve().parents[2] / "src"
+SRC = pathlib.Path(__file__).resolve().parents[2] / "pie"
 sys.path.insert(0, str(REF))
 import generate_sweeps  # noqa: E402
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
-from conftest import pool_workers  # noqa: E402
+from pielib import pool_workers  # noqa: E402
 
 EXTRA_RADII = 2
 PINNED = {"numpy": "1.21.5", "scipy": "1.8.0"}

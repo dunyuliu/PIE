@@ -43,7 +43,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import coreEos as eos
+from pie import coreEos as eos
 
 # (x wt fraction, p GPa, T Kelvin) -- verbatim from src/TmFeSmelt.dat
 GRID_NODES = [

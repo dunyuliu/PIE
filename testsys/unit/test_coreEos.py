@@ -10,7 +10,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import coreEos as eos
+from pie import coreEos as eos
 
 
 # ---------------------------------------------------------------------

@@ -37,7 +37,7 @@ import pathlib
 import pandas as pd
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match
+from pielib import solve_full_model, assert_scalars_match, assert_profiles_match
 
 pytestmark = [pytest.mark.integration, pytest.mark.parity]
 

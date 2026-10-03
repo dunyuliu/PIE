@@ -1,6 +1,7 @@
-"""E2E tier: run src/main.py exactly the way scheduler.py invokes it for
-one composition, end-to-end, in a tmp dir, as a real subprocess -- then
-diff its output against a committed golden.
+"""E2E tier: run `python -m pie` exactly the way scheduler.py invokes it
+for one composition (board item 28e: formerly `python main.py`), end-to-
+end, in a tmp dir, as a real subprocess -- then diff its output against a
+committed golden.
 
 Scope: ONE full composition (S, Edmund, CMR2=0.346, CMC=0.424 -- the
 exact case named in the task brief), not scheduler.py's full 18-way
@@ -26,11 +27,10 @@ import sys
 
 import pytest
 
-from conftest import run_pie
+from pielib import run_pie
 
 pytestmark = pytest.mark.e2e
 
-SRC = pathlib.Path(__file__).resolve().parent.parent.parent / "src"
 GOLDEN = (pathlib.Path(__file__).resolve().parent.parent / "reference"
           / "self_v1.0.5" / "CMR2_0.346_CMC_0.424_S_Edmund" / "pMetaData_0.00.csv")
 RTOL = 1e-4
@@ -68,20 +68,24 @@ def test_failed_radii_have_nan_physics_and_no_h5(full_run):
 @pytest.fixture(scope="module")
 def full_run(tmp_path_factory):
     workdir = tmp_path_factory.mktemp("pie_e2e")
-    for py in SRC.glob("*.py"):
-        (workdir / py.name).symlink_to(py)
-    (workdir / "TmFeSmelt.dat").symlink_to(SRC / "TmFeSmelt.dat")
     (workdir / "results").mkdir()
+    # No symlinking of pie/*.py into workdir (board item 28e): pie is an
+    # installed package now, resolved via `-m pie` regardless of cwd, not
+    # a flat directory of scripts that has to be physically present next
+    # to the output. The symlink approach also could not have worked once
+    # pie's sibling modules use package-relative imports: a symlinked
+    # main.py run as a bare script has no `__package__` for `from
+    # .globalvar import ...` to resolve against.
 
     # v1.3.0 sweep policy: all 40 radii are attempted (v1.2.0 stopped at the
     # first failure), and every failed radius costs a warm + a cold Newton
     # attempt (~90 s each on this shared box under load) -- the 900 s budget
     # of v1.2.0 timed out; measured wall is recorded in
     # docs/notes/solver_v1.3.0.md sec. 4.
-    result = run_pie("main.py", "p", "0.346", "0.424", "S", "Edmund",
+    result = run_pie("-m", "pie", "p", "0.346", "0.424", "S", "Edmund",
                       cwd=str(workdir), timeout=5400)
     assert result.returncode == 0, (
-        f"main.py exited {result.returncode}:\n{result.stdout[-4000:]}"
+        f"pie exited {result.returncode}:\n{result.stdout[-4000:]}"
     )
 
     out_dirs = list((workdir / "results").glob("CMR2_*"))

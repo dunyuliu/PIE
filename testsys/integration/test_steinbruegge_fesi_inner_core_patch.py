@@ -60,7 +60,7 @@ import pytest
 
 pytestmark = [pytest.mark.integration, pytest.mark.parity]
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 REF_PATCHED = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "reference",

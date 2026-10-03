@@ -45,16 +45,33 @@ import time
 HERE = pathlib.Path(__file__).resolve().parent
 
 _CHILD = r'''
-import sys, os, json, time, io, contextlib
+import sys, os, json, time, io, contextlib, pathlib, importlib
 src = sys.argv[1]; case = json.loads(sys.argv[2]); policy = sys.argv[3]; adaptive = sys.argv[4] == "1"
-sys.path.insert(0, src); os.chdir(src)
 sys.argv[:] = ["main.py", "p", repr(case["CMR2"]), repr(case["CMC"]), case["light"], case["liquidus"], repr(case["chi_Si_icb"])]
+# `src` is either the CURRENT repo's installed `pie` package directory
+# (board item 28e: has __init__.py, package-relative imports, import it as
+# "pie") or a flat, bare-sibling-import `src/` checked out from a
+# historical pre-28e commit (no __init__.py -- used only when manually
+# regenerating this script's committed fixture from an old SHA, e.g.
+# v1.2.0 at 18cf78a; not exercised by the live test suite). Branching on
+# that, rather than only ever supporting one, keeps this script able to
+# regenerate its own historical fixture without ALSO requiring every old
+# checkout to be repackaged.
+is_pkg = (pathlib.Path(src) / "__init__.py").is_file()
 import numpy as np
 with contextlib.redirect_stdout(io.StringIO()):
-    import globalvar as gv, planet_input, shootp as lc
-    driverp = None
-    if policy == "continue":
-        import driverp
+    if is_pkg:
+        sys.path.insert(0, str(pathlib.Path(src).parent))
+        gv = importlib.import_module("pie.globalvar")
+        planet_input = importlib.import_module("pie.planet_input")
+        lc = importlib.import_module("pie.shootp")
+        driverp = importlib.import_module("pie.driverp") if policy == "continue" else None
+    else:
+        sys.path.insert(0, src); os.chdir(src)
+        import globalvar as gv, planet_input, shootp as lc
+        driverp = None
+        if policy == "continue":
+            import driverp
     param = planet_input.planet("p", case["CMR2"], case["light"], case["liquidus"])
 scale = param["scale"]; rhocr, rh = param["rhocr"], param["rh"]
 rs = np.arange(1e1, 2e6, gv.dr); rs = rs[rs <= case["max_ricb_m"]]

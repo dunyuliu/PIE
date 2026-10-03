@@ -15,17 +15,17 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-import robust_runner as rr  # src/ is on sys.path via testsys/conftest.py
+from pie import robust_runner as rr  # pie is installed via pyproject.toml (board item 28e)
 
 SRC = Path(rr.__file__).resolve().parent
 
 
 def test_error_code_is_imported_from_globalvar_not_copied():
-    # Requirement 3: reuse src/globalvar.py's ErrorCode, not a copy. (Not an
-    # `is` check: conftest.import_src re-imports globalvar per test, which
+    # Requirement 3: reuse pie/globalvar.py's ErrorCode, not a copy. (Not an
+    # `is` check: pielib.import_src re-imports globalvar per test, which
     # makes a new class object with the same members.)
-    import globalvar
-    assert rr.ErrorCode.__module__ == "globalvar"
+    from pie import globalvar
+    assert rr.ErrorCode.__module__ == "pie.globalvar"
     assert {m.name: m.value for m in rr.ErrorCode} == {m.name: m.value for m in globalvar.ErrorCode}
     assert "class ErrorCode" not in (SRC / "robust_runner.py").read_text()
 
@@ -123,5 +123,5 @@ def test_pie_workers_matches_conftest(monkeypatch, cpu, load, expected):
     monkeypatch.delenv("PIE_WORKERS", raising=False)
     monkeypatch.setattr(os, "cpu_count", lambda: cpu)
     monkeypatch.setattr(os, "getloadavg", lambda: (load, load, load))
-    from conftest import pie_workers as conftest_pie_workers
+    from pielib import pie_workers as conftest_pie_workers
     assert rr.pie_workers() == conftest_pie_workers() == expected

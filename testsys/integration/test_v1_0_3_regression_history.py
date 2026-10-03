@@ -34,7 +34,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 pytestmark = [pytest.mark.integration, pytest.mark.parity]
 
