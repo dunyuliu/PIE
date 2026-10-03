@@ -18,9 +18,19 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv
 #from scipy.constants import G
 #from scipy.constants import R as RGas
-from globalvar import *
-from libCore import *
-from solver import *
+from globalvar import (
+    ErrorCode, chi_Si_icb, liquidus_eq,
+    max_Si_Steinbruegge2020, max_Si_Edmund2022,
+)
+from libCore import (
+    G, SolverError, write_solver_log, reorder_el,
+    getCoreLiquidus, getpotvsr, get_mass_core,
+    get_mass_norm, get_moi, get_ccc,
+)
+from solver import (
+    odeRK4_snow, rhs_PTrhog_solid_snow, rhs_fluid_snow,
+    simpsonDat, rhs_Pgz,
+)
 
 def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     
