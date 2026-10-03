@@ -110,14 +110,16 @@ as inherited, not fresh):**
 | genova/S+Si 0.05 | 620 | 0.049 | 0.3359 |
 | genova/S+Si 0.10 | 150 | 0.029 | 0.3409 |
 
-**After: cannot be computed as a snow-fraction number.** The `generate_sweeps.py` measurement that
-produced the 39 admissible rows records `v, f, fout, chi_li_icb, chi_max, rcmb_m, profile_finite,
-rho_min` per row — **no `isnow`/`isnowcmb` field** (verified by reading the raw JSON schema directly,
-`measure36_partial/*.json`, in this note). Snow-layer state requires the full adiabat-vs-liquidus
-profile classification that `solve_full_model` (not `generate_sweeps.py`) computes. **This is a real
-gap, not a rounding-down**: a corrected snow-fraction number requires re-solving the 39 admissible
-(CMR2, CMC, ricb) triples with `solve_full_model` to get `isnow`, which this note does not do (scope:
-docs/analysis only, no new physics runs beyond the already-committed measurement).
+**After: not computed in this note** — done in `item18_snowfraction_2026-10-03.md`. **Wording
+corrected 2026-10-03 (owner):** the original text here said the measurement "has no `isnow`/`isnowcmb`
+field". That was wrong on two counts. (1) PIE itself has always written `isnow` (0 none, 1 layers,
+2 deep snow, 3 both) and `isnowcmb` per radius — `pie/driverp.py` (then `src/driverp.py:327`) to the
+`pMetaData_*.csv`, and the published Zenodo CSVs carry both columns; the gap was only ever in the
+`generate_sweeps.py`/`measure36` JSON harness, not in PIE. (2) Even that JSON carries the index,
+unlabelled: `fout` is `shoot_mercmodel`'s output tuple and `fout[2] = isnow`, `fout[3] = isnowcmb`
+(`pie/shootp.py` docstring). The 2026-10-03 note re-solved the 39 triples fresh with
+`solve_full_model` anyway (38/39 reconverge cold; fresh `isnow` == `fout[2]` for all 38) and
+computed the per-composition before/after table.
 
 **What can be bounded without that re-solve:**
 - *Row-count impact.* Scaling the pooled rate 39/892 (CI95 3-6%) by the ratio of population "beyond-stop"
@@ -150,8 +152,9 @@ to PIE per `CLAUDE.md`/`PATHWAY_FORWARD.md` item 18's standing instruction.
 
 ## 5. Caveats / known limitations
 
-- **isnow is not computable from this measurement** (§3) — the single largest gap. Closing it needs a
-  fresh `solve_full_model` pass over the 39 (CMR2, CMC, ricb) triples; not done here.
+- ~~**isnow is not computable from this measurement**~~ (§3, corrected 2026-10-03): it is — as
+  `fout[2]` in the measurement JSON and as a first-class column in PIE's own CSVs; the fresh
+  `solve_full_model` pass over the 39 triples is in `item18_snowfraction_2026-10-03.md`.
 - **S+Si 0.00 and S+Si 0.12 are entirely unsampled** by the 37-case measurement; their contribution to
   the affected population (margot 1024+557 draws, genova 1024+? — S+Si 0.12 counts not fully
   transcribed in the inherited census table) is excluded from every number above. The true affected
@@ -187,8 +190,9 @@ to PIE per `CLAUDE.md`/`PATHWAY_FORWARD.md` item 18's standing instruction.
   S+Si 0.05, across three cases, one of them a distinct failure mode — see §2 correction) — the
   pooled rate is not representative of the other 7 sampled compositions, several of which recovered
   zero admissible rows.
-- Snow-fraction before/after: **before** is the inherited published census (table in §3); **after
-  cannot be computed** — `isnow` is not in the measurement's output schema. Row-count impact is bounded
+- Snow-fraction before/after: **before** is the inherited published census (table in §3); **after**
+  was not computed here (the "isnow is not in the schema" reason originally given was wrong — see §3
+  correction; it is computed in `item18_snowfraction_2026-10-03.md`). Row-count impact is bounded
   at roughly 0 to low-thousands of newly-admissible rows against a 474,075-row published denominator
   (single-digit-percent at most for any one affected composition), not a reversal of direction.
   CMR2 direction is **not** uniformly low-CMR2 as previously assumed; it depends on which failure mode
