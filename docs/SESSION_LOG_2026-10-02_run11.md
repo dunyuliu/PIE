@@ -237,7 +237,7 @@ notifications before next dispatch/merge.
    - License identifier in `pyproject.toml` (`GPL-3.0-only`) cross-checked
      against `LICENSE` — matches.
    Squash-merged, deleted remote branch. Local reap: agent's worktree was
-   at `/home/utig5/dliu/pie-worktree-28e` — **outside the project root**,
+   at a sibling directory, not inside the project root —
    a violation of the "isolation: worktree inside the project root, never a
    sibling directory" rule. Checked for uncommitted/ignored work first
    (`git status --ignored`): only build artifacts (`.venv/`, `*.egg-info/`,
