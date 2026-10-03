@@ -11,7 +11,7 @@ haruto-nakamura, already stopped) open with CI just started.
   version-number collapse (1.6.2 -> 1.6.0) and CHANGELOG restructuring, no
   reverted lines; confirmed branch base == current main tip (`a8c16dd`).
 - Re-ran the oracle myself, independent of Haruto's report: fresh worktree
-  (`/tmp/claude-16759/pie-gate-verify`, not his locked one), fresh pinned
+  (a scratch dir, not his locked worktree), fresh pinned
   py3.12 venv built from scratch, `testsys/run.py all` on the exact merge-SHA
   tree -> **327 passed, 15 skipped, 3 xfailed, 0 failed, 452.95s** — matches
   his reported count exactly (independent reproduction, not a re-read).
