@@ -43,16 +43,17 @@ liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
 
 6. Backends: `--backend local` runs a capped thread pool, each thread
    driving one `main.py` subprocess. `--backend tacc` writes
-   src/commands_launcher (the file src/TACC.LS6.parallel.run.slurm already
-   reads) with one `robust_runner.py run-one <manifest> --index i` line per
-   not-yet-done job, so TACC jobs get the same status records/sentinels.
+   src/commands_launcher (the file util/run/TACC.LS6.parallel.run.slurm,
+   item 28b, already reads) with one `robust_runner.py run-one <manifest>
+   --index i` line per not-yet-done job, so TACC jobs get the same status
+   records/sentinels.
 
 CLI (run from anywhere; results/ goes under --src-dir, default src/):
 
     python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
     python3 src/robust_runner.py run mc.csv                       # knox
     python3 src/robust_runner.py run mc.csv --backend tacc        # LS6: then
-    (cd src && sbatch TACC.LS6.parallel.run.slurm)
+    (sbatch util/run/TACC.LS6.parallel.run.slurm)
 
 Status log: append-only JSONL, default src/results/runner_status.jsonl
 (`--status-log`), one `start` and one `end` record per job attempt.
@@ -248,8 +249,8 @@ def write_manifest(path, jobs):
 
 def mc_jobs(n, seed_base, mean_cmr2=0.346, std_cmr2=0.014, cmc0=0.426,
             liquidus_eq="Edmund", chi_si_values=None):
-    """The Monte Carlo ensemble that TACC.LS6.create.parallel.launcher.py
-    + monteCarlo.run.py + scheduler.py produce today, as an explicit job
+    """The Monte Carlo ensemble that util/run/TACC.LS6.create.parallel.launcher.py
+    (item 28b) + monteCarlo.run.py + scheduler.py produce today, as an explicit job
     list: draw i uses seed `seed_base + i` and the same draw as
     monteCarlo.run.py (default_rng(seed).normal(mean, std, 1); CMC =
     cmc0*mean/CMR2), then scheduler.py's compositions -- S+Si at each
@@ -558,8 +559,9 @@ def write_tacc_launcher(jobs, manifest_path, src_dir=SRC_DIR,
                         launcher_out="commands_launcher", status_log_path=None,
                         python_exe=None, force=False):
     """TACC backend: writes the `commands_launcher` file that the existing
-    `src/TACC.LS6.parallel.run.slurm` (LAUNCHER_JOB_FILE=commands_launcher,
-    run from src/) consumes unchanged. Each line is one job routed back
+    `util/run/TACC.LS6.parallel.run.slurm` (item 28b;
+    LAUNCHER_JOB_FILE=commands_launcher, run from src/) consumes unchanged.
+    Each line is one job routed back
     through this runner (`robust_runner.py run-one <manifest> --index i`),
     so a TACC job gets the same per-job status record + provenance as a
     local one. Already-done jobs are left out (same oracle as the local

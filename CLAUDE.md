@@ -33,11 +33,12 @@ Carlo simulation"):
 ```bash
 python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 python3 src/robust_runner.py run mc.csv                    # knox, PIE_WORKERS-capped
-python3 src/robust_runner.py run mc.csv --backend tacc     # LS6: then cd src && sbatch TACC.LS6.parallel.run.slurm
+python3 src/robust_runner.py run mc.csv --backend tacc     # LS6: then sbatch util/run/TACC.LS6.parallel.run.slurm
 ```
 
-Legacy: `src/TACC.LS6.create.parallel.launcher.py` + `monteCarlo.run.py`
-(its resume check treats a killed draw as finished -- README).
+Legacy: `util/run/TACC.LS6.create.parallel.launcher.py` (item 28b; run with
+cwd==src/, see README) + `monteCarlo.run.py` (its resume check treats a
+killed draw as finished -- README).
 
 ## Layout
 

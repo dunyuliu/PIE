@@ -9,8 +9,9 @@ CMC0      = 0.426
 
 if __name__ == "__main__":
     # Optional explicit seed (argv[1]): makes a single draw reproducible and lets
-    # a launcher (TACC.LS6.create.parallel.launcher.py / the knox xargs recipe,
-    # see README "Large ensemble Monte Carlo simulation") regenerate the exact
+    # a launcher (util/run/TACC.LS6.create.parallel.launcher.py, item 28b /
+    # the knox xargs recipe, see README "Large ensemble Monte Carlo
+    # simulation") regenerate the exact
     # same CMR2/CMC for a resumability check, instead of each line being an
     # unrepeatable, unseeded draw. Unseeded (no argv) keeps the old ad hoc
     # interactive behaviour.

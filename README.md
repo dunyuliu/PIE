@@ -64,9 +64,9 @@ python3 src/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 202609
 python3 src/robust_runner.py run mc.csv
 
 # 2b. Lonestar6: writes src/commands_launcher (pending jobs only), then the
-#     existing slurm script runs it under LAUNCHER
+#     existing slurm script (util/run/, item 28b) runs it under LAUNCHER
 python3 src/robust_runner.py run mc.csv --backend tacc
-cd src && sbatch TACC.LS6.parallel.run.slurm
+sbatch util/run/TACC.LS6.parallel.run.slurm
 ```
 
 - **Resume**: re-run the same command. A job counts as done only when its
@@ -90,12 +90,15 @@ cd src && sbatch TACC.LS6.parallel.run.slurm
 
 ### Legacy recipes
 
-`src/TACC.LS6.create.parallel.launcher.py` writes a `commands_launcher`
-of 1024 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or, on knox:
+`util/run/TACC.LS6.create.parallel.launcher.py` (item 28b; writes to
+whatever directory it is run from) writes a `commands_launcher` of 1024
+`monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or, on knox. Run it
+with `cwd == src/` (where `monteCarlo.run.py` still lives, and where its
+`./results/` output has always landed):
 
 ```
 cd src
-python TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
+python ../util/run/TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
 nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
 ```
 
