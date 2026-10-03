@@ -19,7 +19,7 @@ import numpy as np
 from scipy.constants import G
 from scipy.constants import R as RGas
 import coreEos as eos
-from libCore import *
+from libCore import getchi_li_grun
 import sys
 	
 def odeRK4_snow(diffeq,ricb,rcmb,h,y0,chi_li_icb,scale,param):
