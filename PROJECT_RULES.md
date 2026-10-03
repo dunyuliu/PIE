@@ -35,8 +35,9 @@ The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
 `src/`, `util/` (operational scripts split out of `src/` by the Layout PR,
 board item 28 — `util/plot/`, `util/run/`; relocation of existing scripts, not
 new scope, and no physics code), `historical_versions/` (frozen zips/tars of prior versions, read-only —
-see rule 7), `testsys/` and `.github/` (owned by the testing effort, out of
-scope for this rule book's own writer). `results/` is a run artifact, not
+see rule 7), `testsys/` and `.github/` (in scope for this project like `src/`
+— CI config and the test suite, maintained by whoever is doing the current
+campaign work; no separate team owns them). `results/` is a run artifact, not
 tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
 a session's own working notes go in `docs/notes/` (create the directory only
 when the first note needs it).
