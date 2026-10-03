@@ -12,13 +12,19 @@
                                                 # see testsys/conftest.py:pie_workers();
                                                 # -n 0 or PIE_WORKERS=1 disables xdist)
 
-Re-execs itself with PYTHONNOUSERSITE=1 and MPLBACKEND=Agg so the two
-conflicting matplotlib installs on this box's default sys.path (see
-testsys/conftest.py's module docstring and testsys/README.md
-"Findings") can never leak into a subprocess-based (e2e) run the way
-conftest.py's in-process sys.path fixup cannot reach. PYTHONNOUSERSITE
-only takes effect at interpreter STARTUP, hence the re-exec rather than
-just setting os.environ before importing pytest.
+Sets MPLBACKEND=Agg (headless) and one BLAS thread per worker before
+dispatching to pytest. PYTHONNOUSERSITE re-exec logic that used to live
+here (to work around a two-matplotlib-installs conflict on the dev box's
+default system Python) was removed 2026-10-02: PROJECT_RULES.md rule
+3b/3c requires running this suite under the pinned `.venv-py312` venv,
+whose own interpreter has `site.ENABLE_USER_SITE == False` by
+construction (confirmed: `.venv-py312/bin/python3.12 -c "import site;
+print(site.ENABLE_USER_SITE)"` -> False, with or without
+PYTHONNOUSERSITE set) -- the conflict this re-exec compensated for is
+impossible by construction on the required interpreter, so the
+workaround no longer serves a purpose. See
+testsys/contract/test_gate_runs_in_pinned_venv.py for the test that
+gates "this is actually running under that interpreter."
 
 Shared-machine note (PROJECT_RULES.md): `-n` drives pytest-xdist only;
 every in-test ProcessPoolExecutor pool reads the SAME `PIE_WORKERS` knob
@@ -68,16 +74,12 @@ def main():
               f"(or 'all')", file=sys.stderr)
         return 2
 
-    if os.environ.get("PYTHONNOUSERSITE") != "1":
-        env = dict(os.environ)
-        env["PYTHONNOUSERSITE"] = "1"
-        env.setdefault("MPLBACKEND", "Agg")
-        # Shared-machine headroom (PROJECT_RULES.md): one BLAS thread per
-        # worker -- xdist/ProcessPoolExecutor already gives us process-level
-        # parallelism, so a multi-threaded BLAS underneath would multiply it.
-        env.setdefault("OMP_NUM_THREADS", "1")
-        env.setdefault("OPENBLAS_NUM_THREADS", "1")
-        os.execvpe(sys.executable, [sys.executable, __file__, *sys.argv[1:]], env)
+    os.environ.setdefault("MPLBACKEND", "Agg")
+    # Shared-machine headroom (PROJECT_RULES.md): one BLAS thread per
+    # worker -- xdist/ProcessPoolExecutor already gives us process-level
+    # parallelism, so a multi-threaded BLAS underneath would multiply it.
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
 
     here = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(here)

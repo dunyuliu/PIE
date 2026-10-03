@@ -6,42 +6,42 @@ no-build, pure-Python codebase with zero prior tests.
 
 ## Environment (read this first)
 
-Use the **system** Python, not whatever `python3` resolves to on PATH:
+Use the **pinned, uv-managed venv** (PROJECT_RULES.md rule 3b/3c) -- there is
+no other supported Python for this suite:
 
 ```
-/usr/bin/python3 testsys/run.py
+~/.local/bin/uv venv --python 3.12 .venv-py312
+~/.local/bin/uv pip install --python .venv-py312/bin/python3.12 -r testsys/requirements.txt
+.venv-py312/bin/python3.12 testsys/run.py
 ```
 
-This box's `/usr/bin/python3` has two conflicting matplotlib installs
-on its default `sys.path` -- apt's `python3-matplotlib` 3.5.1 under
-`/usr/lib/python3/dist-packages`, and a `pip --user` matplotlib 3.9.2
-under `~/.local/lib/.../site-packages`, which sorts earlier. Several
-src/ modules (`visualization_present.py`, `TEST_visualization_evolution.py`,
-and so transitively `driverp.py`, `shootp.py`'s callers, and `main.py`)
-do `from mpl_toolkits.mplot3d import Axes3D` unconditionally; with both
-installs on the path, `matplotlib` resolves to the pip one but
-`mpl_toolkits` resolves to the apt one, and that pairing is broken
-(apt's `mpl_toolkits.mplot3d.axes3d` imports a name matplotlib 3.9
-removed). See "Findings" below -- this is a real project bug, not
-fixed here.
-
-- **In-process tests** (unit/contract/integration): `testsys/conftest.py`
-  drops the `.local` entries from `sys.path` before importing anything
-  from `src/`, which makes both packages resolve from the same (apt)
-  install. Nothing to set manually.
-- **Subprocess tests** (e2e, which run `main.py` as a real
-  subprocess): need `PYTHONNOUSERSITE=1` (in the subprocess's own
-  environment; `testsys/conftest.py`'s `run_pie()` helper and
-  `testsys/run.py` both set it). `MPLBACKEND=Agg` avoids needing a
-  display either way.
+2026-10-02 (py312 migration): this used to document `/usr/bin/python3` and a
+`sys.path` `.local` filter in `testsys/conftest.py` that worked around two
+conflicting matplotlib installs on that interpreter's default `sys.path`
+(apt's `python3-matplotlib` vs. a stray `pip --user` install). That filter
+was removed, not narrowed, by owner ruling: the required pinned venv has
+`site.ENABLE_USER_SITE == False` and no apt `dist-packages` on `sys.path` by
+construction, so the conflict the filter existed for cannot occur under the
+interpreter this suite actually requires. `testsys/contract/test_gate_runs_in_pinned_venv.py`
+gates the claim that the suite runs under that interpreter. `run_pie()` in
+`testsys/conftest.py` and `testsys/run.py` still set `PYTHONNOUSERSITE=1` for
+subprocess (e2e) runs out of caution (not re-audited as part of this removal,
+since those spawn a new interpreter via `sys.executable` rather than reusing
+the already-isolated in-process one); `MPLBACKEND=Agg` avoids needing a
+display either way. The two-matplotlib-installs bug itself (`from
+mpl_toolkits.mplot3d import Axes3D`, unconditional in `visualization_present.py`
+/ `TEST_visualization_evolution.py` and so transitively `driverp.py`,
+`shootp.py`'s callers, and `main.py`) is still a real `src/` issue -- see
+"Findings" below -- just no longer reachable through the required test
+environment.
 
 ## Running
 
 ```
-/usr/bin/python3 testsys/run.py                       # fast tiers (default): unit + contract + integration
-/usr/bin/python3 testsys/run.py unit
-/usr/bin/python3 testsys/run.py e2e                    # opt-in, ~5.5 min for one composition
-/usr/bin/python3 testsys/run.py all                    # everything
+.venv-py312/bin/python3.12 testsys/run.py                       # fast tiers (default): unit + contract + integration
+.venv-py312/bin/python3.12 testsys/run.py unit
+.venv-py312/bin/python3.12 testsys/run.py e2e                    # opt-in, ~5.5 min for one composition
+.venv-py312/bin/python3.12 testsys/run.py all                    # everything
 ```
 
 Equivalent direct pytest invocation (what `run.py` shells out to; CI

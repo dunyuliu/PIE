@@ -53,7 +53,6 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
 SRC = ROOT / "src"
 OUT = pathlib.Path(__file__).resolve().parent / "real_quad_calls.npz"
 
-sys.path[:] = [p for p in sys.path if "/.local/" not in p]
 sys.path.insert(0, str(SRC))
 os.chdir(SRC)
 os.environ.setdefault("MPLBACKEND", "Agg")
