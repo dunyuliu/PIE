@@ -47,7 +47,6 @@ HERE = pathlib.Path(__file__).resolve().parent
 _CHILD = r'''
 import sys, os, json, time, io, contextlib
 src = sys.argv[1]; case = json.loads(sys.argv[2]); policy = sys.argv[3]; adaptive = sys.argv[4] == "1"
-sys.path[:] = [p for p in sys.path if "/.local/lib/" not in p]
 sys.path.insert(0, src); os.chdir(src)
 sys.argv[:] = ["main.py", "p", repr(case["CMR2"]), repr(case["CMC"]), case["light"], case["liquidus"], repr(case["chi_Si_icb"])]
 import numpy as np

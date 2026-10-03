@@ -1,5 +1,4 @@
 import sys, os
-sys.path[:] = [p for p in sys.path if "/.local/lib/" not in p]
 SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "src")  # repo src/
 os.chdir(SRC)
 sys.path.insert(0, SRC)

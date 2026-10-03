@@ -22,9 +22,25 @@ def test_ci_workflow_is_valid_yaml():
     assert len(doc["jobs"]) >= 1
 
 
-def test_ci_workflow_pins_python_3_10():
-    text = WORKFLOW.read_text()
-    assert "3.10" in text, "CI must pin Python 3.10 to match the dev box's /usr/bin/python3"
+def test_ci_workflow_pins_python_3_12():
+    """Checks the job's actual `python-version:` field, not a substring
+    match against the whole file -- a stray comment mentioning an old
+    pin (e.g. a changelog-style note) must not make this pass by
+    accident the way `"3.10" in text` did before the py312 migration."""
+    import yaml
+    with open(WORKFLOW) as f:
+        doc = yaml.safe_load(f)
+    found = False
+    for job in doc["jobs"].values():
+        for step in job.get("steps", []):
+            uses = step.get("uses", "")
+            if uses.startswith("actions/setup-python"):
+                version = str(step.get("with", {}).get("python-version", ""))
+                assert version == "3.12", (
+                    f"job step {step} pins python-version {version!r}, expected '3.12'"
+                )
+                found = True
+    assert found, "no actions/setup-python step found in the workflow"
 
 
 def test_ci_workflow_sets_mplbackend_agg():

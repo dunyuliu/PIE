@@ -19,26 +19,22 @@ physics:
 Neither of these is something a test file should have to know about --
 that would be testing the loader, not the physics. They live here once.
 
-There's a third trap this file removes only for ITSELF (import order, not
-cwd): the dev box has two matplotlib installs on /usr/bin/python3's default
-sys.path -- apt's python3-matplotlib 3.5.1 under
-/usr/lib/python3/dist-packages, and a pip --user install of matplotlib
-3.9.2 under ~/.local/lib/.../site-packages, which sorts EARLIER. `import
-matplotlib` picks the pip one; `from mpl_toolkits.mplot3d import Axes3D`
-(used unconditionally by src/visualization_present.py and
-src/TEST_visualization_evolution.py, and so transitively by driverp.py,
-shootp.py's caller chain, and main.py's `from drivere import *`) resolves
-mpl_toolkits from the OTHER (apt) install, and that pairing is broken:
-apt's mpl_toolkits.mplot3d.axes3d imports `docstring` from matplotlib,
-which 3.9.2 removed years ago. Net effect: ANY import of driverp, shootp's
-callers, or main.py raises ImportError, unconditionally, regardless of
-code_mode -- this is a real project bug, reported in testsys/README.md
-under "Findings", not fixed here (constraint: no src/ edits). Dropping the
-'.local' entries from sys.path before src is ever imported makes both
-mpl_toolkits and matplotlib resolve from the SAME (apt) install, which is
-self-consistent, and is a test-harness-only decision (sys.path, not
-src/). `testsys/run.py` does the equivalent for subprocess (e2e) runs via
-PYTHONNOUSERSITE=1.
+A third trap used to live here (import order, not cwd): pre-pinned-venv,
+the dev box's default `/usr/bin/python3` had two conflicting matplotlib
+installs on sys.path (apt's python3-matplotlib under
+/usr/lib/python3/dist-packages, and a pip --user install under
+~/.local/lib/.../site-packages that sorted earlier and paired badly with
+apt's mpl_toolkits). That no longer applies: PROJECT_RULES.md rule 3b/3c
+requires running this suite under the pinned `.venv-py312` venv, whose own
+interpreter has `site.ENABLE_USER_SITE == False` and no apt
+dist-packages on sys.path by construction (confirmed via
+`.venv-py312/bin/python3.12 -c "import sys, site;
+print(site.ENABLE_USER_SITE, sys.path)"`) -- the user-site shadowing this
+file used to filter for is impossible by construction once you're on the
+required interpreter, so the sys.path filter was removed (2026-10-02,
+owner ruling overriding an earlier narrowing). See
+testsys/contract/test_gate_runs_in_pinned_venv.py for the test that gates
+the claim "the suite actually runs under that interpreter."
 """
 import os
 import subprocess
@@ -50,16 +46,6 @@ import pytest
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 
-# Narrowed to "/.local/lib/" (2026-10-02, py312 migration): the bare
-# "/.local/" substring also matches the uv-managed interpreter's OWN
-# stdlib path (~/.local/share/uv/python/cpython-3.12.../lib/python3.12),
-# which has nothing to do with the pip --user site-packages this filter
-# exists to drop -- a blanket match there stripped the interpreter's own
-# stdlib out of sys.path and broke every import (e.g. `pdb`). pip --user
-# installs always land under ".local/lib/pythonX.Y/site-packages", so
-# "/.local/lib/" still catches the case this was written for. See
-# testsys/unit/test_conftest_syspath_filter.py for both directions.
-sys.path[:] = [p for p in sys.path if "/.local/lib/" not in p]
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
@@ -450,10 +436,14 @@ def assert_profiles_match(computed, reference, rtol=1e-3, atol=1e-6,
 
 
 def run_pie(*args, cwd, timeout=600, env_extra=None):
-    """Run a src/*.py entry point as a real subprocess: PYTHONNOUSERSITE=1
-    so the two-matplotlib-installs conflict (see module docstring) can't
-    reappear via a different sys.path assembly than the in-process
-    workaround above, MPLBACKEND=Agg so no test needs a display."""
+    """Run a src/*.py entry point as a real subprocess. PYTHONNOUSERSITE=1
+    is kept here out of caution (not re-audited as part of the 2026-10-02
+    filter removal -- see module docstring -- since this call spawns a
+    NEW interpreter via `sys.executable` rather than reusing the
+    already-isolated in-process one; whether that subprocess still needs
+    it under the pinned venv is an open question, flagged to the project
+    owner rather than decided here). MPLBACKEND=Agg so no test needs a
+    display."""
     env = dict(os.environ)
     env["PYTHONNOUSERSITE"] = "1"
     env["MPLBACKEND"] = "Agg"

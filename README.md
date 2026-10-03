@@ -20,11 +20,12 @@ shown because `uv` is not on default `PATH` on most hosts):
 ~/.local/bin/uv pip install --python .venv/bin/python3.12 -r requirements.txt
 ```
 
-Fallback (no `uv`): any Python 3.12 interpreter, `pip install -r
-requirements.txt`. On a PEP 668 "externally managed" system Python you may
-need a venv first (`python3.12 -m venv .venv && .venv/bin/pip install -r
-requirements.txt`) -- see `testsys/conftest.py`'s module docstring for why a
-bare `pip install --user` fallback is handled explicitly in the test harness.
+The pinned, uv-managed venv above is the ONLY supported path (PROJECT_RULES.md
+rule 3c) -- there is no non-venv or "any Python 3.12" fallback. A bare
+`pip install --user` or an ad hoc venv built some other way is unsupported
+and untested, and testsys/'s pinned-venv contract test
+(`testsys/contract/test_gate_runs_in_pinned_venv.py`) will fail the gate
+rather than silently accept it.
 
 All commands below run from `src/` (outputs are written to `./results/`,
 relative to the current directory when the script runs):
