@@ -604,7 +604,29 @@ class meltingDataFromFile:
         # interp2d(p, x) returned an array of shape (len(x), len(p)), squeezed
         # to 1-D when len(x) == 1; [0] then picked the first element (a scalar
         # for scalar queries). Reproduce that exactly.
-        z=np.atleast_2d(self.TF(np.sort(np.atleast_1d(p)),np.sort(np.atleast_1d(x)))).T
+        #
+        # Board item 27 perf: np.sort() on an array of length <=1 is always
+        # a no-op (there is nothing to reorder) -- skip the sort() dispatch
+        # machinery in that case rather than calling it and discarding an
+        # identical result. This is NOT a vectorization/approximation change
+        # like PIE_FAST_QUAD's GK21 port: no new code path, no reassociated
+        # floating-point ops, the exact same self.TF(...) call with the
+        # exact same array contents either way -- bit-identical on every
+        # environment by construction, so it needs no opt-in flag. Profiled
+        # (cProfile, canonical Margot-fit single-radius solve): this
+        # function's TmFeS lookups are called with scalar x/p (length-1
+        # after atleast_1d) in every real present-day-solve call site
+        # (`libCore.TmFeSSi`), so the skip fires on the overwhelming
+        # majority of the 65k+ calls/solve profiled in
+        # docs/notes/perf_v1.3.4.md. See
+        # testsys/unit/test_perf_v1_3_4_melting_sort_skip.py for the
+        # differential test (including length>1 calls, where real np.sort
+        # still runs, proving the branch doesn't change THAT behaviour).
+        p1 = np.atleast_1d(p)
+        x1 = np.atleast_1d(x)
+        p1 = p1 if p1.shape[0] <= 1 else np.sort(p1)
+        x1 = x1 if x1.shape[0] <= 1 else np.sort(x1)
+        z=np.atleast_2d(self.TF(p1,x1)).T
         if len(z)==1:
             z=z[0]
         return np.array(z)[0]
