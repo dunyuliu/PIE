@@ -50,11 +50,11 @@ import sys
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
-SRC = ROOT / "src"
 OUT = pathlib.Path(__file__).resolve().parent / "real_quad_calls.npz"
 
-sys.path.insert(0, str(SRC))
-os.chdir(SRC)
+# `pie` is an installed package (board item 28e, `uv pip install -e .`),
+# not a bare `src/`-on-sys.path directory -- no sys.path insert needed,
+# imported below as `pie.<module>` via importlib, same as testsys/pielib.py.
 os.environ.setdefault("MPLBACKEND", "Agg")
 
 
@@ -66,8 +66,17 @@ def _set_argv(CMR2, CMC, light, liq, chi=None):
 
 
 def _fresh(*names):
+    """Force a real reimport of each `pie.<name>` submodule. Deleting only
+    sys.modules is not enough once these are real package submodules
+    reached via package-relative imports elsewhere (`from . import X`) --
+    CPython skips the reimport if `name` is already an attribute of the
+    `pie` package object. Same fix as testsys/pielib.py's
+    `_purge_pie_submodules` (board item 28e), duplicated here rather than
+    imported so this standalone regen script has no pytest dependency."""
+    import pie as _pie_pkg
     for name in names:
-        sys.modules.pop(name, None)
+        sys.modules.pop(f"pie.{name}", None)
+        _pie_pkg.__dict__.pop(name, None)
 
 
 CASES = [
@@ -93,10 +102,10 @@ def main():
             _set_argv(CMR2, CMC, light, liq, chi)
             _fresh("globalvar", "planet_input", "libCore", "solver",
                    "coreEos", "shootp", "driverp")
-            gv = importlib.import_module("globalvar")
-            planet_input = importlib.import_module("planet_input")
-            shootp = importlib.import_module("shootp")
-            coreEos = importlib.import_module("coreEos")
+            gv = importlib.import_module("pie.globalvar")
+            planet_input = importlib.import_module("pie.planet_input")
+            shootp = importlib.import_module("pie.shootp")
+            coreEos = importlib.import_module("pie.coreEos")
 
             param = planet_input.planet("p", CMR2, light, liq)
             scale = param["scale"]
