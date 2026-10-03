@@ -129,6 +129,7 @@ class RunnerStatus(str, enum.Enum):
     `ErrorCode` name instead (see `job_status_from_codes`)."""
     PROCESS_CRASHED = "PROCESS_CRASHED"      # nonzero exit / signal / timeout
     INCOMPLETE_OUTPUT = "INCOMPLETE_OUTPUT"  # exited 0 but csv missing / no data rows
+    SKIPPED_LOCKED = "SKIPPED_LOCKED"        # another process already claimed this job
 
 
 def pie_workers():
@@ -145,7 +146,14 @@ def pie_workers():
         load1 = os.getloadavg()[0]
         free_cores = max(0, cpu - 1 - load1)
         return min(24, max(4, int(free_cores // 2)))
-    except (OSError, AttributeError):
+    except (OSError, AttributeError) as e:
+        # Board item 26c: not a silent fallback (PROJECT_RULES.md rule 2) --
+        # record why the cap-from-load-average formula couldn't run, same
+        # spirit as provenance()'s git_sha_error. Printed to stderr (this
+        # function has no record/log sink of its own to attach a field to,
+        # unlike provenance()'s dict) rather than swallowed.
+        print(f"pie_workers: falling back to 4 (cpu_count/getloadavg "
+              f"unavailable: {e!r})", file=sys.stderr)
         return 4
 
 
@@ -370,6 +378,80 @@ def already_done(job, src_dir=SRC_DIR):
     return sentinel_path(job, src_dir).exists()
 
 
+def lock_path(job, src_dir=SRC_DIR):
+    chi = 0.0 if job.chi_Si_icb is None else job.chi_Si_icb
+    return job.model_path(src_dir) / ".runner_lock_{:.2f}.json".format(chi)
+
+
+def _acquire_lock(path, payload):
+    """Atomic claim (board item 26a: done-check/job-run race): two
+    overlapping runs of the same manifest can both pass `already_done`
+    (sentinel not written yet) and then both launch `python -m pie` for
+    the same job, each truncating the same pMetaData csv with 'w' --
+    second write wins, first run's work is lost silently. `O_CREAT |
+    O_EXCL` is atomic at the filesystem level (unlike a
+    check-then-create), so at most one caller ever succeeds here for a
+    given lock path, even across processes/hosts sharing the same
+    filesystem.
+
+    One reclaim attempt if the existing lock is stale (`_lock_is_stale`,
+    same-host dead-pid check only) -- required for resumability: a runner
+    SIGKILLed mid-job leaves its lock behind (no `finally` runs), and
+    without reclaiming it a restart would wrongly report SKIPPED_LOCKED
+    forever instead of redoing the missing work (caught by
+    testsys/integration/test_robust_runner_crash_restart.py). `--force`
+    also removes a (possibly non-stale) lock before re-running, same as
+    it already bypasses the done-check."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    for attempt in range(2):
+        try:
+            fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        except FileExistsError:
+            if attempt == 0 and _lock_is_stale(path):
+                _release_lock(path)
+                continue
+            return False
+        try:
+            os.write(fd, (json.dumps(payload, default=str) + "\n").encode("utf-8"))
+        finally:
+            os.close(fd)
+        return True
+    return False
+
+
+def _lock_is_stale(path):
+    """True iff `path` names a pid on THIS host that is no longer alive --
+    the runner that held it was killed (SIGKILL, node failure, OOM) before
+    its `finally` could release it. A lock from a DIFFERENT host is never
+    auto-reclaimed here (item 26a: 'keep it simple', no cross-host
+    liveness channel) -- a TACC job stuck behind a crashed node's lock
+    needs an operator to remove it or pass `--force`; that limitation is
+    documented, not hidden."""
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return False  # can't tell what it is -- leave it alone, don't guess
+    if payload.get("host") != socket.gethostname():
+        return False
+    pid = payload.get("pid")
+    if not isinstance(pid, int):
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True  # confirmed dead
+    except PermissionError:
+        return False  # alive, owned by someone else
+    return False  # alive
+
+
+def _release_lock(path):
+    try:
+        os.remove(str(path))
+    except FileNotFoundError:
+        pass
+
+
 def summarize_error_codes(csv_path):
     """Per-job status in item 16's vocabulary: count the pMetaData csv's
     per-radius `error_code` column by `ErrorCode` name. A code that is not
@@ -465,7 +547,7 @@ def _write_sentinel(path, payload):
 
 
 def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
-                python_exe=None, timeout=None):
+                python_exe=None, timeout=None, force=False):
     """Run one job as `nice -n 10 <python> main.py p ...` (rule 15: nice
     10, one BLAS thread). Returns a dict describing the outcome; never
     raises on a job failure -- that failure IS the result, recorded.
@@ -476,73 +558,100 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
       * RunnerStatus.PROCESS_CRASHED when it exited nonzero / by signal /
         timed out -> no sentinel, re-run on resume;
       * RunnerStatus.INCOMPLETE_OUTPUT when it exited 0 but its csv is
-        missing or has no data rows -> no sentinel, re-run on resume.
+        missing or has no data rows -> no sentinel, re-run on resume;
+      * RunnerStatus.SKIPPED_LOCKED when another process already claimed
+        this job (board item 26a) -> no subprocess launched, nothing
+        touched, re-checked (not re-run) on resume.
     """
     python_exe = python_exe or sys.executable
     src_dir = Path(src_dir)
-    # job.argv()[0] is the literal 'main.py' placeholder (the sys.argv
-    # shape pie/globalvar.py expects); dropped here since `-m pie` supplies
-    # its own argv[0]. Invoked via `-m pie` (board item 28e), not a path to
-    # main.py: pie.main now uses package-relative imports and cannot be run
-    # as a bare script. `python -m pie` resolves "pie" the installed
-    # package regardless of `cwd` -- EXCEPT when `cwd` itself contains a
-    # `pie/` subdirectory, which takes priority on `sys.path` (Python
-    # prepends the invocation cwd for `-m`); testsys/integration's
-    # crash/restart tests rely on exactly that to shadow the real package
-    # with a fake stand-in, see that test module's `fake_src` fixture.
-    cmd = ["nice", "-n", "10", python_exe, "-m", "pie"] + job.argv()[1:]
-    # results/ is relative to pie.main's cwd (globalvar.model_path) and
-    # nothing in pie/ creates it (CLAUDE.md "Running").
-    (src_dir / "results").mkdir(exist_ok=True)
 
-    if status_log is not None:
-        status_log.start(job, run_id)
+    # Claim the job before touching anything else (item 26a): two
+    # overlapping runs of the same manifest can both pass the caller's
+    # `already_done` filter (sentinel not written yet) and both reach
+    # here; the atomic O_EXCL lock below ensures only one of them
+    # actually launches `python -m pie` and writes the pMetaData csv.
+    lock = lock_path(job, src_dir)
+    if force:
+        _release_lock(lock)  # --force already bypasses the done-check; a stale lock shouldn't block it
+    claimed = _acquire_lock(lock, {"job_id": job.job_id, "pid": os.getpid(),
+                                   "host": socket.gethostname(), "run_id": run_id,
+                                   "claimed_at": time.time()})
+    if not claimed:
+        if status_log is not None:
+            status_log.start(job, run_id)
+            status_log.end(job, run_id, RunnerStatus.SKIPPED_LOCKED.value, None, 0.0,
+                           extra={"n_rows": 0, "error_code_counts": {}})
+        return {"job_id": job.job_id, "status": RunnerStatus.SKIPPED_LOCKED.value,
+                "returncode": None, "duration_s": 0.0, "done": False,
+                "n_rows": 0, "error_code_counts": {}, "stderr_tail": ""}
 
-    start = time.time()
     try:
-        proc = subprocess.run(cmd, cwd=str(src_dir), env=_child_env(),
-                              capture_output=True, text=True, timeout=timeout)
-        returncode = proc.returncode
-        stderr_tail = proc.stderr[-4000:] if proc.stderr else ""
-    except subprocess.TimeoutExpired:
-        returncode = None
-        stderr_tail = f"TIMEOUT after {timeout}s"
-    end = time.time()
+        # job.argv()[0] is the literal 'main.py' placeholder (the sys.argv
+        # shape pie/globalvar.py expects); dropped here since `-m pie` supplies
+        # its own argv[0]. Invoked via `-m pie` (board item 28e), not a path to
+        # main.py: pie.main now uses package-relative imports and cannot be run
+        # as a bare script. `python -m pie` resolves "pie" the installed
+        # package regardless of `cwd` -- EXCEPT when `cwd` itself contains a
+        # `pie/` subdirectory, which takes priority on `sys.path` (Python
+        # prepends the invocation cwd for `-m`); testsys/integration's
+        # crash/restart tests rely on exactly that to shadow the real package
+        # with a fake stand-in, see that test module's `fake_src` fixture.
+        cmd = ["nice", "-n", "10", python_exe, "-m", "pie"] + job.argv()[1:]
+        # results/ is relative to pie.main's cwd (globalvar.model_path) and
+        # nothing in pie/ creates it (CLAUDE.md "Running").
+        (src_dir / "results").mkdir(exist_ok=True)
 
-    csv_path = job.pmetadata_file(src_dir)
-    n_rows, counts, read_error = 0, {}, None
-    if returncode == 0:
+        if status_log is not None:
+            status_log.start(job, run_id)
+
+        start = time.time()
         try:
-            n_rows, counts = summarize_error_codes(csv_path)
-        except (OSError, ValueError) as e:
-            read_error = str(e)
+            proc = subprocess.run(cmd, cwd=str(src_dir), env=_child_env(),
+                                  capture_output=True, text=True, timeout=timeout)
+            returncode = proc.returncode
+            stderr_tail = proc.stderr[-4000:] if proc.stderr else ""
+        except subprocess.TimeoutExpired:
+            returncode = None
+            stderr_tail = f"TIMEOUT after {timeout}s"
+        end = time.time()
 
-    if returncode != 0:
-        status = RunnerStatus.PROCESS_CRASHED.value
-    elif read_error or n_rows == 0:
-        status = RunnerStatus.INCOMPLETE_OUTPUT.value
-    else:
-        status = job_status_from_codes(counts)
+        csv_path = job.pmetadata_file(src_dir)
+        n_rows, counts, read_error = 0, {}, None
+        if returncode == 0:
+            try:
+                n_rows, counts = summarize_error_codes(csv_path)
+            except (OSError, ValueError) as e:
+                read_error = str(e)
 
-    extra = {"n_rows": n_rows, "error_code_counts": counts,
-             "stderr_tail": stderr_tail, "start_time": start, "end_time": end}
-    if read_error:
-        extra["read_error"] = read_error
-    done = status not in (RunnerStatus.PROCESS_CRASHED.value,
-                          RunnerStatus.INCOMPLETE_OUTPUT.value)
-    if done:
-        prov = status_log.prov if status_log is not None else provenance()
-        _write_sentinel(sentinel_path(job, src_dir), {
-            "job_id": job.job_id, **job.as_record(), "run_id": run_id,
-            "status": status, "n_rows": n_rows, "error_code_counts": counts,
-            "start_time": start, "end_time": end, "output_csv": str(csv_path),
-            **prov,
-        })
-    if status_log is not None:
-        status_log.end(job, run_id, status, returncode, end - start, extra=extra)
-    return {"job_id": job.job_id, "status": status, "returncode": returncode,
-            "duration_s": end - start, "done": done, "n_rows": n_rows,
-            "error_code_counts": counts, "stderr_tail": stderr_tail}
+        if returncode != 0:
+            status = RunnerStatus.PROCESS_CRASHED.value
+        elif read_error or n_rows == 0:
+            status = RunnerStatus.INCOMPLETE_OUTPUT.value
+        else:
+            status = job_status_from_codes(counts)
+
+        extra = {"n_rows": n_rows, "error_code_counts": counts,
+                 "stderr_tail": stderr_tail, "start_time": start, "end_time": end}
+        if read_error:
+            extra["read_error"] = read_error
+        done = status not in (RunnerStatus.PROCESS_CRASHED.value,
+                              RunnerStatus.INCOMPLETE_OUTPUT.value)
+        if done:
+            prov = status_log.prov if status_log is not None else provenance()
+            _write_sentinel(sentinel_path(job, src_dir), {
+                "job_id": job.job_id, **job.as_record(), "run_id": run_id,
+                "status": status, "n_rows": n_rows, "error_code_counts": counts,
+                "start_time": start, "end_time": end, "output_csv": str(csv_path),
+                **prov,
+            })
+        if status_log is not None:
+            status_log.end(job, run_id, status, returncode, end - start, extra=extra)
+        return {"job_id": job.job_id, "status": status, "returncode": returncode,
+                "duration_s": end - start, "done": done, "n_rows": n_rows,
+                "error_code_counts": counts, "stderr_tail": stderr_tail}
+    finally:
+        _release_lock(lock)
 
 
 def run_local(jobs, src_dir=SRC_DIR, status_log_path=None, workers=None,
@@ -569,7 +678,7 @@ def run_local(jobs, src_dir=SRC_DIR, status_log_path=None, workers=None,
         # layer of process forking on top (rule 15: never multiply
         # parallelism layers).
         futs = {pool.submit(run_one_job, j, src_dir, status_log, run_id,
-                             python_exe, timeout): j for j in todo}
+                             python_exe, timeout, force): j for j in todo}
         for fut in concurrent.futures.as_completed(futs):
             results.append(fut.result())
 
@@ -619,7 +728,7 @@ def run_one(jobs, index, src_dir=SRC_DIR, status_log_path=None, run_id=None,
     status_log_path = status_log_path or (Path(src_dir) / "results" / "runner_status.jsonl")
     return run_one_job(job, src_dir, StatusLog(status_log_path),
                        run_id or os.environ.get("SLURM_JOB_ID") or str(int(time.time())),
-                       python_exe, timeout)
+                       python_exe, timeout, force)
 
 
 def _parse_args(argv):
@@ -669,7 +778,12 @@ def main(argv=None):
                          status_log_path=args.status_log,
                          force=args.force, timeout=args.timeout)
         print(json.dumps({k: v for k, v in result.items() if k != "stderr_tail"}))
-        return 0 if result.get("done") or result["status"] == "SKIPPED_ALREADY_DONE" else 1
+        # SKIPPED_ALREADY_DONE/SKIPPED_LOCKED: not this invocation's failure
+        # -- the former means another run already finished the job, the
+        # latter (item 26a) that another run is finishing it right now;
+        # resuming later re-checks both.
+        ok_statuses = ("SKIPPED_ALREADY_DONE", RunnerStatus.SKIPPED_LOCKED.value)
+        return 0 if result.get("done") or result["status"] in ok_statuses else 1
     if args.backend == "local":
         result = run_local(jobs, src_dir=args.src_dir, status_log_path=args.status_log,
                            workers=args.workers, force=args.force,
@@ -680,7 +794,8 @@ def main(argv=None):
         print(json.dumps({"run_id": result["run_id"], "total": result["total"],
                           "skipped": result["skipped"], "ran": len(result["results"]),
                           "statuses": statuses}, indent=2))
-        return 0 if all(r["done"] for r in result["results"]) else 1
+        return 0 if all(r["done"] or r["status"] == RunnerStatus.SKIPPED_LOCKED.value
+                        for r in result["results"]) else 1
     result = write_tacc_launcher(jobs, args.manifest, src_dir=args.src_dir,
                                  launcher_out=args.launcher_out,
                                  status_log_path=args.status_log, force=args.force)

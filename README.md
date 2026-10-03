@@ -42,13 +42,13 @@ mkdir -p results
 
 ## Monte Carlo simulation on CMR2:
 ```
-python pie/monteCarlo.run.py
+python util/run/monteCarlo.run.py
 ```
-will generate a suite of Mercury present-day interior models fitting a set of CMR2 and CMC that are randomly generated from assigned mean CMR2 and its STD. (Run from the repo root -- an editable install means `pie/` is this checkout's own source directory; `monteCarlo.run.py`/`scheduler.py` are operational scripts, not part of the installed console entry point, so they're invoked by path like this, not via `-m`.)
+will generate a suite of Mercury present-day interior models fitting a set of CMR2 and CMC that are randomly generated from assigned mean CMR2 and its STD. (Run from the repo root -- `monteCarlo.run.py`/`scheduler.py` are operational scripts, not part of the installed `pie` package, so they're invoked by path like this, not via `-m`; board item 28b.)
 
 ## General run with specified CMR2 and CMC:
 ```
-python pie/scheduler.py CMR2 CMC
+python util/run/scheduler.py CMR2 CMC
 ```
 where CMR2 and CMC, for Margot et al. constraints, are 0.346 and 0.424, respectively. scheduler.py will loop over cases (S, Si, S+Si), liquidus equation (Steinbruegge, Edmund), and in particular for the case with S+Si, Si%wt from 0% to 15% in 1% increment. Internally it invokes `python -m pie p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` once per composition -- the same entry point the `pie` console script runs:
 ```
@@ -67,7 +67,7 @@ One job = one `python -m pie p CMR2 CMC light_element liquidus_eq
 ```
 # 1. manifest: write it by hand (CSV columns CMR2,CMC,light_element,
 #    liquidus_eq,chi_Si_icb[,seed]; chi_Si_icb only for S+Si), or generate
-#    the seeded Monte Carlo ensemble (same draw as monteCarlo.run.py,
+#    the seeded Monte Carlo ensemble (same draw as util/run/monteCarlo.run.py,
 #    same compositions as scheduler.py: S+Si x 16 chi_Si_icb, S, Si):
 python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 
@@ -104,12 +104,12 @@ sbatch util/run/TACC.LS6.parallel.run.slurm
 `util/run/TACC.LS6.create.parallel.launcher.py` (item 28b; writes to
 whatever directory it is run from) writes a `commands_launcher` of 1024
 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or, on knox. Run it
-with `cwd == pie/` (where `monteCarlo.run.py` still lives, and where its
-`./results/` output has always landed):
+with `cwd == util/run/` (where `monteCarlo.run.py` lives, board item 28b,
+and where its `./results/` output lands):
 
 ```
-cd pie
-python ../util/run/TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
+cd util/run
+python TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
 nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
 ```
 

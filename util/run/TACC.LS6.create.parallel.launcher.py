@@ -8,6 +8,10 @@ import numpy as np
 #   nice -n 10 xargs -P $PIE_WORKERS -I{} sh -c '{}' < commands_launcher
 # (see README "Large ensemble Monte Carlo simulation").
 #
+# Run with cwd == util/run/ (where monteCarlo.run.py lives, board item
+# 28b) -- the written lines reference it by bare filename, resolved
+# against whatever cwd the launcher lines are later run from.
+#
 # Each line gets an explicit seed (monteCarlo.run.py argv[1]): the old
 # unseeded np.random draw meant no line could be identified, reproduced,
 # or safely skipped on a resumed/partial run. sys.executable, not bare
