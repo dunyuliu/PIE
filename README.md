@@ -150,27 +150,33 @@ single row. Before v1.3.0 the first failure ended the composition.
 
 ## Performance options
 
-`PIE_FAST_QUAD=1` (env var, default **off**) opts `coreEos.py`'s
-`eosAndersonGrueneisen.Gibbs` into a vectorised 21-point Gauss-Kronrod
-(GK21) evaluation of its `scipy.integrate.quad` call, falling back to the
-real `scipy.integrate.quad` per call whenever QUADPACK's own single-panel
+As of 2026-10-02, `coreEos.py`'s `eosAndersonGrueneisen.Gibbs` uses, BY
+DEFAULT, a vectorised 21-point Gauss-Kronrod (GK21) evaluation of its
+`scipy.integrate.quad` call, falling back to the real
+`scipy.integrate.quad` per call whenever QUADPACK's own single-panel
 accept test (replicated from `dqagse.f`) would reject it. Measured ~4x
 faster per call on this box's pinned environment (see
 `docs/notes/perf_v1.3.3.md` for the full timing table).
 
-Default (`PIE_FAST_QUAD` unset or `0`) is the unconditional
-`scipy.integrate.quad` call -- **identical to pre-v1.3.3 behaviour on
-every environment**. `PIE_FAST_QUAD=1` is bit-identical to default on the
-pinned environment (`numpy==1.21.5`, `scipy==1.8.0`) but is NOT
-bit-identical on every environment: `eosAndersonGrueneisen.volume`'s
-`CubicSpline` does not return exactly the same values for a vectorised
-array call vs one-scalar-call-per-point on newer numpy/scipy (floating-
-point non-associativity in `CubicSpline`'s own vectorized-vs-scalar code
-path), so the max relative difference is bounded at **<=1e-14** rather
-than exactly 0 off the pinned environment
-(`testsys/unit/test_perf_v1_3_3_gk21_quad.py`). Set `PIE_FAST_QUAD=1` only
-if you have verified that bound is acceptable for your use (it is far
-below the solver's own convergence tolerance, `ftol=xtol=1e-6`).
+`PIE_FAST_QUAD=0` (env var) is the explicit escape hatch back to the
+unconditional `scipy.integrate.quad` call -- **identical to pre-v1.3.3
+behaviour on every environment**. `PIE_FAST_QUAD` unset, or set to any
+other value (e.g. `1`), means GK21-on. PIE requires the pinned environment
+(`numpy==1.21.5`, `scipy==1.8.0`, `testsys/requirements.txt`): on it, GK21
+is bit-identical to `scipy.integrate.quad` (max diff **0.0**, measured
+over 237057 real captured solver (p, T) calls,
+`testsys/unit/test_perf_v1_3_3_gk21_quad.py`). Off the pinned environment
+(e.g. CI's informational `fast-latest` canary, current numpy/scipy),
+`eosAndersonGrueneisen.volume`'s `CubicSpline` does not return exactly the
+same values for a vectorised array call vs one-scalar-call-per-point
+(floating-point non-associativity in `CubicSpline`'s own
+vectorized-vs-scalar code path), so the max relative difference is
+bounded at **<=1e-14** rather than exactly 0 there -- far below the
+solver's own convergence tolerance (`ftol=xtol=1e-6`), and measured at
+exactly **0.0** on this host's resolved newer numpy/scipy
+(`numpy==2.2.6`/`scipy==1.15.3`). Set `PIE_FAST_QUAD=0` if you need
+byte-identical pre-v1.3.3 behaviour on an environment you have not
+verified against this bound.
 
 ## Outputs and error codes
 
