@@ -2,3 +2,4 @@
 __pycache__/
 .claude/
 .venv/
+src/commands_launcher
