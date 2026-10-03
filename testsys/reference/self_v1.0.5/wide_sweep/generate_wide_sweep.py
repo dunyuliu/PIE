@@ -15,10 +15,10 @@ import time
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent.parent.parent
 sys.path.insert(0, str(ROOT / "testsys"))
-sys.path.insert(0, str(ROOT / "src"))
-os.chdir(ROOT / "src")
+# `pie` itself is not sys.path-inserted (board item 28e): it is installed
+# (`uv pip install -e .`), so no chdir/sys.path trick is needed to import it.
 
-from conftest import solve_full_model, pool_workers  # noqa: E402
+from pielib import solve_full_model, pool_workers  # noqa: E402
 
 MOI_CONFIGS = [(0.346, 0.426), (0.333, 0.443)]  # Margot, Genova
 COMPOSITIONS = [

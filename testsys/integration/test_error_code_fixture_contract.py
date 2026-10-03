@@ -29,7 +29,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 # docs/notes/solver_v1.3.0_measurement/cases36.json:
 # "margot_S_000_crash_stderr_10m" (role: measure, published_class

@@ -11,9 +11,15 @@ no other supported Python for this suite:
 
 ```
 ~/.local/bin/uv venv --python 3.12 .venv-py312
+~/.local/bin/uv pip install --python .venv-py312/bin/python3.12 -e .
 ~/.local/bin/uv pip install --python .venv-py312/bin/python3.12 -r testsys/requirements.txt
 .venv-py312/bin/python3.12 testsys/run.py
 ```
+
+Board item 28e: the suite imports `pie` as an installed package (`import
+pie.<module>` / `from pie import <module>`), not a bare `pie/` directory
+inserted onto `sys.path` -- the editable install (`-e .`) above is required
+before `testsys/run.py` will collect anything.
 
 2026-10-02 (py312 migration): this used to document `/usr/bin/python3` and a
 `sys.path` `.local` filter in `testsys/conftest.py` that worked around two
@@ -24,14 +30,14 @@ was removed, not narrowed, by owner ruling: the required pinned venv has
 construction, so the conflict the filter existed for cannot occur under the
 interpreter this suite actually requires. `testsys/contract/test_gate_runs_in_pinned_venv.py`
 gates the claim that the suite runs under that interpreter. `run_pie()` in
-`testsys/conftest.py` and `testsys/run.py` still set `PYTHONNOUSERSITE=1` for
+`testsys/pielib.py` and `testsys/run.py` still set `PYTHONNOUSERSITE=1` for
 subprocess (e2e) runs out of caution (not re-audited as part of this removal,
 since those spawn a new interpreter via `sys.executable` rather than reusing
 the already-isolated in-process one); `MPLBACKEND=Agg` avoids needing a
 display either way. The two-matplotlib-installs bug itself (`from
 mpl_toolkits.mplot3d import Axes3D`, unconditional in `visualization_present.py`
 / `TEST_visualization_evolution.py` and so transitively `driverp.py`,
-`shootp.py`'s callers, and `main.py`) is still a real `src/` issue -- see
+`shootp.py`'s callers, and `main.py`) is still a real `pie/` issue -- see
 "Findings" below -- just no longer reachable through the required test
 environment.
 
@@ -56,16 +62,16 @@ PYTHONNOUSERSITE=1 MPLBACKEND=Agg /usr/bin/python3 -m pytest testsys -m "unit or
 | Tier | Marker | What | Count | Runtime |
 |---|---|---|---|---|
 | Unit | `unit` | Pure functions: coreEos EOS objects, libCore's mass/MOI integrals, the Newton solver in isolation, planet_input/globalvar parameter sanity | 32 (+1 xfail) | ~8 s |
-| Contract | `contract` | Output CSV/h5 schema vs `globalvar.presentday_columns`, CI workflow YAML validity and push/PR-excludes-e2e, README/run.py/pytest.ini tier-name parity, repo hygiene (src/ untouched), no `interp2d` in `src/` (removed in scipy 1.14; ported in v1.1.1) | 13 | ~0.5 s |
+| Contract | `contract` | Output CSV/h5 schema vs `globalvar.presentday_columns`, CI workflow YAML validity and push/PR-excludes-e2e, README/run.py/pytest.ini tier-name parity, repo hygiene (pie/ untouched), no `interp2d` in `pie/` (removed in scipy 1.14; ported in v1.1.1) | 13 | ~0.5 s |
 | Integration | `integration` (parity subset also marked `parity`) | One present-day solve at Margot CMR2=0.346/CMC=0.424 (self-consistency); 3 solves vs **published paper output** (regression anchor, same code) with ALL 19 scalars + full radial profiles gated; **wide fast subset**: 1 radius x 2 MOI x 6 compositions (12 cases, all scalars+profiles, incl. a documented non-convergent case); **v1.0.4 (2023) history**: 17-row field-by-field diff with 2 known, attributed deltas; **MC-wide parity**: 24 curated real Monte-Carlo-drawn (CMR2,CMC) cases (4 per composition x MOI: extremes/centre/most-converged) vs published scalars | 9+3+12+14+24 | ~19s+~57s+~52s+~0.02s+~65s |
-| E2E | `e2e` | (a) `main.py p 0.346 0.424 S Edmund` end-to-end in a tmp dir via the REAL CLI subprocess (full file/figure I/O), vs a self-golden; (b) wide sweep, ALL 3 radii x 2 MOI x 6 compositions (36 cases, all scalars+profiles), direct-solve (not CLI), parallelized, CI-sharded by composition; (c) `published_wide` (marker `published_wide`, skipped when `~/shared_dataset` absent -- always in CI): 240 further Monte-Carlo-drawn cases sampled directly from the shared cache, never copied | 4 + 36 + 240 | ~4.5 min + ~54 s + ~150-200 s |
+| E2E | `e2e` | (a) `python -m pie p 0.346 0.424 S Edmund` end-to-end in a tmp dir via the REAL CLI subprocess (full file/figure I/O), vs a self-golden; (b) wide sweep, ALL 3 radii x 2 MOI x 6 compositions (36 cases, all scalars+profiles), direct-solve (not CLI), parallelized, CI-sharded by composition; (c) `published_wide` (marker `published_wide`, skipped when `~/shared_dataset` absent -- always in CI): 240 further Monte-Carlo-drawn cases sampled directly from the shared cache, never copied | 4 + 36 + 240 | ~4.5 min + ~54 s + ~150-200 s |
 
 `published_wide` (since v1.3.0): a fresh failure where the published run
 converged is a HARD failure whatever its signature -- the ricb = 10 m
 "Factor is exactly singular" flake (Findings #5, bug B5) is fixed by the
 getk2 nrs=0 index fix (board item 19 closed). A fresh convergence where the
 published run had zero rows is accepted only if the recovered model passes
-`conftest.assert_recovered_model_valid` (residual, chi box, ricb < rcmb,
+`pielib.assert_recovered_model_valid` (residual, chi box, ricb < rcmb,
 rho > 0, finite) and is printed as "recovered".
 
 Fast-tier total (unit+contract+integration, what CI runs on every
@@ -87,7 +93,7 @@ MOI configurations -- gating ALL 19 `presentday_columns` scalars
 in the Zenodo parity test; they are the model's own FIT TARGETS and are
 now gated everywhere) plus the FULL radial profile arrays (r, rho, P,
 T, Tad, g, chi_li -- not just the scalar summary). See
-`testsys/conftest.py`'s `solve_full_model`/`assert_scalars_match`/
+`testsys/pielib.py`'s `solve_full_model`/`assert_scalars_match`/
 `assert_profiles_match` for the shared implementation all of these
 tests now use.
 
@@ -157,9 +163,12 @@ shoot → h5/csv/figure output), just not all 18 compositions of it.
 
   ```
   cd /tmp && mkdir pie_regen && cd pie_regen
-  ln -s /path/to/PIE/src/*.py . && cp /path/to/PIE/src/TmFeSmelt.dat .
   mkdir results
-  PYTHONNOUSERSITE=1 MPLBACKEND=Agg /usr/bin/python3 main.py p 0.346 0.424 S Edmund
+  # pie is an installed package (board item 28e) -- no symlinking of
+  # pie/*.py needed (and it would no longer work: pie's sibling modules
+  # use package-relative imports, which only resolve inside the real
+  # package).
+  PYTHONNOUSERSITE=1 MPLBACKEND=Agg /path/to/PIE/.venv/bin/python3.12 -m pie p 0.346 0.424 S Edmund
   cp results/CMR2_*_S_Edmund/pMetaData_0.00.csv \
      /path/to/PIE/testsys/reference/self_v1.0.5/CMR2_0.346_CMC_0.424_S_Edmund/
   ```
@@ -196,9 +205,9 @@ shoot → h5/csv/figure output), just not all 18 compositions of it.
 `testsys/integration/test_v1_2_0_invariant.py` re-runs the 14-case fixed
 sample in `testsys/reference/v1_2_0_sweeps/sample.json` (one published MC
 draw per failure class; 6 cases with converged v1.2.0 rows, 8 zero-row
-cases) with the current `src/` and the v1.3.0 continue policy, capped at
+cases) with the current `pie/` and the v1.3.0 continue policy, capped at
 (v1.2.0 rows + 2) radii per case, and asserts: every row that converged in
-v1.2.0 (fixture `v1_2_0_sweeps.json`, generated from `src/` at 18cf78a with
+v1.2.0 (fixture `v1_2_0_sweeps.json`, generated from `src/` (the pre-28e directory name) at 18cf78a with
 `generate_sweeps.py --policy stop` on the pinned env) has a bit-identical
 `v`, `f`, `fout` (exact on numpy 1.21.5/scipy 1.8.0, rtol 1e-9 elsewhere);
 every additional converged row is "recovered" and valid (residual < 1e-5,
@@ -207,13 +216,13 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
 
 ## Findings (real bugs found while building this suite -- not fixed here, per constraint)
 
-1. **`src/planet_input.py:119`** -- `elif mod_type == 'e':` references an
+1. **`pie/planet_input.py:119`** -- `elif mod_type == 'e':` references an
    undefined name (should be `code_mode`, matching the `if code_mode ==
    'p':` branch at line 62). `planet('e', ...)` always raises
    `NameError`; the evolution-model branch of `planet()` is unreachable
    dead code. Locked in as `testsys/unit/test_planet_input.py::test_planet_evolution_mode_would_ideally_work`
    (`xfail(strict=True)`).
-2. **`src/driverp.py:111`, `if chi_li.any()<0:`** -- `.any()` returns a
+2. **`pie/driverp.py:111`, `if chi_li.any()<0:`** -- `.any()` returns a
    numpy bool (`True`/`False`, i.e. `1`/`0` when compared numerically);
    `bool < 0` is always `False`. This condition -- meant to set
    `error_code = 2` ("Final light element %wt negative") -- can NEVER
@@ -224,13 +233,13 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    found zero rows with `error_code != 0`, consistent with this branch
    never having fired in the published dataset either (full census since:
    `error_code` is 0 in all 201,633 margot + 272,442 genova rows). The
-   `error_code = 1` path is dead too: `src/libCore.py:142-144` sets
-   `err = True` on negative chi, but `src/shootp.py:131` hard-codes
+   `error_code = 1` path is dead too: `pie/libCore.py:142-144` sets
+   `err = True` on negative chi, but `pie/shootp.py:131` hard-codes
    `err0 = False` and returns that instead. **Fixed in v1.2.0** (PR #5):
    `(chi_li<0).any()` and the `err` flag are restored, and `error_code`
    now takes the values 0-6 listed in the top-level README; locked by
    `testsys/unit/test_dead_checks.py` and `test_error_codes.py`.
-3. **`isnow` classification knife-edge (2 vs 3)** -- `src/shootp.py`'s
+3. **`isnow` classification knife-edge (2 vs 3)** -- `pie/shootp.py`'s
    `isnow=3` ("deep snow + layers") vs `isnow=2` ("deep snow")
    distinction hinges on `abs(adiabat_T - liquidus_T) < 1e-8` at one
    specific radial grid point -- an epsilon two orders tighter than the
@@ -261,7 +270,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    `docs/audits/AUDIT_2026-09-29_solver-failures.md` (claims 4b, 5):
    (a) at ricb=10 m `getk2` has nrs=0, and the fluid loop at k=0 indexes
    `k+nrs-1 = -1`, wrapping to the CMB end and reading the uninitialised
-   `g[399]` (`np.empty`, `src/shootp.py:426`, loop `:456-460`), so the
+   `g[399]` (`np.empty`, `pie/shootp.py:426`, loop `:456-460`), so the
    10-m solve depends on heap contents; (b) the published solve itself
    is not reproducible at boundary cases -- a plain re-run of published
    10-m det(J)==0 case `runs/base/034.json` (genova S) went 0 -> 30
@@ -270,7 +279,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
 5. **2/240 `published_wide` samples: identical starting conditions
    (ricb=10 m, the FIRST radius, same CMR2/CMC/`chi_Si_icb`/code) but a
    fresh solve raises `RuntimeError('Factor is exactly singular')` in
-   `src/libCore.py:266` (`getpotvsr`'s `b = inv(A)*rhs`, a sparse LU
+   `pie/libCore.py:266` (`getpotvsr`'s `b = inv(A)*rhs`, a sparse LU
    factorization used by `getk2`'s ellipticity calculation) where the
    published run converged.** The CONCERNING direction (current code
    reproduces fewer solutions than published, on identical input) --
@@ -283,7 +292,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    unconfirmed as the cause of this flip
    (`docs/audits/AUDIT_2026-09-29_solver-failures.md` claim 4c;
    `docs/notes/failure_analysis_2026-09-28.md` §3.2): at ricb=10 m,
-   nrs = round(400*ricb/rcmb) = 0 (`src/shootp.py:421`), so the fluid
+   nrs = round(400*ricb/rcmb) = 0 (`pie/shootp.py:421`), so the fluid
    loop at k=0 (`:456-460`) indexes `k+nrs-1 = -1`, wrapping to the CMB
    end and reading `r[399]` and the still-uninitialised `g[399]`
    (`np.empty`, `:426`); `rho[0]`/`g[0]` themselves ARE set (`:442-443`).
@@ -319,8 +328,8 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    import *` at module level even in `code_mode='p'` runs, so a present-day-only
    run pays for the evolution-model plotting module's import too. Worked
    around at the test-harness level (`sys.path` fixup / `PYTHONNOUSERSITE=1`),
-   not fixed in `src/`.
-8. **`src/libCore.py:284-288`, `get_mass_core`** -- the fixed (bb37b0a)
+   not fixed in `pie/`.
+8. **`pie/libCore.py:284-288`, `get_mass_core`** -- the fixed (bb37b0a)
    formula is `ssum = rho[0]*r[0]**3/r[-1]**3` for the FIRST term, then
    `rho[i]*(4/3)*pi*(r[i]**3-r[i-1]**3)` for every subsequent shell. The
    first term is a leftover, differently-normalised expression (it looks
@@ -336,7 +345,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    site has `r[0]≈0`) -- see the audit principle in this suite's design
    brief: a check that fires on a scenario absent from real data is not
    evidence of a bug in that data.
-9. **`src/libCore.py:59-68`, `reorder_el`** -- for `li_el == 'S+Si'`, the
+9. **`pie/libCore.py:59-68`, `reorder_el`** -- for `li_el == 'S+Si'`, the
    function's own `chi_Si_constant` argument is ignored; it returns
    `{'Si': chi_Si_icb, ...}` reading the **module-level global**
    `chi_Si_icb` (from `from globalvar import *`) instead. **Currently

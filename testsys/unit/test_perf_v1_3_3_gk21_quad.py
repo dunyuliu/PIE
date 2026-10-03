@@ -49,7 +49,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-from conftest import import_src
+from pielib import import_src
 
 FIXTURE = (pathlib.Path(__file__).resolve().parent.parent / "reference"
            / "perf_v1.3.3" / "real_quad_calls.npz")
@@ -78,20 +78,54 @@ def real_calls():
 
 
 @pytest.fixture(scope="module")
-def coreEos():
-    return import_src("coreEos")
+def _loaded_planet_input():
+    """ONE `import_src("planet_input")` call, module-scoped (its result is
+    cached as stable object references, not re-looked-up later): `coreEos`
+    and `eos_objects` below are both derived from this single load, so they
+    are guaranteed to be the exact same `pie.coreEos` module instance the
+    `eosAndersonGrueneisen` objects were actually built against.
+
+    This replaced two INDEPENDENT `import_src` calls (one for a bare
+    `coreEos` fixture, one inside `eos_objects` via `import_src("planet_input")`)
+    -- `import_src` deletes `pie.coreEos` (and friends) from `sys.modules`
+    and re-imports fresh every time it runs, so two separate calls produced
+    two DIFFERENT module objects; mutating `PIE_FAST_QUAD` on one silently
+    had no effect on the other's bound `Gibbs()` methods. A first fix
+    (`coreEos` fixture doing `sys.modules["pie.coreEos"]` lazily, depending
+    on `eos_objects`) was ALSO wrong: with `eos_objects` cached from an
+    earlier test, `coreEos`'s lazy lookup could run much later, by which
+    time an unrelated test in another file sharing this xdist worker could
+    have called its own `import_src`/`solve_full_model` in between and
+    deleted `pie.coreEos` from `sys.modules` again (`KeyError`). Capturing
+    the module object HERE, in the same fixture body as the import_src
+    call, immune to any later sys.modules churn, is what actually fixes it.
+    Found while gating board item 28e's PR: the divergence is latent in
+    `import_src`'s reload design (pre-dates this packaging change) and only
+    became an observed, deterministic failure once this PR's new contract
+    test (`test_dependency_pins_match.py`'s pyproject check) shifted
+    pytest-xdist's `loadscope` fixture-setup/test-interleaving order enough
+    to expose it.
+    """
+    import sys
+    import_src("globalvar")
+    planet_input = import_src("planet_input")
+    coreEos_mod = sys.modules["pie.coreEos"]
+    param = planet_input.planet("p", 0.346, "S", "Edmund")
+    return coreEos_mod, {"fccFe": param["fccFe"], "lFe": param["lFe"]}
 
 
 @pytest.fixture(scope="module")
-def eos_objects():
+def coreEos(_loaded_planet_input):
+    return _loaded_planet_input[0]
+
+
+@pytest.fixture(scope="module")
+def eos_objects(_loaded_planet_input):
     """The two eosAndersonGrueneisen instances whose Gibbs() method
     actually calls quad in a real solve (GibbsFlag=True): fccFe and lFe
     (src/planet_input.py's `planet()`). liquidFeS/liquidFeSi use the
     gamma0/q branch instead (GibbsFlag=False) and never call Gibbs/quad."""
-    import_src("globalvar")
-    planet_input = import_src("planet_input")
-    param = planet_input.planet("p", 0.346, "S", "Edmund")
-    return {"fccFe": param["fccFe"], "lFe": param["lFe"]}
+    return _loaded_planet_input[1]
 
 
 # ---------------------------------------------------------------------
@@ -243,30 +277,47 @@ class TestGK21MatchesRealQuadBitIdentically:
         rng = np.random.default_rng(7)
         idx = rng.choice(len(real_calls["b"]), size=100, replace=False)
         max_reldiff = 0.0
-        for name, eosobj in eos_objects.items():
-            for i in idx:
-                b, T = float(real_calls["b"][i]), float(real_calls["T"][i])
-                p = b * eosobj.pMax
-                coreEos.PIE_FAST_QUAD = True
-                g_fast = eosobj.Gibbs(p, T)
-                coreEos.PIE_FAST_QUAD = False
-                g_quad = eosobj.Gibbs(p, T)
-                if _on_pinned_env():
-                    assert g_fast == g_quad, (
-                        f"{name}: Gibbs(p={p}, T={T}) differs between "
-                        f"PIE_FAST_QUAD True/False on the pinned "
-                        f"environment: {g_fast!r} vs {g_quad!r}"
-                    )
-                else:
-                    reldiff = abs(g_fast - g_quad) / max(abs(g_quad), 1e-300)
-                    max_reldiff = max(max_reldiff, reldiff)
-        if not _on_pinned_env():
-            assert max_reldiff <= GK21_PORTABLE_RTOL, (
-                f"Gibbs(PIE_FAST_QUAD=True) exceeded the portable rtol "
-                f"bound off the pinned environment: max reldiff "
-                f"{max_reldiff!r} > {GK21_PORTABLE_RTOL}"
-            )
-        coreEos.PIE_FAST_QUAD = True  # restore module default for other tests
+        try:
+            for name, eosobj in eos_objects.items():
+                for i in idx:
+                    b, T = float(real_calls["b"][i]), float(real_calls["T"][i])
+                    p = b * eosobj.pMax
+                    coreEos.PIE_FAST_QUAD = True
+                    g_fast = eosobj.Gibbs(p, T)
+                    coreEos.PIE_FAST_QUAD = False
+                    g_quad = eosobj.Gibbs(p, T)
+                    if _on_pinned_env():
+                        assert g_fast == g_quad, (
+                            f"{name}: Gibbs(p={p}, T={T}) differs between "
+                            f"PIE_FAST_QUAD True/False on the pinned "
+                            f"environment: {g_fast!r} vs {g_quad!r}"
+                        )
+                    else:
+                        reldiff = abs(g_fast - g_quad) / max(abs(g_quad), 1e-300)
+                        max_reldiff = max(max_reldiff, reldiff)
+            if not _on_pinned_env():
+                assert max_reldiff <= GK21_PORTABLE_RTOL, (
+                    f"Gibbs(PIE_FAST_QUAD=True) exceeded the portable rtol "
+                    f"bound off the pinned environment: max reldiff "
+                    f"{max_reldiff!r} > {GK21_PORTABLE_RTOL}"
+                )
+        finally:
+            # board item 28e hazard found while gating this PR: an assertion
+            # failure anywhere in the loop above used to skip this restore,
+            # leaking PIE_FAST_QUAD=False into every OTHER test that shares
+            # this xdist worker process for the rest of the session (this
+            # module's own global `coreEos` is one process-wide singleton).
+            # Adding one new, unrelated contract test
+            # (test_dependency_pins_match.py's pyproject-pin check, this PR)
+            # shifted xdist's loadscope worker assignment enough to put a
+            # leaking run of this test ahead of
+            # TestDefaultBehaviourIsGK21On::test_gibbs_takes_gk21_path_by_default
+            # in the same worker, turning a latent bug into an observed,
+            # deterministic failure (`-n 0`/serial always passed; only
+            # `-n <workers>` showed it). Fixed with `finally` rather than
+            # reverting the triggering test, since the bug is the missing
+            # restore-on-failure here, not the new test.
+            coreEos.PIE_FAST_QUAD = True  # restore module default for other tests
 
 
 # ---------------------------------------------------------------------

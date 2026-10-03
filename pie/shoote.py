@@ -9,14 +9,14 @@ Modified by dliu since 03/31/2022.
 import numpy as np
 import time
 import scipy
-import coreEos as eos
+from . import coreEos as eos
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import inv
 from scipy.constants import G
 from scipy.constants import R as RGas
-from globalvar import *
-from libCore import *
-from solver import *
+from .globalvar import *
+from .libCore import *
+from .solver import *
 
 def shoot_mercmodel(v,ricb,rhocr,rhom,chi_li_in_fix,core_mass_fix,
                     mantle_mass_fix,param,scale):

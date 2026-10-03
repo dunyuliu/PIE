@@ -12,7 +12,7 @@ import pytest
 
 pytestmark = pytest.mark.contract
 
-import robust_runner as rr  # src/ is on sys.path via testsys/conftest.py
+from pie import robust_runner as rr  # pie is installed via pyproject.toml (board item 28e)
 
 HEADER = ("CMR2", "CMC", "light_element", "liquidus_eq", "chi_Si_icb")
 
@@ -100,7 +100,7 @@ def test_tacc_launcher_lists_only_pending_jobs_as_run_one_lines(tmp_path):
     assert len(lines) == 2
     for line, idx in zip(lines, (1, 2)):
         tok = line.split()
-        assert tok[0] == "/opt/py" and tok[1].endswith("src/robust_runner.py")
+        assert tok[0] == "/opt/py" and tok[1].endswith("pie/robust_runner.py")
         assert tok[2:4] == ["run-one", str(manifest.resolve())]
         assert tok[tok.index("--index") + 1] == str(idx)
         assert tok[tok.index("--src-dir") + 1] == str(src.resolve())

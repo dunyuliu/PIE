@@ -13,7 +13,7 @@ environment, scipy 1.8.0) and skips on scipy >= 1.14.
 import numpy as np
 import pytest
 
-import coreEos as eos
+from pie import coreEos as eos
 
 pytestmark = pytest.mark.unit
 

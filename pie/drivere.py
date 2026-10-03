@@ -1,8 +1,8 @@
 import numpy as np
-import shoote as lc
+from . import shoote as lc
 import glob,os,sys
-from globalvar import *
-import TEST_visualization_evolution as vis
+from .globalvar import *
+from . import TEST_visualization_evolution as vis
 import pandas as pd
 import csv # for adding data to csv -- added 6/28/2022
 

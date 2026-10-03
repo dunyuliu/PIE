@@ -31,7 +31,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 # Same (CMR2, CMC) as test_steinbruegge_anchor.py's independently-anchored
 # Fe-S Steinbruegge case, so the Si=0 slice checked here inherits that

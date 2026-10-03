@@ -21,7 +21,7 @@ import os
 import numpy as np
 import pytest
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 pytestmark = [pytest.mark.integration]
 

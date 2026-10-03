@@ -31,11 +31,15 @@ Smallest edit that solves the problem; fold content into the file it belongs
 to; never refactor unrelated code in the same change.
 
 The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
-`PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a), `update_log` (frozen, see 1a), plus
-`src/`, `util/` (operational scripts split out of `src/` by the Layout PR,
+`PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a), `update_log` (frozen, see 1a),
+`pyproject.toml` (board item 28e: packaging + the pinned deps that must
+agree with `requirements.txt`, rule 3b), plus
+`pie/` (the installable package; renamed from `src/` by board item 28e —
+same role, same rules below that still say `src/` in older prose), `util/`
+(operational scripts split out of `src/` by the Layout PR,
 board item 28 — `util/plot/`, `util/run/`; relocation of existing scripts, not
 new scope, and no physics code), `historical_versions/` (frozen zips/tars of prior versions, read-only —
-see rule 7), `testsys/` and `.github/` (in scope for this project like `src/`
+see rule 7), `testsys/` and `.github/` (in scope for this project like `pie/`
 — CI config and the test suite, maintained by whoever is doing the current
 campaign work; no separate team owns them). `results/` is a run artifact, not
 tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
@@ -48,7 +52,7 @@ directory; this proposes the boundary before the root accumulates
 they had one.
 
 **How to apply**: before adding any new root-level file, ask whether it
-belongs in `src/`, `docs/notes/`, or one of the four named documents instead.
+belongs in `pie/`, `docs/notes/`, or one of the four named documents instead.
 
 ---
 

@@ -18,16 +18,16 @@
 """
 
 import numpy as np # loading numpy.
-from globalvar import ( # loading global variables.
+from .globalvar import ( # loading global variables.
     code_mode, CMR2, light_element, liquidus_eq, dr, model_path,
     path_to_present_day_models, csvfiles_path, pMetaDataFileName,
     compiled_data_file, presentday_columns, contourcond,
     radii_vs_cmbtemp_path, csv_radii_vs_cmbtemp_filename, columns_radvtemp,
     xtol, ftol,
 )
-from planet_input import planet # loading planet, which produces initial model input.
-from drivere import drivere # loading drivere, which does the main computation for evolution model.
-from driverp import driverp # loading driverp, which does the main computation for presentDay model.
+from .planet_input import planet # loading planet, which produces initial model input.
+from .drivere import drivere # loading drivere, which does the main computation for evolution model.
+from .driverp import driverp # loading driverp, which does the main computation for presentDay model.
 import csv # for writing and using csv files -- added 6/27/2022
 import glob,os,sys # for creating new directories -- added 6/28/2022
 import pandas as pd # for reading csv files -- added 6/28/2022

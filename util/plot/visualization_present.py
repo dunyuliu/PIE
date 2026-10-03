@@ -7,22 +7,18 @@ Created on Fri Oct 11 14:52:43 2019
 """
 
 import os, sys
-# util/plot/ -> repo root -> src/: board item 28(a) moved this file out of
-# src/, where its sibling imports below (shootp, globalvar) still live, so
-# src/ must be put on sys.path before those imports resolve.
-_SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src')
-if _SRC_DIR not in sys.path:
-    sys.path.insert(0, _SRC_DIR)
 
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import shootp as lc
+# board item 28e: pie is an installed package (`uv pip install -e .`), not
+# a sys.path-inserted directory -- import it like any other package.
+from pie import shootp as lc
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.patches as mpatches
-from globalvar import chi_Si_icb, liquidus_eq, model_path, presentFigureName
+from pie.globalvar import chi_Si_icb, liquidus_eq, model_path, presentFigureName
 import os, stat
 import shutil
 

@@ -25,7 +25,7 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-from conftest import import_src
+from pielib import import_src
 
 
 @pytest.fixture

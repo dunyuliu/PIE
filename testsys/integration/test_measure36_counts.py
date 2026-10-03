@@ -44,7 +44,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from conftest import is_admissible
+from pielib import is_admissible
 
 FIXTURE = (
     Path(__file__).resolve().parents[1]

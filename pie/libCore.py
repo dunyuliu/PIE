@@ -3,7 +3,7 @@
 import numpy as np
 import time
 import scipy
-import coreEos as eos
+from . import coreEos as eos
 import sys
 import os
 import json
@@ -23,7 +23,7 @@ from scipy.constants import R as RGas
 # transitively through libCore's own `import *`; planet_input.py now
 # imports globalvar directly instead of relying on that (see its own
 # import block).
-from globalvar import (
+from .globalvar import (
     ErrorCode,
     chi_Si_icb,
     liquidus_eq,

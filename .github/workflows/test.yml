@@ -38,7 +38,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install -r testsys/requirements.txt
+        run: |
+          pip install -e .
+          pip install -r testsys/requirements.txt
 
       - name: Run fast tiers (unit, contract, integration)
         env:
@@ -66,6 +68,7 @@ jobs:
 
       - name: Install latest dependencies (pins stripped)
         run: |
+          pip install -e . --no-deps
           sed -E 's/==[^ ]+//' testsys/requirements.txt | grep -v '^#' > /tmp/req-latest.txt
           pip install -r /tmp/req-latest.txt
           pip freeze | grep -iE '^(numpy|scipy|pandas|tables|h5py|matplotlib|pytest)=='
@@ -78,9 +81,9 @@ jobs:
         run: python3 testsys/run.py unit contract integration
 
   e2e-cli-smoke:
-    # The ONE true full-CLI-subprocess pipeline test (main.py p 0.346
-    # 0.424 S Edmund, ~4.5 min): argv parsing, directory creation, real
-    # h5/csv/figure file writes, all through the real entry point.
+    # The ONE true full-CLI-subprocess pipeline test (`python -m pie p
+    # 0.346 0.424 S Edmund`, ~4.5 min): argv parsing, directory creation,
+    # real h5/csv/figure file writes, all through the real entry point.
     # Opt-in only (see the `on:` block above) -- NOT part of the push/PR
     # gate.
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
@@ -91,7 +94,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install -r testsys/requirements.txt
+        run: |
+          pip install -e .
+          pip install -r testsys/requirements.txt
       - name: Run the full-CLI-subprocess e2e test
         env:
           PYTHONNOUSERSITE: '1'
@@ -131,7 +136,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install -r testsys/requirements.txt
+        run: |
+          pip install -e .
+          pip install -r testsys/requirements.txt
       - name: Run this composition's shard of the wide sweep
         env:
           PYTHONNOUSERSITE: '1'

@@ -1,4 +1,4 @@
-import coreEos as eos
+from . import coreEos as eos
 # Previously relied on `from libCore import *` to transitively re-export
 # globalvar's names (MFe, MFeS, MFeSi, CMC, ...) because libCore.py did
 # `from globalvar import *` itself. libCore.py's own star-import was
@@ -6,8 +6,8 @@ import coreEos as eos
 # (PATHWAY_FORWARD.md item 9), so this file now imports globalvar
 # directly, same as shootp.py/shoote.py already do -- no behaviour
 # change, same full globalvar namespace as before.
-from globalvar import *
-from libCore import *
+from .globalvar import *
+from .libCore import *
 from scipy.constants import G
 import numpy as np
 

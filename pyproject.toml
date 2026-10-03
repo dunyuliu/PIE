@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pie"
+version = "1.6.0"
+description = "PIE: Planetary Interior Evolution -- Mercury interior structure inversion and evolution model"
+readme = "README.md"
+requires-python = "==3.12.*"
+license = { text = "GPL-3.0-only" }
+# Exact pins, matching requirements.txt (PROJECT_RULES.md rule 3b: every
+# dependency manifest pins exact versions and must not drift from the
+# others -- testsys/contract/test_dependency_pins_match.py checks
+# requirements.txt vs testsys/requirements.txt; the same test's sibling
+# check (added with this file, board item 28e) checks this file against
+# requirements.txt too). requirements.txt remains the source of truth;
+# update both together under a green `testsys/run.py all`.
+dependencies = [
+    "numpy==2.5.3",
+    "scipy==1.18.1",
+    "pandas==3.0.6",
+    "matplotlib==3.11.2",
+    "h5py==3.16.0",
+    "tables==3.11.1",
+]
+
+[project.scripts]
+pie = "pie.cli:main"
+
+[tool.setuptools]
+packages = ["pie"]
+
+[tool.setuptools.package-data]
+pie = ["TmFeSmelt.dat"]

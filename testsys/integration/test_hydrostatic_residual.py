@@ -44,7 +44,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 NC_FLUID = 51  # src/shootp.py's own hard-coded fluid-core RK4 node count
 

@@ -1,7 +1,7 @@
 import numpy as np
-import shootp as lc
+from . import shootp as lc
 import glob,os,sys
-from globalvar import *
+from .globalvar import *
 import pandas as pd
 import csv # added 6/30/2022
 

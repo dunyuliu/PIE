@@ -42,7 +42,7 @@ from scipy.sparse.linalg import inv as sparse_inv
 
 pytestmark = pytest.mark.unit
 
-from conftest import import_src
+from pielib import import_src
 
 FIXTURE = (pathlib.Path(__file__).resolve().parent.parent / "reference"
            / "perf_v1.3.2" / "real_solver_states.npz")

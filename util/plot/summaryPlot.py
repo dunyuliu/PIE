@@ -2,23 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-# util/plot/ -> repo root -> src/: board item 28(a) moved this file out of
-# src/, where its sibling imports below (globalvar, drivere, driverp) still
-# live, so src/ must be put on sys.path before those imports resolve.
-_SRC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src')
-if _SRC_DIR not in sys.path:
-    sys.path.insert(0, _SRC_DIR)
 
 import numpy as np # loading numpy.
-from globalvar import (
+# board item 28e: pie is an installed package (`uv pip install -e .`), not
+# a sys.path-inserted directory -- import it like any other package.
+from pie.globalvar import (
     CMR2,
     compiled_data_file,
     contourcond,
     csvfiles_path,
     presentday_columns,
 ) # loading global variables actually used below.
-from drivere import * # loading drivere, which does the main computation for evolution model.
-from driverp import * # loading driverp, which does the main computation for presentDay model.
+from pie.drivere import * # loading drivere, which does the main computation for evolution model.
+from pie.driverp import * # loading driverp, which does the main computation for presentDay model.
 import csv # for writing and using csv files -- added 6/27/2022
 import glob,os,sys # for creating new directories -- added 6/28/2022
 import pandas as pd # for reading csv files -- added 6/28/2022

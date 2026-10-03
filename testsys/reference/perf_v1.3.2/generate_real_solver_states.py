@@ -1,13 +1,12 @@
 import sys, os
-SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "src")  # repo src/
-os.chdir(SRC)
-sys.path.insert(0, SRC)
+# pie is installed (board item 28e: `uv pip install -e .`), no sys.path/
+# chdir trick needed to import it.
 sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
 import numpy as np
-import globalvar as gv
-import planet_input
-import libCore as lcore
-import shootp as lc
+from pie import globalvar as gv
+from pie import planet_input
+from pie import libCore as lcore
+from pie import shootp as lc
 from scipy.sparse import csc_matrix
 
 captured_A = []

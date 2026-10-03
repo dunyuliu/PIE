@@ -19,7 +19,7 @@ testsys/e2e/), so a single well-converged radius is what "integration
 import numpy as np
 import pytest
 
-from conftest import import_src
+from pielib import import_src
 
 pytestmark = pytest.mark.integration
 
@@ -31,15 +31,13 @@ def solved_margot_case():
     so the ~17 s solve is shared across every assertion below rather than
     repeated per test."""
     import sys as _sys
+    from pielib import _purge_pie_submodules
     _sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
-    for name in list(_sys.modules):
-        if name in ("globalvar", "planet_input", "libCore", "solver",
-                     "coreEos", "shootp", "driverp"):
-            del _sys.modules[name]
-    import globalvar as gv
+    _purge_pie_submodules()
+    from pie import globalvar as gv
     planet_input = import_src("planet_input", CMR2=0.346, CMC=0.424,
                                light_element="S", liquidus_eq="Edmund")
-    import shootp as lc
+    from pie import shootp as lc
 
     param = planet_input.planet("p", 0.346, "S", "Edmund")
     scale = param["scale"]

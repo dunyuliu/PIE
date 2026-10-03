@@ -23,7 +23,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from conftest import solve_full_model
+from pielib import solve_full_model
 
 CMR2, CMC, RICB_M = 0.346, 0.424, 500_010.0
 

@@ -25,7 +25,7 @@ import pathlib
 
 import pytest
 
-from conftest import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference, pool_workers
+from pielib import solve_full_model, assert_scalars_match, assert_profiles_match, check_converged_without_reference, pool_workers
 
 pytestmark = pytest.mark.integration
 
