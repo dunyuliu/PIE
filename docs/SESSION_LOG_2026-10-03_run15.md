@@ -231,3 +231,18 @@ session, not yet returned a completion notification) -- her real work lives in
 the separate scratchpad worktree (`item18b-figs`), but `a95e98e6`'s `.claude`
 worktree slot is still her active lock. Did not touch it; flagging back to the
 dispatching session rather than removing a live child's worktree.
+
+## Follow-up cleanup + new consilium rule (2026-10-04)
+
+- Reaped `agent-ac0791fdea4a873d5` (dunyu-liu's stopped item-18b attempt):
+  verified first (not locked, zero commits, only an untracked/incomplete
+  `docs/notes/item18b_paper_filter_recompute_2026-10-04_scripts/paper_filters.py`
+  matching his own exit report -- no outputs written). Worktree + branch
+  `item18b-paper-filter-recompute` removed.
+- Kept `agent-ac134d96bd0721c4c` (jordan-kim, item-18b analysis) until the
+  18(b) audit (priya-nair) has run, per instruction.
+- **New consilium rule (PR #84, relayed):** board (`PATHWAY_FORWARD.md`) and
+  session-log commits go through a PR from here on, same as code -- no more
+  direct pushes to `main` for these files. Commit `29361f6` (the prior
+  cleanup log entry) is left as-is since it predates the rule; every log/board
+  update after this one goes through a PR.
