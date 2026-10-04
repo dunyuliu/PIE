@@ -315,6 +315,13 @@ def mynewtonSys(Jfun,x0,varargin,
       if verbose:
           end = time.time()
           print(k,np.linalg.norm(f),np.linalg.norm(dx),end-start)
+      # item31b (2026-10-04): per-iterate trajectory record (not in the
+      # original v1.0.5; debug-only, no change to the Newton algorithm
+      # itself -- x/f/dx are computed exactly as before this edit).
+      # alpha is always 1.0 in v1.0.5 (no line search existed yet).
+      _dump({'kind':'iterate','k':k,'x_post':list(np.asarray(x,dtype=float)),
+             'normf':float(np.linalg.norm(f)),'normdx':float(np.linalg.norm(dx)),
+             'alpha':1.0})
       if (np.linalg.norm(f) < feps) or (np.linalg.norm(dx) < xeps):
           _dump({'kind':'converged','k':k,'x':list(np.asarray(x,dtype=float)),
                  'normf':float(np.linalg.norm(f)),'normdx':float(np.linalg.norm(dx))})

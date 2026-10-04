@@ -1,0 +1,36 @@
+total prestop-failing candidate radii across 18 runs: 368
+  head_error_code 4.0 : 368
+code 1.0: 0 candidates available, sampling 0
+code 2.0: 0 candidates available, sampling 0
+code 4.0: 368 candidates available, sampling 30
+sampled 30 candidate radii for verification
+0 genova S 0.00 ricb_m=550010 head_ec=4.0 -> HEAD-correctly-rejects
+1 genova S+Si 0.00 ricb_m=1250010 head_ec=4.0 -> HEAD-correctly-rejects
+2 margot S+Si 0.10 ricb_m=900010 head_ec=4.0 -> HEAD-correctly-rejects
+3 genova S+Si 0.06 ricb_m=650010 head_ec=4.0 -> HEAD-correctly-rejects
+4 genova S+Si 0.00 ricb_m=1050010 head_ec=4.0 -> HEAD-correctly-rejects
+5 genova S 0.00 ricb_m=650010 head_ec=4.0 -> HEAD-correctly-rejects
+6 genova S+Si 0.04 ricb_m=1050010 head_ec=4.0 -> HEAD-correctly-rejects
+7 genova S+Si 0.00 ricb_m=1700010 head_ec=4.0 -> HEAD-correctly-rejects
+8 genova Si 0.00 ricb_m=1400010 head_ec=4.0 -> HEAD-correctly-rejects
+9 margot S+Si 0.04 ricb_m=350010 head_ec=4.0 -> HEAD-correctly-rejects
+10 margot S+Si 0.03 ricb_m=800010 head_ec=4.0 -> HEAD-correctly-rejects
+11 genova Si 0.00 ricb_m=600010 head_ec=4.0 -> HEAD-correctly-rejects
+12 genova Si 0.00 ricb_m=150010 head_ec=4.0 -> HEAD-correctly-rejects
+13 genova S+Si 0.00 ricb_m=1200010 head_ec=4.0 -> HEAD-correctly-rejects
+14 margot S+Si 0.04 ricb_m=50010 head_ec=4.0 -> HEAD-correctly-rejects
+15 margot S+Si 0.10 ricb_m=800010 head_ec=4.0 -> HEAD-correctly-rejects
+16 genova S+Si 0.04 ricb_m=50010 head_ec=4.0 -> HEAD-correctly-rejects
+17 genova S+Si 0.00 ricb_m=700010 head_ec=4.0 -> HEAD-correctly-rejects
+18 genova S+Si 0.03 ricb_m=10 head_ec=4.0 -> HEAD-correctly-rejects
+19 genova S+Si 0.07 ricb_m=400010 head_ec=4.0 -> HEAD-correctly-rejects
+20 genova S+Si 0.00 ricb_m=1100010 head_ec=4.0 -> HEAD-correctly-rejects
+21 genova S+Si 0.03 ricb_m=800010 head_ec=4.0 -> HEAD-correctly-rejects
+22 genova S+Si 0.03 ricb_m=550010 head_ec=4.0 -> HEAD-correctly-rejects
+23 genova S+Si 0.06 ricb_m=10 head_ec=4.0 -> HEAD-correctly-rejects
+24 genova S+Si 0.05 ricb_m=150010 head_ec=4.0 -> HEAD-correctly-rejects
+25 genova Si 0.00 ricb_m=1350010 head_ec=4.0 -> HEAD-correctly-rejects
+26 genova S 0.00 ricb_m=500010 head_ec=4.0 -> HEAD-correctly-rejects
+27 genova S+Si 0.09 ricb_m=500010 head_ec=4.0 -> HEAD-correctly-rejects
+28 genova S+Si 0.05 ricb_m=700010 head_ec=4.0 -> HEAD-correctly-rejects
+29 genova S+Si 0.06 ricb_m=400010 head_ec=4.0 -> HEAD-correctly-rejects

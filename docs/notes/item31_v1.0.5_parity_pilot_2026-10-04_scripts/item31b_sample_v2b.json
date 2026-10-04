@@ -1,0 +1,182 @@
+[
+ {
+  "moi": "margot",
+  "CMR2": "0.32309560390322517",
+  "CMC": "0.4561993361077999",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 35,
+  "source_prestop_rows": 35
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.3238224293537849",
+  "CMC": "0.45517538823404297",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 33,
+  "source_prestop_rows": 34
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32267038796555886",
+  "CMC": "0.4571817108167542",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 39,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32261995537629246",
+  "CMC": "0.4572531783656689",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 39,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.32259909969326567",
+  "CMC": "0.4569014611018672",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 39,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32813302061089583",
+  "CMC": "0.4495707250838673",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 12,
+  "source_prestop_rows": 31
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3372030922529055",
+  "CMC": "0.43747819456340975",
+  "light": "S+Si",
+  "chi_Si_icb": "0.09",
+  "source_prestop_rerun_failed": 29,
+  "source_prestop_rows": 33
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3311409112779387",
+  "CMC": "0.44548708714575563",
+  "light": "S+Si",
+  "chi_Si_icb": "0.03",
+  "source_prestop_rerun_failed": 20,
+  "source_prestop_rows": 31
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33761521177007486",
+  "CMC": "0.43694417448365586",
+  "light": "S+Si",
+  "chi_Si_icb": "0.07",
+  "source_prestop_rerun_failed": 10,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32720510070492914",
+  "CMC": "0.45084566127540726",
+  "light": "S+Si",
+  "chi_Si_icb": "0.02",
+  "source_prestop_rerun_failed": 31,
+  "source_prestop_rows": 33
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32848451417048385",
+  "CMC": "0.4490896637015816",
+  "light": "S+Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 7,
+  "source_prestop_rows": 30
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33827918960370956",
+  "CMC": "0.4360865360142814",
+  "light": "S+Si",
+  "chi_Si_icb": "0.09",
+  "source_prestop_rerun_failed": 24,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3284440537899105",
+  "CMC": "0.44914498617886583",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 8,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.3237161500209568",
+  "CMC": "0.4553248269833242",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 33,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32791374994531786",
+  "CMC": "0.4498713458176119",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 14,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32731629837795884",
+  "CMC": "0.45069249753538637",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 19,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.31983259262347324",
+  "CMC": "0.46123817085042523",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 38,
+  "source_prestop_rows": 38
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.32369988789716986",
+  "CMC": "0.4553477017169171",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 33,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33085575587868965",
+  "CMC": "0.445871040109965",
+  "light": "S+Si",
+  "chi_Si_icb": "0.02",
+  "source_prestop_rerun_failed": 13,
+  "source_prestop_rows": 31
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.34020155920885686",
+  "CMC": "0.43326080086984703",
+  "light": "S+Si",
+  "chi_Si_icb": "0.10",
+  "source_prestop_rerun_failed": 20,
+  "source_prestop_rows": 32
+ }
+]

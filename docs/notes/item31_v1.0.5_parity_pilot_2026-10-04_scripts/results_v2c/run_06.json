@@ -1,0 +1,12 @@
+{
+ "moi": "genova",
+ "CMR2": "0.3325014714411607",
+ "CMC": "0.44366420202776424",
+ "light": "S+Si",
+ "chi_Si_icb": "0.03",
+ "source_prestop_rerun_failed": 9,
+ "source_prestop_rows": 30,
+ "status": "exception",
+ "exc": "TimeoutExpired(['<machine-local-path-redacted>', '-m', 'pie', 'p', '0.3325014714411607', '0.44366420202776424', 'S+Si', 'Edmund', '0.03'], 1200)",
+ "wall_s": 1480.4284977912903
+}

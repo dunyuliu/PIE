@@ -1,0 +1,164 @@
+[
+ {
+  "moi": "genova",
+  "CMR2": "0.33415422835630704",
+  "CMC": "0.4414697989178255",
+  "light": "S+Si",
+  "chi_Si_icb": "0.06",
+  "source_prestop_rerun_failed": 25,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32267038796555886",
+  "CMC": "0.4571817108167542",
+  "light": "S+Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 39,
+  "source_prestop_rows": 39
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33547312483006037",
+  "CMC": "0.43973418161209865",
+  "light": "S+Si",
+  "chi_Si_icb": "0.07",
+  "source_prestop_rerun_failed": 25,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.32969837143028674",
+  "CMC": "0.44706317280419516",
+  "light": "S+Si",
+  "chi_Si_icb": "0.03",
+  "source_prestop_rerun_failed": 27,
+  "source_prestop_rows": 33
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3345507735423346",
+  "CMC": "0.44094652192257666",
+  "light": "S+Si",
+  "chi_Si_icb": "0.05",
+  "source_prestop_rerun_failed": 15,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.3336549367777233",
+  "CMC": "0.4417617836663192",
+  "light": "S+Si",
+  "chi_Si_icb": "0.04",
+  "source_prestop_rerun_failed": 11,
+  "source_prestop_rows": 31
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3325014714411607",
+  "CMC": "0.44366420202776424",
+  "light": "S+Si",
+  "chi_Si_icb": "0.03",
+  "source_prestop_rerun_failed": 9,
+  "source_prestop_rows": 30
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33413469575021953",
+  "CMC": "0.441495606042292",
+  "light": "S+Si",
+  "chi_Si_icb": "0.05",
+  "source_prestop_rerun_failed": 18,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3285599983169839",
+  "CMC": "0.44898648878637537",
+  "light": "S+Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 5,
+  "source_prestop_rows": 30
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3227902546762755",
+  "CMC": "0.4570119384426459",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 36,
+  "source_prestop_rows": 36
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3318469798939245",
+  "CMC": "0.44453922722802763",
+  "light": "S+Si",
+  "chi_Si_icb": "0.04",
+  "source_prestop_rerun_failed": 24,
+  "source_prestop_rows": 33
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3231218418027994",
+  "CMC": "0.4565429535092541",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "source_prestop_rerun_failed": 35,
+  "source_prestop_rows": 35
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3383198104386025",
+  "CMC": "0.43603417668257244",
+  "light": "S+Si",
+  "chi_Si_icb": "0.09",
+  "source_prestop_rerun_failed": 24,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3329362232551652",
+  "CMC": "0.44308486039063455",
+  "light": "S+Si",
+  "chi_Si_icb": "0.05",
+  "source_prestop_rerun_failed": 25,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33427594557023393",
+  "CMC": "0.44130905006745436",
+  "light": "S+Si",
+  "chi_Si_icb": "0.06",
+  "source_prestop_rerun_failed": 25,
+  "source_prestop_rows": 33
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3302214782669897",
+  "CMC": "0.4467274532661633",
+  "light": "S+Si",
+  "chi_Si_icb": "0.03",
+  "source_prestop_rerun_failed": 25,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.3400309480032389",
+  "CMC": "0.4334781903398864",
+  "light": "S+Si",
+  "chi_Si_icb": "0.10",
+  "source_prestop_rerun_failed": 21,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33998917664025274",
+  "CMC": "0.43389322406604697",
+  "light": "S+Si",
+  "chi_Si_icb": "0.09",
+  "source_prestop_rerun_failed": 12,
+  "source_prestop_rows": 31
+ }
+]
