@@ -9,19 +9,29 @@ coauthor; the erratum/comment decision stays with the owner (item 18).
 Author: dunyu-liu. Scripts and outputs: `item18a_population_rerun_2026-10-03_scripts/`.
 Zenodo tree `~/shared_dataset/zenodo.16459292/extracted/PIE` read-only throughout.
 
-## Verdict (pilot stage; main-run section below is filled when the run completes)
+## Verdict
 
-Works with caveats. The census is complete and cross-checked; a full
-census-level re-run is infeasible on knox (~100 h wall), so a stratified
-size-weighted sample of 1,400 runs (93 strata) is running. The pilot already
-shows three things a reviewer must know before any before/after number is
-read: (i) 20 of 72 sampled non-finished runs crash the v1.6.0 code with an
+Works with caveats. Census complete and cross-checked; full census-level
+re-run infeasible on knox (~100 h wall), so a stratified size-weighted sample
+of 1,400 runs (93 strata) was re-run in 4.2 h. Population-scaled result
+(section 4): the discarded runs add an estimated ~18,000 admissible rows
+(+3.8% on 474,075) and ~2,300 snow rows; **margot** snow fractions move
+**down** by 0.2–1.0 pp in every composition (CI95 excludes zero for S+Si
+0.01, 0.04, 0.06, 0.07, 0.11, and the zero-snow classes S+Si 0.00/0.12);
+**genova** S and low-chi S+Si move by |delta| <= 0.3 pp, while genova S+Si
+>= 0.05 moves **up** by +0.5 to +10 pp with CIs mostly including zero
+(small published denominators of 2,000–19,000 rows; 101 of the 135 recovered
+snow rows sit at ricb >= 1,750 km, next to the geometric limit). Si-only
+admissible snow fraction stays exactly 0 (20 recovered admissible Si rows,
+none snow-bearing). Three things a reviewer must know before any of these
+numbers is read: (i) 326 of 1,400 sampled runs (23%) crash the v1.6.0 code with an
 *uncaught* `ValueError` at radius index 31–37 (ricb 1.55–1.85 Mm), losing
 the rest of the sweep; (ii) the re-run is not a superset of the published
-run — 335 of 1,153 radii the published v1.0.5 code converged on fail in
-v1.6.0; (iii) on 1 of ~95 recovered rows the warm-start sweep and the
-cold-start single-radius solver converge to different Newton roots
-(chi_Si_icb 0.11 vs 0.22, isnow 2 vs 0).
+run — 6,964 of 23,608 radii (30%) the published v1.0.5 code converged on
+fail in v1.6.0; (iii) the warm-start sweep and the cold-start single-radius
+solver disagree on 28 of 977 recovered rows (different Newton roots,
+|dchi| up to 0.38), and 20 of the 135 recovered snow rows are "no snow" when
+solved cold — the recovered snow rows are start-dependent.
 
 ## 1. Census (deliverable 1) — `census.py` -> `census_runs.csv`, `census_summary.json`
 
@@ -143,6 +153,19 @@ same runner command on `main_manifest.csv`, `--status-log pie/results/main_statu
 | wall per job incl. the 5 timeouts | mean 452 s, median 232 s, p90 396 s (`pilot_snowfraction.json`) |
 | Si-only runs in the pilot | 4: two `crash_at_1.95Mm` (1 radius beyond, code 5), two `newton_maxit` at 10 m (39 x code 4, 1 x code 5) — zero converged Si rows |
 
+### 3.2 Main run (fresh, `main_snowfraction.json`, `main_rerun_rows.json`, `main_coldcheck.json`)
+
+| quantity | value |
+|---|---|
+| wall | **4.22 h** (20:14:35 → 00:27:43 CDT, 2026-10-03/04), 1,397 jobs ran + 3 resumed from pilot sentinels; per job mean 259 s, median 206 s, p90 412 s (contended: 24 workers, load ~27 on 64 cores; plus 5 pilot stragglers for the first 30 min) |
+| completion | 1,400/1,400 analysed: 1,022 full 40-radius sweeps; **326 mid-sweep `ValueError` crashes** (rows reached 25–38, median 34); 52 timeouts at 1,200 s (rows reached 26–37); 1 job `SKIPPED_LOCKED` (held by a pilot straggler; its pilot partial csv, 29 rows, is what is analysed) |
+| pre-stop rows | 23,608 in 875 runs; isnow mismatches 0; 865/875 runs agree to rel diff < 1e-3 on chi_li_icb/rcmb, 10 runs do not (6 < 1e-2, 3 < 1, one genova S+Si 0.03 newton_maxit run at rel diff 45 = a different root on a pre-stop radius); **6,964 pre-stop radii (30%) fail in v1.6.0** |
+| beyond-stop radii attempted | 30,169 (of ~35,500 in the sample); codes 4 CHI_OUTSIDE_BOX 25,727, 3 NONFINITE_SHOOT 1,674, 0 CONVERGED 1,098, 5 RICB_GE_RCMB 886, 1 NEWTON_MAXIT 748, 2 SINGULAR_J 36 |
+| converged = admissible | **1,098 (3.6%)** in 576 of 1,400 runs; warm 949, cold-fallback 149 |
+| snow-bearing | **135** (12% of recovered); by ricb: < 750 km 32, 1.25–1.5 Mm 2, **>= 1.75 Mm 101** |
+| by mode (runs / beyond / conv / snow) | detJ0 596/10,127/211/0; crash_lt_1.95Mm 512/16,069/463/102; newton_maxit 257/3,938/424/33; crash_at_1.95Mm 35/35/0/0 (all code 5: the Mode-C candidates are at the geometric limit, nothing to recover) |
+| cold-start cross-check (1,098 rows, 16 workers, 5.9 s/solve) | 977 reconverge; 942 agree to |dchi| < 1e-6, 7 to < 1e-3, **28 to a different root** (max |dchi| 0.38; 1 of them cold-inadmissible); isnow agrees on 950/977; **20 warm snow rows are cold no-snow**, 0 the other way; 121 cold failures (`SolverError`, warm-start-only recoveries) |
+
 ## 4. Before/after snow fraction (deliverable 4) — `snowfraction.py main` -> `main_table.md`, `main_snowfraction.json`
 
 Method (stages 3/4 of `resolve_and_census.py`, code imported not re-typed):
@@ -155,12 +178,61 @@ normal CI95 (per-run variance, finite-population correction); after =
 (pub_snow + S)/(pub_rows + A) for both denominators (all published rows;
 admissible-only published rows). Crashed re-runs contribute zero.
 
-**Pending main-run completion.** The table lands in a follow-up commit on
-this branch; at the pilot level (not population-weighted, n too small per
-stratum) the direction is: ~9% of beyond-stop radii recover, ~8% of those
-are snow-bearing, so added snow rows are in the hundreds against 474,075
-published rows — deltas at the 0.0x pp level, consistent with the
-predecessor's +0.05 pp maximum.
+Reading the table (`main_table.md`, reproduced below): `n/N` = sampled runs
+over non-finished runs in that (moi, composition); "(k/m strata n<10)" flags
+strata that are direction-only; A and S are population totals (weighted);
+the delta CI propagates the variance of S only (A treated as fixed, so
+zero-snow classes show a degenerate CI); both denominators as in the
+predecessor note. Population totals: **A ≈ 18,300 added admissible rows
+(+3.9% on 474,075), S ≈ 2,300 added snow rows.** Numbers below are
+weighted estimates from 1,400 sampled runs, truncated by the 326 crashes and
+52 timeouts (which bias A and S low, mostly at ricb >= 1.55 Mm — exactly
+where the snow rows concentrate).
+
+| moi/composition | published rows | before isnow>0 | sampled runs n/N | sample: beyond/conv/adm/snow | est. added adm A [CI95] | est. added snow S [CI95] | after | delta (pp) [CI95] | before adm-only | after adm-only | delta (pp) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| genova/S | 27545 | 0.1517 | 50/1024 (2/4 strata n<10) | 502/18/18/0 | 312 [184, 440] | 0 [0, 0] | 0.1500 | -0.170 [-0.170, -0.170] | 0.1774 | 0.1750 | -0.232 |
+| genova/S+Si_0.00 | 27492 | 0.1517 | 50/1024 (2/4 strata n<10) | 566/26/26/0 | 500 [350, 650] | 0 [0, 0] | 0.1490 | -0.271 [-0.271, -0.271] | 0.1774 | 0.1737 | -0.369 |
+| genova/S+Si_0.01 | 27676 | 0.1128 | 47/1024 (1/3 strata n<10) | 603/21/21/1 | 429 [283, 574] | 17 [0, 50] | 0.1117 | -0.111 [-0.172, +0.005] | 0.1403 | 0.1384 | -0.190 |
+| genova/S+Si_0.02 | 27126 | 0.0875 | 48/1024 | 626/26/26/4 | 503 [303, 702] | 78 [0, 180] | 0.0888 | +0.124 [-0.159, +0.492] | 0.1187 | 0.1196 | +0.091 |
+| genova/S+Si_0.03 | 25730 | 0.0686 | 48/1024 | 723/23/23/2 | 433 [278, 588] | 43 [0, 99] | 0.0691 | +0.051 [-0.114, +0.266] | 0.1006 | 0.1005 | -0.003 |
+| genova/S+Si_0.04 | 23335 | 0.0547 | 47/1024 (1/3 strata n<10) | 711/35/35/2 | 744 [115, 1374] | 47 [0, 108] | 0.0550 | +0.025 [-0.169, +0.281] | 0.0872 | 0.0860 | -0.117 |
+| genova/S+Si_0.05 | 18901 | 0.0488 | 47/1024 (1/3 strata n<10) | 776/33/33/5 | 797 [538, 1057] | 133 [7, 259] | 0.0536 | +0.478 [-0.161, +1.117] | 0.0793 | 0.0849 | +0.562 |
+| genova/S+Si_0.06 | 16219 | 0.0412 | 47/1024 (1/3 strata n<10) | 939/68/68/6 | 933 [539, 1326] | 144 [11, 278] | 0.0474 | +0.618 [-0.162, +1.398] | 0.0712 | 0.0787 | +0.756 |
+| genova/S+Si_0.07 | 12695 | 0.0372 | 47/1024 (1/3 strata n<10) | 1036/53/53/6 | 1132 [700, 1563] | 178 [29, 326] | 0.0470 | +0.979 [-0.094, +2.053] | 0.0661 | 0.0785 | +1.242 |
+| genova/S+Si_0.08 | 9482 | 0.0349 | 47/1024 (1/3 strata n<10) | 1135/48/48/6 | 989 [542, 1436] | 182 [0, 394] | 0.0490 | +1.409 [-0.330, +3.432] | 0.0637 | 0.0829 | +1.925 |
+| genova/S+Si_0.09 | 6909 | 0.0307 | 48/1024 (1/3 strata n<10) | 1103/51/51/9 | 1073 [650, 1496] | 272 [20, 524] | 0.0606 | +2.994 [-0.167, +6.156] | 0.0597 | 0.1046 | +4.495 |
+| genova/S+Si_0.10 | 4864 | 0.0288 | 47/1024 (1/3 strata n<10) | 1210/41/41/10 | 896 [459, 1332] | 311 [34, 588] | 0.0783 | +4.953 [+0.148, +9.757] | 0.0587 | 0.1375 | +7.878 |
+| genova/S+Si_0.11 | 3058 | 0.0271 | 46/1024 (2/3 strata n<10) | 1116/34/34/3 | 728 [316, 1140] | 95 [0, 197] | 0.0470 | +1.987 [-0.522, +4.684] | 0.0563 | 0.0808 | +2.453 |
+| genova/S+Si_0.12 | 1980 | 0.0273 | 40/1024 (1/2 strata n<10) | 1207/27/27/9 | 693 [307, 1080] | 284 [49, 519] | 0.1264 | +9.914 [+1.138, +18.691] | 0.0541 | 0.1998 | +14.571 |
+| genova/Si | 39430 | 0.0043 | 30/422 (2/3 strata n<10) | 308/20/20/0 | 109 [0, 272] | 0 [0, 0] | 0.0043 | -0.001 [-0.001, -0.001] | 0.0000 | 0.0000 | +0.000 |
+| margot/S | 13168 | 0.3852 | 49/1024 (2/4 strata n<10) | 1208/27/27/7 | 387 [171, 603] | 84 [0, 168] | 0.3804 | -0.480 [-1.097, +0.137] | 0.4504 | 0.4426 | -0.775 |
+| margot/S+Si_0.00 | 13109 | 0.3863 | 49/1024 (2/4 strata n<10) | 1358/23/23/0 | 295 [157, 433] | 0 [0, 0] | 0.3778 | -0.851 [-0.851, -0.851] | 0.4506 | 0.4391 | -1.153 |
+| margot/S+Si_0.01 | 13208 | 0.3563 | 47/1024 (1/3 strata n<10) | 1148/26/26/5 | 454 [266, 642] | 68 [0, 155] | 0.3494 | -0.689 [-1.185, -0.047] | 0.4118 | 0.4017 | -1.004 |
+| margot/S+Si_0.02 | 13373 | 0.3276 | 48/1024 (1/3 strata n<10) | 1335/29/29/7 | 511 [266, 755] | 100 [16, 185] | 0.3228 | -0.482 [-1.091, +0.126] | 0.3817 | 0.3738 | -0.789 |
+| margot/S+Si_0.03 | 13291 | 0.3038 | 47/1024 (1/3 strata n<10) | 1203/38/38/9 | 488 [294, 681] | 87 [22, 151] | 0.2993 | -0.447 [-0.916, +0.022] | 0.3495 | 0.3425 | -0.697 |
+| margot/S+Si_0.04 | 13412 | 0.2809 | 48/1024 (1/3 strata n<10) | 1232/44/44/6 | 617 [369, 864] | 35 [0, 79] | 0.2710 | -0.987 [-1.235, -0.675] | 0.3267 | 0.3130 | -1.373 |
+| margot/S+Si_0.05 | 13195 | 0.2634 | 48/1024 (1/3 strata n<10) | 1337/30/30/3 | 288 [144, 432] | 39 [0, 84] | 0.2606 | -0.277 [-0.563, +0.061] | 0.3047 | 0.3005 | -0.421 |
+| margot/S+Si_0.06 | 13266 | 0.2467 | 48/1024 (1/3 strata n<10) | 1138/29/29/2 | 393 [184, 603] | 8 [0, 18] | 0.2402 | -0.648 [-0.710, -0.578] | 0.2856 | 0.2768 | -0.876 |
+| margot/S+Si_0.07 | 13268 | 0.2337 | 47/1024 (1/3 strata n<10) | 1173/44/44/4 | 631 [356, 905] | 30 [0, 72] | 0.2253 | -0.843 [-1.061, -0.543] | 0.2712 | 0.2595 | -1.167 |
+| margot/S+Si_0.08 | 13143 | 0.2221 | 47/1024 (1/3 strata n<10) | 1061/69/69/13 | 1102 [706, 1498] | 116 [0, 246] | 0.2130 | -0.907 [-1.718, +0.011] | 0.2570 | 0.2435 | -1.345 |
+| margot/S+Si_0.09 | 12993 | 0.2107 | 48/1024 (1/3 strata n<10) | 976/51/51/8 | 508 [278, 739] | 85 [0, 212] | 0.2090 | -0.165 [-0.793, +0.778] | 0.2421 | 0.2389 | -0.323 |
+| margot/S+Si_0.10 | 13017 | 0.1990 | 48/1024 (1/3 strata n<10) | 1045/52/52/5 | 867 [509, 1224] | 71 [0, 197] | 0.1917 | -0.730 [-1.242, +0.179] | 0.2305 | 0.2199 | -1.063 |
+| margot/S+Si_0.11 | 13280 | 0.1866 | 48/1024 (1/3 strata n<10) | 1113/62/62/3 | 931 [542, 1319] | 70 [0, 166] | 0.1793 | -0.733 [-1.222, -0.051] | 0.2200 | 0.2089 | -1.109 |
+| margot/S+Si_0.12 | 13163 | 0.1813 | 48/1024 (1/3 strata n<10) | 1092/50/50/0 | 568 [239, 897] | 0 [0, 0] | 0.1738 | -0.750 [-0.750, -0.750] | 0.2097 | 0.1997 | -0.997 |
+| margot/Si | 16747 | 0.0376 | 41/766 | 1189/0/0/0 | 0 [0, 0] | 0 [0, 0] | 0.0376 | +0.000 [+0.000, +0.000] | 0.0000 | 0.0000 | +0.000 |
+
+Interpretation (regression-class, UNAUDITED): the recovered rows are mostly
+no-snow (88%), so wherever the published snow fraction is high (margot,
+0.18–0.39) adding them dilutes it: margot moves down by 0.2–1.0 pp
+everywhere. Where the published fraction is low and the denominator small
+(genova S+Si >= 0.08, 2,000–9,500 rows) a few dozen recovered snow rows at
+ricb >= 1.75 Mm raise it by several pp with wide CIs. Against the 2026-10-03
+note's 39-row result (max +0.05 pp) this is the population-scale answer:
+magnitudes of order 1 pp, direction composition-dependent, not negligible
+for margot — but 20/135 of the snow rows are start-dependent (section 3.2),
+so the genova upticks in particular should not be quoted without the
+cold-start caveat.
 
 ## 5. Si-only admissible-zero question
 
@@ -188,10 +260,12 @@ Mechanism (read-only, file:line at HEAD `d7d9941`):
   row is then tagged `error_code 4` by `pie/driverp.py:288`
   (`chi_li < 0` → CHI_OUTSIDE_ADMISSIBLE_BOX) and excluded as inadmissible.
 
-Does the re-run change the answer? Pilot: 0 converged Si rows beyond the
-stop (4 runs). Main run: see section 4's table and
-`main_snowfraction.json::si_only_admissible_snow_runs` (filled on
-completion). Mechanistically the answer cannot change: an admissible Si row
+Does the re-run change the answer? **No.** Main run: 71 Si runs sampled,
+1,497 beyond-stop radii attempted, 20 converged (all genova, ricb 1.1–1.65
+Mm, chi_Si_icb 0.0014–0.022, inside the box), **0 snow-bearing**; margot Si
+recovered nothing (`main_snowfraction.json::si_only_admissible_snow_runs`
+is empty). Admissible-only Si snow fraction stays exactly 0 in both MOIs.
+Mechanistically the answer cannot change: an admissible Si row
 needs 0 <= chi_Si_icb <= 0.12, and in that range the Edmund Si liquidus along
 the adiabat does not produce chi increasing outward in any published row,
 so `isnow` stays 0. Whether the negative-chi snow rows are "real" is a
@@ -215,7 +289,14 @@ physics question for rafael-santos, not settled here.
 - 335/1,153 pre-stop rows that v1.0.5 converged but v1.6.0 does not: the
   "after" dataset is not published + additions; a true re-publication would
   change existing rows too. This note only adds rows (as the brief asked).
-- Root non-uniqueness (1/95 rows): recovered rows depend on the start.
-- Long-tail jobs cut at 1,200 s lose their upper radii (counted as zero).
+- Root non-uniqueness (28/977 recovered rows, 20/135 snow rows, and one
+  pre-stop run at rel diff 45): recovered rows depend on the start; the
+  genova high-chi upticks rest on a few dozen such rows.
+- 52 jobs cut at 1,200 s and 326 crashed mid-sweep lose their upper radii
+  (counted as zero) — where the snow rows are.
+- The delta CI propagates only the variance of S (A fixed); zero-snow
+  classes show a degenerate CI. A proper ratio-estimator CI would be wider.
+- Per-composition n is 40–50 runs over 2–4 strata; strata with n<10 are
+  flagged and are direction-only.
 - 7 strata with N_h < 10 and the pilot's per-stratum n: direction only.
 - Same-code-family comparison; no independent oracle (rule 5).
