@@ -113,6 +113,13 @@ check treats a killed draw as finished -- README).
   Collapses what were drafted across PRs #52-#59 as three separate entries
   (v1.6.0/v1.6.1/v1.6.2) into this one tag, the only one actually cut — see
   CHANGELOG.md for the per-change breakdown (Breaking/Fixed/Performance).
+- v1.6.1 (2026-10-04): patch, full release ceremony (owner-requested, not the
+  lighter patch cadence). Board item 30 (`pie/shootp.py` non-finite ICB
+  density now raises `SolverError` code 7 instead of an uncaught `ValueError`
+  that killed the whole sweep; `pie/robust_runner.py::run_one_job` counts csv
+  rows whenever the file exists, not only on `returncode == 0`) plus item 29a
+  (stale-lock reclaim race fix, landed after v1.6.0 but not yet changelogged).
+  No API/behaviour-breaking change, no numerical-output change.
 
 ## Known correctness caveats
 

@@ -2,6 +2,97 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
 
+* v1.6.1; 20261004; patch, two independent crash/observability fixes to
+  `pie/robust_runner.py` and `pie/shootp.py`, both landed on `main` since
+  v1.6.0 and released here for the first time (neither was in any prior
+  CHANGELOG entry). No API/behaviour-breaking change; no change to any
+  converged numerical output. Grant: patch release, owner-authorized
+  explicit full-ceremony run (not the lighter patch cadence), under the
+  standing "unattended-merge grant ... for v1.x patch/minor releases"
+  (CHANGELOG v1.4.0 entry, owner-approved 2026-10-02, still in effect).
+  * **Fixed** (board item 30, PR #72 squash `133967a`, closed PR #73 squash
+    `c2246f0`): `pie/shootp.py::shoot_mercmodel` could build a non-finite
+    ODE initial state `y0` when a bounded-line-search Newton trial iterate
+    pushed `eosInnerCore` outside its domain; `scipy.integrate.solve_ivp`
+    then raised a bare `ValueError` that `pie/driverp.py`'s per-radius
+    `except lc.SolverError` handler did not catch, killing the whole sweep
+    process and losing every remaining radius (observed in 326/1,400
+    sampled jobs, 23%, during the item-18a population re-run). `y0` is now
+    checked for finiteness immediately before `solve_ivp` and raises a new
+    `SolverError(ErrorCode.NONFINITE_ICB_DENSITY, code 7)`
+    (`pie/globalvar.py`) -- inside the line search this is a rejected
+    trial, at the Newton level a per-radius failure row, and the sweep
+    continues; no blanket `except ValueError` was added anywhere (verified
+    by victor-reyes's and lars-eriksson's audits). README's error-code
+    table gains row 7. Regression tests:
+    `testsys/integration/test_item30_nonfinite_icb_density_crash.py`,
+    `testsys/integration/test_item30_robust_runner_hides_partial_rows.py`.
+  * **Fixed** (same PR #72): `pie/robust_runner.py::run_one_job` only read
+    the per-job csv back (`summarize_error_codes`, sets `n_rows`) when
+    `returncode == 0`; a job that crashed mid-sweep (e.g. the item-30 bug
+    above, or any other nonzero-exit case) reported `n_rows=0` regardless
+    of rows actually written before the crash, hiding real partial output
+    from monitoring/resume logic. Now reads the csv whenever it exists,
+    regardless of return code; status semantics unchanged (nonzero rc is
+    still `PROCESS_CRASHED`). Observability/operational only -- no change
+    to any convergence result.
+  * **Fixed** (board item 29a, PR #62 squash `0454817`, landed after the
+    v1.6.0 tag and not previously changelogged): `pie/robust_runner.py`'s
+    stale-lock reclaim was not atomic -- two reclaimers could both pass the
+    staleness check on the same dead-pid lock, then race `_release_lock`'s
+    unconditional `os.remove` against a third process's fresh re-acquire,
+    letting two runners believe they held the same job's lock (the exact
+    double-truncation failure mode item 26's lock was built to prevent).
+    `_acquire_lock` now returns a per-claimant token recorded in the lock
+    JSON; `_reclaim_stale_lock` takes an `fcntl.flock` on a sibling mutex
+    file and re-checks staleness inside the critical section, swapping the
+    stale file via `os.replace` (lock path never momentarily absent);
+    `_release_lock` is compare-then-delete when given a token. Narrow
+    trigger (a prior crash plus two reclaimers racing within a few
+    syscalls); not hit in CI or any gate run to date, but load-bearing for
+    large concurrent TACC/knox batches. New test:
+    `testsys/unit/test_robust_runner_item29a.py` (5 cases, red/green
+    verified both ways).
+  * **Housekeeping, also shipping in this tag for the first time since
+    v1.6.0** (testsys-only, not user-facing): item 29b
+    (`testsys/reference/perf_v1.3.3/generate_real_quad_calls.py`'s stale
+    `sys.path.insert(0, ROOT/"src")` replaced with package-style
+    `importlib.import_module("pie....")` imports, post item-28e rename)
+    and item 28h (`testsys/conftest.py` fully deleted; `testsys/pielib.py`
+    is now loaded as a pytest plugin via `testsys/pytest.ini`).
+  * **Not in this release, but committed to `main` in the same window and
+    worth flagging for the record**: item 18/18a's population-census and
+    snow-fraction re-analysis (`docs/notes/item18_snowfraction_2026-10-03.md`,
+    `docs/notes/item18a_population_rerun_2026-10-03.md` and their
+    `_scripts/` directories) -- these are research data/docs, not `pie/`
+    code, audited AUDITED-PASS by priya-nair, but the owner's erratum/
+    comment decision for coauthors is still open; no number has been sent
+    to any coauthor. Item 31 (convergence regression vs v1.0.5, 6,964/
+    23,608 pre-stop radii) is open, unconfirmed root cause, awaiting an
+    owner scope decision -- explicitly not touched by this patch.
+  * No refactor pass was dispatched for this release: the net production
+    diff is ~30 lines across the item-30 fix plus the already-landed item-
+    29a fix, and both audits (zofia-kaminska rule-book, victor-reyes
+    technical) came back clean-or-low/advisory-only, so a kai-fischer pass
+    was judged unnecessary rather than skipped.
+  * Two Low-severity residual risks noted by victor-reyes, both
+    non-blocking per his own verdict (re-confirmed here): (1) a density
+    that goes non-finite *during* `solve_ivp` integration rather than at
+    the initial state is still mislabeled under error code 2/3 instead of
+    7 -- undercounts code-7 stats, does not crash; (2) a retried job
+    crashing before `pie/main.py:152`'s csv truncation can report a stale
+    previous attempt's row count under `PROCESS_CRASHED`, a log-only
+    exposure. Two Advisory items, also non-blocking: stale docstrings
+    mentioning "codes 1-5" for retry logic; NaN/Infinity appearing in JSON
+    solver-log context dicts (not strict-JSON).
+  * zofia-kaminska's Mode B rule-book audit found no new violations in this
+    patch's blast radius. One pre-existing Tier-3 unenforceable-as-written
+    finding, not introduced by this patch: no branch protection configured
+    on `main`, so rule 13's "green CI on merge SHA" gate is operator-
+    discipline-only today, not mechanically enforced.
+  * Gate: fresh `testsys/run.py unit contract integration` (fast tier) on
+    the pinned py3.12 venv, this exact tree -- see Work record below for
+    the count. CI: see "CI run this release was gated on" below.
 * v1.6.0; 20261003; owner correction 2026-10-03: collapses what were
   drafted across PRs #52-#59 as three separate entries (v1.6.0/v1.6.1/
   v1.6.2) into this single release -- none of those three was ever tagged
