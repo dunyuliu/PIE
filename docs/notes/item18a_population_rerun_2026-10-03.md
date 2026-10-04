@@ -15,7 +15,7 @@ Works with caveats. Census complete and cross-checked; full census-level
 re-run infeasible on knox (~100 h wall), so a stratified size-weighted sample
 of 1,400 runs (93 strata) was re-run in 4.2 h. Population-scaled result
 (section 4): the discarded runs add an estimated ~18,000 admissible rows
-(+3.8% on 474,075) and ~2,300 snow rows; **margot** snow fractions move
+(+3.8% on 474,075) and ~2,600 snow rows; **margot** snow fractions move
 **down** by 0.2–1.0 pp in every composition (CI95 excludes zero for S+Si
 0.01, 0.04, 0.06, 0.07, 0.11, and the zero-snow classes S+Si 0.00/0.12);
 **genova** S and low-chi S+Si move by |delta| <= 0.3 pp, while genova S+Si
@@ -183,8 +183,8 @@ over non-finished runs in that (moi, composition); "(k/m strata n<10)" flags
 strata that are direction-only; A and S are population totals (weighted);
 the delta CI propagates the variance of S only (A treated as fixed, so
 zero-snow classes show a degenerate CI); both denominators as in the
-predecessor note. Population totals: **A ≈ 18,300 added admissible rows
-(+3.9% on 474,075), S ≈ 2,300 added snow rows.** Numbers below are
+predecessor note. Population totals: **A ≈ 18,310 added admissible rows
+(+3.9% on 474,075), S ≈ 2,580 added snow rows.** Numbers below are
 weighted estimates from 1,400 sampled runs, truncated by the 326 crashes and
 52 timeouts (which bias A and S low, mostly at ricb >= 1.55 Mm — exactly
 where the snow rows concentrate).
