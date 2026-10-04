@@ -1,5 +1,21 @@
 # Item 31(b) — non-box differential: the error_code 1/2 ("not code 4") share of the regressed population — 2026-10-04
 
+**AUDITED-PASS (lars-eriksson + priya-nair, 2026-10-04, PR #82 comment
+https://github.com/dunyuliu/PIE/pull/82#issuecomment-5984745161).**
+lars-eriksson independently confirmed `verify_v105_root_v2.py` faithfully
+reproduces HEAD's three production acceptance checks (`pie/shootp.py`'s
+`mercmodel_box` + `pie/driverp.py:287-288`'s chi>=0 post-check +
+`pie/driverp.py:252`'s rs>=rcmb check) against the real source, file:line,
+no discrepancies. priya-nair independently re-derived all four headline
+counts (864 matched candidates, 138/138 code-4 correctly-rejects, the one
+matched code-1 case's `full_head_accept=True`, 0 code-2 samples) directly
+from the raw `classification_v2*.json`, not from this note's prose -- all
+CONFIRMED exactly. One caveat from lars (hardcoded Edmund liquidus model)
+is moot for this pilot's actual sample (all 30 Si-only candidates have
+chi_Si_icb=0.00) but is NOT moot for the next, code-1/2-direct-sampling
+phase (S/Si/S+Si under both Edmund and Steinbruegge) -- that phase's
+verifier must read `liquidus_eq` per-row, logged as a precondition there.
+
 **Follow-up to item 31** (`docs/notes/item31_v1.0.5_parity_pilot_2026-10-04.md`,
 PR #79, conductor-corrected). That note's corrected verdict stands and is
 **not re-opened here**; this is a separate investigation into the part of
