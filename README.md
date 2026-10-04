@@ -32,6 +32,10 @@ and untested, and testsys/'s pinned-venv contract test
 (`testsys/contract/test_gate_runs_in_pinned_venv.py`) will fail the gate
 rather than silently accept it.
 
+Run `git config core.hooksPath .githooks` once after cloning to enable the
+local pre-commit hook that blocks machine-local path leaks before they reach
+CI (opt-in per clone; see `.githooks/pre-commit`).
+
 `pie` is now an installed package (board item 28e), run as a console
 script or via `-m`, from anywhere -- not a flat `src/` directory you `cd`
 into. Outputs are written to `./results/`, relative to your current

@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Pre-commit hook: block machine-local path leaks before they reach CI.
+#
+# Mirrors testsys/contract/test_repo_hygiene.py::test_no_machine_local_paths_in_tracked_files
+# exactly (same regex, same `update_log` exemption) but runs only against
+# staged files, so it stays fast (~seconds, not a full pytest run).
+#
+# Enable with:  git config core.hooksPath .githooks
+#
+# This hook does not replace testsys/contract/test_repo_hygiene.py -- that
+# test remains the real CI gate. This only catches the leak earlier.
+
+set -euo pipefail
+
+python3 - <<'PYEOF'
+import re
+import subprocess
+import sys
+
+# Must stay byte-identical to the pattern in
+# testsys/contract/test_repo_hygiene.py::test_no_machine_local_paths_in_tracked_files
+PAT = re.compile(r"/home/(utig5|staff)/|/tmp/claude-\d")
+
+result = subprocess.run(
+    ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
+    stdout=subprocess.PIPE, text=True, check=True,
+)
+staged = [f for f in result.stdout.split("\n") if f]
+
+offenders = []  # list of (path, line_no, line_text)
+for path in staged:
+    if path == "update_log":
+        continue
+    show = subprocess.run(
+        ["git", "show", f":{path}"],
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+    )
+    if show.returncode != 0:
+        # Not a regular text blob readable this way (e.g. submodule); skip.
+        continue
+    for lineno, line in enumerate(show.stdout.split("\n"), start=1):
+        if PAT.search(line):
+            offenders.append((path, lineno, line.strip()))
+
+if offenders:
+    print("pre-commit: BLOCKED -- machine-local path(s) found in staged files:",
+          file=sys.stderr)
+    for path, lineno, line in offenders:
+        print(f"  {path}:{lineno}: {line}", file=sys.stderr)
+    print(
+        "Remove the machine-local path(s) above before committing "
+        "(see testsys/contract/test_repo_hygiene.py).",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+sys.exit(0)
+PYEOF
