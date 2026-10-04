@@ -246,3 +246,46 @@ dispatching session rather than removing a live child's worktree.
   direct pushes to `main` for these files. Commit `29361f6` (the prior
   cleanup log entry) is left as-is since it predates the rule; every log/board
   update after this one goes through a PR.
+
+## Item 18(b) landed + worktree reap (2026-10-04)
+
+- PR #75 (`docs(item18b): paper-figure impact...`, squash `1cf831e`): jordan-kim's
+  paper-filter recompute (`item18b_paper_filter_recompute_2026-10-04.md`) +
+  marta-silva's side-by-side figure regeneration (`item18b_figure_comparison_2026-10-04.md`,
+  17 PNGs), rebased onto current main before push (gate axis 4 caught a
+  stale-base artifact: the branch's merge-base predated my `29361f6`/`3f562e3`
+  session-log commits, so a raw diffstat showed 57 spurious deletions in
+  `SESSION_LOG_2026-10-03_run15.md` that neither author touched -- rebase
+  resolved it to a pure-additive 27-file/0-deletion diff).
+- CI caught a real repo-hygiene violation on first push (`fast` failed):
+  4 scripts (jordan-kim's `analyze.py`/`trace.py`, marta-silva's
+  `build_rowsets.py`/`make_figures.py`) hardcoded `/home/<user>/...` absolute
+  paths. Fixed directly (both authors finished, not live; mechanical,
+  self-verified per rule -- `ZEN` now uses the project's `~/shared_dataset`
+  expanduser convention, `ITEM18A` resolves relative to the script's own
+  location, `RESULTS` reads `PIE_ITEM18A_RAW_RESULTS` with no machine-specific
+  default); re-ran `analyze.py` with the env var set against the real item-18a
+  raw output and confirmed `item18b_results.json` reproduces byte-identical --
+  pure path fix, not a behavior change, so not re-audited. CI green on retry
+  (291 passed on `fast`, same as before the fix, +1 hygiene test now passing).
+- priya-nair audited PR #75 before merge (owner's explicit audit-before-merge
+  order, same as #70): all 5 claim categories PASS, independently re-derived
+  to 3+ sig figs from her own query of the raw CSVs (not the authors' script
+  output) -- predicate text at Zenodo file:line, isnow-mismatch percentages,
+  the Fig2 headline delta, the population-total cross-check, and the
+  read-only-Zenodo check. Flagged per rule 5: still same-code-family, not an
+  independent truth oracle. Posted as PR #75 comment before merge.
+- PR #76 (`Board: add item 32...`, squash `6ab15f1`): board row only, through
+  its own PR per the new rule, CI green, merged.
+- Reaped (content confirmed fully landed on main via `git diff origin/main
+  <branch> --stat` on each, zero unlanded unique work): worktree
+  `agent-a7d2fd536939b904f` (item-18a's 2.7GB raw results, held pending this
+  audit, now freed -- its committed deliverables already live at
+  `docs/notes/item18a_population_rerun_2026-10-03_scripts/`, nothing to copy
+  out), worktree `agent-ac134d96bd0721c4c` (jordan-kim, held pending this
+  audit), and the scratchpad worktree for `marta-silva/item18b-figure-comparison`
+  (my own merge-prep clone, branch now squash-merged + remote-deleted). Local
+  branches `worktree-agent-a7d2fd536939b904f` / `worktree-agent-ac134d96bd0721c4c`
+  deleted. No worktrees remain open.
+- Item 18 (owner erratum/comment decision) and item 31 (convergence
+  regression) remain open, parked for the owner. No number sent to coauthors.
