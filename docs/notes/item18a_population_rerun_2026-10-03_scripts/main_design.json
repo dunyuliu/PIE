@@ -1,0 +1,384 @@
+{
+ "name": "main",
+ "n_requested": 1400,
+ "n_sampled": 1400,
+ "floor": 8,
+ "seed": 20261004,
+ "frame_size": 29860,
+ "n_strata": 93,
+ "excluded_manifest": null,
+ "strata": {
+  "genova|S|crash_at_1.95Mm": {
+   "N_h": 3,
+   "n_h": 3
+  },
+  "genova|S|crash_lt_1.95Mm": {
+   "N_h": 180,
+   "n_h": 12
+  },
+  "genova|S|detJ0": {
+   "N_h": 779,
+   "n_h": 26
+  },
+  "genova|S|newton_maxit": {
+   "N_h": 62,
+   "n_h": 9
+  },
+  "genova|S+Si_0.00|crash_at_1.95Mm": {
+   "N_h": 3,
+   "n_h": 3
+  },
+  "genova|S+Si_0.00|crash_lt_1.95Mm": {
+   "N_h": 181,
+   "n_h": 12
+  },
+  "genova|S+Si_0.00|detJ0": {
+   "N_h": 778,
+   "n_h": 26
+  },
+  "genova|S+Si_0.00|newton_maxit": {
+   "N_h": 62,
+   "n_h": 9
+  },
+  "genova|S+Si_0.01|crash_lt_1.95Mm": {
+   "N_h": 223,
+   "n_h": 13
+  },
+  "genova|S+Si_0.01|detJ0": {
+   "N_h": 735,
+   "n_h": 25
+  },
+  "genova|S+Si_0.01|newton_maxit": {
+   "N_h": 66,
+   "n_h": 9
+  },
+  "genova|S+Si_0.02|crash_lt_1.95Mm": {
+   "N_h": 274,
+   "n_h": 14
+  },
+  "genova|S+Si_0.02|detJ0": {
+   "N_h": 671,
+   "n_h": 24
+  },
+  "genova|S+Si_0.02|newton_maxit": {
+   "N_h": 79,
+   "n_h": 10
+  },
+  "genova|S+Si_0.03|crash_lt_1.95Mm": {
+   "N_h": 323,
+   "n_h": 15
+  },
+  "genova|S+Si_0.03|detJ0": {
+   "N_h": 627,
+   "n_h": 23
+  },
+  "genova|S+Si_0.03|newton_maxit": {
+   "N_h": 74,
+   "n_h": 10
+  },
+  "genova|S+Si_0.04|crash_lt_1.95Mm": {
+   "N_h": 398,
+   "n_h": 17
+  },
+  "genova|S+Si_0.04|detJ0": {
+   "N_h": 563,
+   "n_h": 21
+  },
+  "genova|S+Si_0.04|newton_maxit": {
+   "N_h": 63,
+   "n_h": 9
+  },
+  "genova|S+Si_0.05|crash_lt_1.95Mm": {
+   "N_h": 532,
+   "n_h": 20
+  },
+  "genova|S+Si_0.05|detJ0": {
+   "N_h": 448,
+   "n_h": 18
+  },
+  "genova|S+Si_0.05|newton_maxit": {
+   "N_h": 44,
+   "n_h": 9
+  },
+  "genova|S+Si_0.06|crash_lt_1.95Mm": {
+   "N_h": 616,
+   "n_h": 22
+  },
+  "genova|S+Si_0.06|detJ0": {
+   "N_h": 369,
+   "n_h": 16
+  },
+  "genova|S+Si_0.06|newton_maxit": {
+   "N_h": 39,
+   "n_h": 9
+  },
+  "genova|S+Si_0.07|crash_lt_1.95Mm": {
+   "N_h": 710,
+   "n_h": 24
+  },
+  "genova|S+Si_0.07|detJ0": {
+   "N_h": 292,
+   "n_h": 15
+  },
+  "genova|S+Si_0.07|newton_maxit": {
+   "N_h": 22,
+   "n_h": 8
+  },
+  "genova|S+Si_0.08|crash_lt_1.95Mm": {
+   "N_h": 789,
+   "n_h": 26
+  },
+  "genova|S+Si_0.08|detJ0": {
+   "N_h": 223,
+   "n_h": 13
+  },
+  "genova|S+Si_0.08|newton_maxit": {
+   "N_h": 12,
+   "n_h": 8
+  },
+  "genova|S+Si_0.09|crash_lt_1.95Mm": {
+   "N_h": 846,
+   "n_h": 28
+  },
+  "genova|S+Si_0.09|detJ0": {
+   "N_h": 163,
+   "n_h": 12
+  },
+  "genova|S+Si_0.09|newton_maxit": {
+   "N_h": 15,
+   "n_h": 8
+  },
+  "genova|S+Si_0.10|crash_lt_1.95Mm": {
+   "N_h": 902,
+   "n_h": 29
+  },
+  "genova|S+Si_0.10|detJ0": {
+   "N_h": 113,
+   "n_h": 10
+  },
+  "genova|S+Si_0.10|newton_maxit": {
+   "N_h": 9,
+   "n_h": 8
+  },
+  "genova|S+Si_0.11|crash_lt_1.95Mm": {
+   "N_h": 950,
+   "n_h": 30
+  },
+  "genova|S+Si_0.11|detJ0": {
+   "N_h": 67,
+   "n_h": 9
+  },
+  "genova|S+Si_0.11|newton_maxit": {
+   "N_h": 7,
+   "n_h": 7
+  },
+  "genova|S+Si_0.12|crash_lt_1.95Mm": {
+   "N_h": 978,
+   "n_h": 31
+  },
+  "genova|S+Si_0.12|detJ0": {
+   "N_h": 46,
+   "n_h": 9
+  },
+  "genova|Si|crash_at_1.95Mm": {
+   "N_h": 368,
+   "n_h": 16
+  },
+  "genova|Si|crash_lt_1.95Mm": {
+   "N_h": 5,
+   "n_h": 5
+  },
+  "genova|Si|newton_maxit": {
+   "N_h": 49,
+   "n_h": 9
+  },
+  "margot|S|crash_at_1.95Mm": {
+   "N_h": 1,
+   "n_h": 1
+  },
+  "margot|S|crash_lt_1.95Mm": {
+   "N_h": 132,
+   "n_h": 11
+  },
+  "margot|S|detJ0": {
+   "N_h": 841,
+   "n_h": 28
+  },
+  "margot|S|newton_maxit": {
+   "N_h": 50,
+   "n_h": 9
+  },
+  "margot|S+Si_0.00|crash_at_1.95Mm": {
+   "N_h": 1,
+   "n_h": 1
+  },
+  "margot|S+Si_0.00|crash_lt_1.95Mm": {
+   "N_h": 134,
+   "n_h": 11
+  },
+  "margot|S+Si_0.00|detJ0": {
+   "N_h": 840,
+   "n_h": 28
+  },
+  "margot|S+Si_0.00|newton_maxit": {
+   "N_h": 49,
+   "n_h": 9
+  },
+  "margot|S+Si_0.01|crash_lt_1.95Mm": {
+   "N_h": 149,
+   "n_h": 11
+  },
+  "margot|S+Si_0.01|detJ0": {
+   "N_h": 834,
+   "n_h": 27
+  },
+  "margot|S+Si_0.01|newton_maxit": {
+   "N_h": 41,
+   "n_h": 9
+  },
+  "margot|S+Si_0.02|crash_lt_1.95Mm": {
+   "N_h": 172,
+   "n_h": 12
+  },
+  "margot|S+Si_0.02|detJ0": {
+   "N_h": 810,
+   "n_h": 27
+  },
+  "margot|S+Si_0.02|newton_maxit": {
+   "N_h": 42,
+   "n_h": 9
+  },
+  "margot|S+Si_0.03|crash_lt_1.95Mm": {
+   "N_h": 193,
+   "n_h": 12
+  },
+  "margot|S+Si_0.03|detJ0": {
+   "N_h": 791,
+   "n_h": 26
+  },
+  "margot|S+Si_0.03|newton_maxit": {
+   "N_h": 40,
+   "n_h": 9
+  },
+  "margot|S+Si_0.04|crash_lt_1.95Mm": {
+   "N_h": 221,
+   "n_h": 13
+  },
+  "margot|S+Si_0.04|detJ0": {
+   "N_h": 771,
+   "n_h": 26
+  },
+  "margot|S+Si_0.04|newton_maxit": {
+   "N_h": 32,
+   "n_h": 9
+  },
+  "margot|S+Si_0.05|crash_lt_1.95Mm": {
+   "N_h": 244,
+   "n_h": 14
+  },
+  "margot|S+Si_0.05|detJ0": {
+   "N_h": 746,
+   "n_h": 25
+  },
+  "margot|S+Si_0.05|newton_maxit": {
+   "N_h": 34,
+   "n_h": 9
+  },
+  "margot|S+Si_0.06|crash_lt_1.95Mm": {
+   "N_h": 274,
+   "n_h": 14
+  },
+  "margot|S+Si_0.06|detJ0": {
+   "N_h": 712,
+   "n_h": 25
+  },
+  "margot|S+Si_0.06|newton_maxit": {
+   "N_h": 38,
+   "n_h": 9
+  },
+  "margot|S+Si_0.07|crash_lt_1.95Mm": {
+   "N_h": 301,
+   "n_h": 15
+  },
+  "margot|S+Si_0.07|detJ0": {
+   "N_h": 696,
+   "n_h": 24
+  },
+  "margot|S+Si_0.07|newton_maxit": {
+   "N_h": 27,
+   "n_h": 8
+  },
+  "margot|S+Si_0.08|crash_lt_1.95Mm": {
+   "N_h": 315,
+   "n_h": 15
+  },
+  "margot|S+Si_0.08|detJ0": {
+   "N_h": 681,
+   "n_h": 24
+  },
+  "margot|S+Si_0.08|newton_maxit": {
+   "N_h": 28,
+   "n_h": 8
+  },
+  "margot|S+Si_0.09|crash_lt_1.95Mm": {
+   "N_h": 340,
+   "n_h": 16
+  },
+  "margot|S+Si_0.09|detJ0": {
+   "N_h": 646,
+   "n_h": 23
+  },
+  "margot|S+Si_0.09|newton_maxit": {
+   "N_h": 38,
+   "n_h": 9
+  },
+  "margot|S+Si_0.10|crash_lt_1.95Mm": {
+   "N_h": 373,
+   "n_h": 17
+  },
+  "margot|S+Si_0.10|detJ0": {
+   "N_h": 630,
+   "n_h": 23
+  },
+  "margot|S+Si_0.10|newton_maxit": {
+   "N_h": 21,
+   "n_h": 8
+  },
+  "margot|S+Si_0.11|crash_lt_1.95Mm": {
+   "N_h": 394,
+   "n_h": 17
+  },
+  "margot|S+Si_0.11|detJ0": {
+   "N_h": 597,
+   "n_h": 22
+  },
+  "margot|S+Si_0.11|newton_maxit": {
+   "N_h": 33,
+   "n_h": 9
+  },
+  "margot|S+Si_0.12|crash_lt_1.95Mm": {
+   "N_h": 434,
+   "n_h": 18
+  },
+  "margot|S+Si_0.12|detJ0": {
+   "N_h": 557,
+   "n_h": 21
+  },
+  "margot|S+Si_0.12|newton_maxit": {
+   "N_h": 33,
+   "n_h": 9
+  },
+  "margot|Si|crash_at_1.95Mm": {
+   "N_h": 127,
+   "n_h": 11
+  },
+  "margot|Si|crash_lt_1.95Mm": {
+   "N_h": 445,
+   "n_h": 18
+  },
+  "margot|Si|newton_maxit": {
+   "N_h": 194,
+   "n_h": 12
+  }
+ }
+}

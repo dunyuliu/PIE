@@ -1,0 +1,553 @@
+{
+ "zenodo": "~/shared_dataset/zenodo.16459292/extracted/PIE",
+ "n_runs": 36864,
+ "n_draws_per_moi": 1024,
+ "modes_total": {
+  "crash_lt_1.95Mm": 12028,
+  "si_exceed": 6144,
+  "newton_maxit": 1303,
+  "crash_at_1.95Mm": 503,
+  "detJ0": 16026,
+  "finish": 860
+ },
+ "non_finished_excl_si_exceed": 29860,
+ "non_finished_by_mode": {
+  "crash_lt_1.95Mm": 12028,
+  "newton_maxit": 1303,
+  "crash_at_1.95Mm": 503,
+  "detJ0": 16026
+ },
+ "non_finished_by_moi": {
+  "margot": 15102,
+  "genova": 14758
+ },
+ "radii_beyond_stop_total": 754725,
+ "published_rows_total": 474075,
+ "cross_checks": {
+  "margot": {
+   "runs": 18432,
+   "draws": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 4121,
+    "si_exceed": 3072,
+    "newton_maxit": 700,
+    "crash_at_1.95Mm": 129,
+    "detJ0": 10152,
+    "finish": 258
+   },
+   "launcher_log": "a.log.o2494644",
+   "launcher_counts": {
+    "singular": 4037,
+    "indexerror": 213
+   },
+   "rows_match_log_mismatches": 0,
+   "published_rows": 201633
+  },
+  "genova": {
+   "runs": 18432,
+   "draws": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 7907,
+    "si_exceed": 3072,
+    "crash_at_1.95Mm": 374,
+    "newton_maxit": 603,
+    "detJ0": 5874,
+    "finish": 602
+   },
+   "launcher_log": "a.log.o2491704",
+   "launcher_counts": {
+    "singular": 7749,
+    "indexerror": 532
+   },
+   "rows_match_log_mismatches": 0,
+   "published_rows": 272442
+  }
+ },
+ "per_moi_composition": {
+  "genova/S": {
+   "runs": 1024,
+   "modes": {
+    "crash_at_1.95Mm": 3,
+    "crash_lt_1.95Mm": 180,
+    "detJ0": 779,
+    "newton_maxit": 62
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 18,
+    "50km-1.45Mm": 725,
+    ">=1.5Mm": 281
+   }
+  },
+  "genova/S+Si_0.00": {
+   "runs": 1024,
+   "modes": {
+    "crash_at_1.95Mm": 3,
+    "crash_lt_1.95Mm": 181,
+    "detJ0": 778,
+    "newton_maxit": 62
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 20,
+    "50km-1.45Mm": 723,
+    ">=1.5Mm": 281
+   }
+  },
+  "genova/S+Si_0.01": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 223,
+    "detJ0": 735,
+    "newton_maxit": 66
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 43,
+    "50km-1.45Mm": 602,
+    ">=1.5Mm": 379
+   }
+  },
+  "genova/S+Si_0.02": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 274,
+    "detJ0": 671,
+    "newton_maxit": 79
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 86,
+    "50km-1.45Mm": 487,
+    ">=1.5Mm": 451
+   }
+  },
+  "genova/S+Si_0.03": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 323,
+    "detJ0": 627,
+    "newton_maxit": 74
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 155,
+    "50km-1.45Mm": 361,
+    ">=1.5Mm": 508
+   }
+  },
+  "genova/S+Si_0.04": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 398,
+    "detJ0": 563,
+    "newton_maxit": 63
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 251,
+    "50km-1.45Mm": 276,
+    ">=1.5Mm": 497
+   }
+  },
+  "genova/S+Si_0.05": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 532,
+    "detJ0": 448,
+    "newton_maxit": 44
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 404,
+    "50km-1.45Mm": 189,
+    ">=1.5Mm": 431
+   }
+  },
+  "genova/S+Si_0.06": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 616,
+    "detJ0": 369,
+    "newton_maxit": 39
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 500,
+    "50km-1.45Mm": 132,
+    ">=1.5Mm": 392
+   }
+  },
+  "genova/S+Si_0.07": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 710,
+    "detJ0": 292,
+    "newton_maxit": 22
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 618,
+    "50km-1.45Mm": 80,
+    ">=1.5Mm": 326
+   }
+  },
+  "genova/S+Si_0.08": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 789,
+    "detJ0": 223,
+    "newton_maxit": 12
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 724,
+    "50km-1.45Mm": 48,
+    ">=1.5Mm": 252
+   }
+  },
+  "genova/S+Si_0.09": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 846,
+    "detJ0": 163,
+    "newton_maxit": 15
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 808,
+    "50km-1.45Mm": 32,
+    ">=1.5Mm": 184
+   }
+  },
+  "genova/S+Si_0.10": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 902,
+    "detJ0": 113,
+    "newton_maxit": 9
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 874,
+    "50km-1.45Mm": 14,
+    ">=1.5Mm": 136
+   }
+  },
+  "genova/S+Si_0.11": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 950,
+    "detJ0": 67,
+    "newton_maxit": 7
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 930,
+    "50km-1.45Mm": 9,
+    ">=1.5Mm": 85
+   }
+  },
+  "genova/S+Si_0.12": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 978,
+    "detJ0": 46
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 964,
+    "50km-1.45Mm": 5,
+    ">=1.5Mm": 55
+   }
+  },
+  "genova/S+Si_0.13": {
+   "runs": 1024,
+   "modes": {
+    "si_exceed": 1024
+   },
+   "non_finished_excl_si_exceed": 0,
+   "stage_of_non_finished": {
+    "10m": 1024
+   }
+  },
+  "genova/S+Si_0.14": {
+   "runs": 1024,
+   "modes": {
+    "si_exceed": 1024
+   },
+   "non_finished_excl_si_exceed": 0,
+   "stage_of_non_finished": {
+    "10m": 1024
+   }
+  },
+  "genova/S+Si_0.15": {
+   "runs": 1024,
+   "modes": {
+    "si_exceed": 1024
+   },
+   "non_finished_excl_si_exceed": 0,
+   "stage_of_non_finished": {
+    "10m": 1024
+   }
+  },
+  "genova/Si": {
+   "runs": 1024,
+   "modes": {
+    "crash_at_1.95Mm": 368,
+    "crash_lt_1.95Mm": 5,
+    "finish": 602,
+    "newton_maxit": 49
+   },
+   "non_finished_excl_si_exceed": 422,
+   "stage_of_non_finished": {
+    "10m": 18,
+    "50km-1.45Mm": 14,
+    ">=1.5Mm": 390
+   }
+  },
+  "margot/S": {
+   "runs": 1024,
+   "modes": {
+    "crash_at_1.95Mm": 1,
+    "crash_lt_1.95Mm": 132,
+    "detJ0": 841,
+    "newton_maxit": 50
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 439,
+    "50km-1.45Mm": 487,
+    ">=1.5Mm": 98
+   }
+  },
+  "margot/S+Si_0.00": {
+   "runs": 1024,
+   "modes": {
+    "crash_at_1.95Mm": 1,
+    "crash_lt_1.95Mm": 134,
+    "detJ0": 840,
+    "newton_maxit": 49
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 441,
+    "50km-1.45Mm": 486,
+    ">=1.5Mm": 97
+   }
+  },
+  "margot/S+Si_0.01": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 149,
+    "detJ0": 834,
+    "newton_maxit": 41
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 439,
+    "50km-1.45Mm": 485,
+    ">=1.5Mm": 100
+   }
+  },
+  "margot/S+Si_0.02": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 172,
+    "detJ0": 810,
+    "newton_maxit": 42
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 439,
+    "50km-1.45Mm": 474,
+    ">=1.5Mm": 111
+   }
+  },
+  "margot/S+Si_0.03": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 193,
+    "detJ0": 791,
+    "newton_maxit": 40
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 444,
+    "50km-1.45Mm": 467,
+    ">=1.5Mm": 113
+   }
+  },
+  "margot/S+Si_0.04": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 221,
+    "detJ0": 771,
+    "newton_maxit": 32
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 450,
+    "50km-1.45Mm": 451,
+    ">=1.5Mm": 123
+   }
+  },
+  "margot/S+Si_0.05": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 244,
+    "detJ0": 746,
+    "newton_maxit": 34
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 464,
+    "50km-1.45Mm": 437,
+    ">=1.5Mm": 123
+   }
+  },
+  "margot/S+Si_0.06": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 274,
+    "detJ0": 712,
+    "newton_maxit": 38
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 470,
+    "50km-1.45Mm": 428,
+    ">=1.5Mm": 126
+   }
+  },
+  "margot/S+Si_0.07": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 301,
+    "detJ0": 696,
+    "newton_maxit": 27
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 477,
+    "50km-1.45Mm": 411,
+    ">=1.5Mm": 136
+   }
+  },
+  "margot/S+Si_0.08": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 315,
+    "detJ0": 681,
+    "newton_maxit": 28
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 490,
+    "50km-1.45Mm": 391,
+    ">=1.5Mm": 143
+   }
+  },
+  "margot/S+Si_0.09": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 340,
+    "detJ0": 646,
+    "newton_maxit": 38
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 503,
+    "50km-1.45Mm": 375,
+    ">=1.5Mm": 146
+   }
+  },
+  "margot/S+Si_0.10": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 373,
+    "detJ0": 630,
+    "newton_maxit": 21
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 513,
+    "50km-1.45Mm": 351,
+    ">=1.5Mm": 160
+   }
+  },
+  "margot/S+Si_0.11": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 394,
+    "detJ0": 597,
+    "newton_maxit": 33
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 509,
+    "50km-1.45Mm": 341,
+    ">=1.5Mm": 174
+   }
+  },
+  "margot/S+Si_0.12": {
+   "runs": 1024,
+   "modes": {
+    "crash_lt_1.95Mm": 434,
+    "detJ0": 557,
+    "newton_maxit": 33
+   },
+   "non_finished_excl_si_exceed": 1024,
+   "stage_of_non_finished": {
+    "10m": 516,
+    "50km-1.45Mm": 329,
+    ">=1.5Mm": 179
+   }
+  },
+  "margot/S+Si_0.13": {
+   "runs": 1024,
+   "modes": {
+    "si_exceed": 1024
+   },
+   "non_finished_excl_si_exceed": 0,
+   "stage_of_non_finished": {
+    "10m": 1024
+   }
+  },
+  "margot/S+Si_0.14": {
+   "runs": 1024,
+   "modes": {
+    "si_exceed": 1024
+   },
+   "non_finished_excl_si_exceed": 0,
+   "stage_of_non_finished": {
+    "10m": 1024
+   }
+  },
+  "margot/S+Si_0.15": {
+   "runs": 1024,
+   "modes": {
+    "si_exceed": 1024
+   },
+   "non_finished_excl_si_exceed": 0,
+   "stage_of_non_finished": {
+    "10m": 1024
+   }
+  },
+  "margot/Si": {
+   "runs": 1024,
+   "modes": {
+    "crash_at_1.95Mm": 127,
+    "crash_lt_1.95Mm": 445,
+    "finish": 258,
+    "newton_maxit": 194
+   },
+   "non_finished_excl_si_exceed": 766,
+   "stage_of_non_finished": {
+    "10m": 572,
+    "50km-1.45Mm": 39,
+    ">=1.5Mm": 155
+   }
+  }
+ }
+}

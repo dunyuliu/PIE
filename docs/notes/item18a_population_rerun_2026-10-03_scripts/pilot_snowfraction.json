@@ -1,0 +1,145 @@
+{
+ "summary": {
+  "n_sample": 72,
+  "n_done": 72,
+  "n_rerun_crashed_no_rows": 0,
+  "n_rerun_partial": 25,
+  "rerun_partial_kinds": {
+   "crash_after_rows": 20,
+   "timeout": 5
+  },
+  "rerun_partial_rows_reached": {
+   "crash_after_rows": [
+    31,
+    32,
+    33,
+    33,
+    34,
+    34,
+    34,
+    34,
+    34,
+    34,
+    35,
+    35,
+    35,
+    36,
+    36,
+    36,
+    36,
+    37,
+    37,
+    37
+   ],
+   "timeout": [
+    29,
+    30,
+    34,
+    34,
+    37
+   ]
+  },
+  "rerun_partial_last_lines": {
+   "ValueError: All components of the initial state `y0` must be finite.": 20
+  },
+  "rerun_crashed_by": {},
+  "rerun_crash_last_lines": {},
+  "wall_per_job_s": {
+   "mean": 451.8112636605899,
+   "median": 232.1536214351654,
+   "p90": 396.2315466403961,
+   "max": 3602.058844089508,
+   "total_cpu_s": 32530.41098356247
+  },
+  "by_stage_wall_s": {
+   "10m": 422.62787233988445,
+   "50km-1.45Mm": 434.5733534253162,
+   ">=1.5Mm": 518.7572465570349
+  },
+  "prestop": {
+   "rows": 1153,
+   "max_rel_diff": 0.00028883515344924564,
+   "isnow_mismatch": 0,
+   "rerun_failed": 335
+  },
+  "beyond": {
+   "rows": 1584,
+   "converged": 113,
+   "admissible": 113,
+   "admissible_snow": 8,
+   "runs_with_admissible": 25,
+   "error_codes": {
+    "5": 43,
+    "1": 35,
+    "2": 3,
+    "3": 83,
+    "4": 1307,
+    "0": 113
+   },
+   "admissible_start": {
+    "warm": 106,
+    "cold": 7
+   }
+  },
+  "by_mode_beyond": {
+   "crash_at_1.95Mm": {
+    "runs": 3,
+    "beyond": 3,
+    "converged": 0,
+    "admissible": 0,
+    "snow": 0,
+    "error_codes": {
+     "5": 3
+    }
+   },
+   "crash_lt_1.95Mm": {
+    "runs": 27,
+    "beyond": 772,
+    "converged": 17,
+    "admissible": 17,
+    "snow": 3,
+    "error_codes": {
+     "1": 32,
+     "2": 3,
+     "3": 18,
+     "4": 688,
+     "5": 14,
+     "0": 17
+    }
+   },
+   "detJ0": {
+    "runs": 34,
+    "beyond": 635,
+    "converged": 44,
+    "admissible": 44,
+    "snow": 2,
+    "error_codes": {
+     "0": 44,
+     "1": 3,
+     "3": 57,
+     "4": 511,
+     "5": 20
+    }
+   },
+   "newton_maxit": {
+    "runs": 8,
+    "beyond": 174,
+    "converged": 52,
+    "admissible": 52,
+    "snow": 3,
+    "error_codes": {
+     "4": 108,
+     "5": 6,
+     "0": 52,
+     "3": 8
+    }
+   }
+  },
+  "git_shas": [
+   "d7d9941a201a9266708a913707b5b4bd9989f5be"
+  ],
+  "git_src_dirty": [
+   "True"
+  ]
+ }
+}
