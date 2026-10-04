@@ -133,7 +133,7 @@ load ~32 on 64 cores) — a transient 5 over the cap, noted here.
 
 Provenance: host knox (64 cores), worktree HEAD `d7d9941` (origin/main; the
 scripts are uncommitted additions, so the runner records `git_src_dirty`),
-`/home/utig5/dliu/PIE/.venv/bin/python3` 3.12.15, numpy 2.5.3, scipy 1.18.1
+`<repo>/.venv/bin/python3` 3.12.15, numpy 2.5.3, scipy 1.18.1
 (pins match), `PYTHONPATH=<worktree>` so `pie` resolves to the worktree.
 Commands: `design.py pilot --n 72 --seed 20261003`;
 `PIE_WORKERS=24 python3 pie/robust_runner.py run <pilot_manifest.csv> --status-log pie/results/pilot_status.jsonl --timeout 3600`

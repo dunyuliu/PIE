@@ -1,5 +1,5 @@
 {
- "zenodo": "/home/staff/dliu/shared_dataset/zenodo.16459292/extracted/PIE",
+ "zenodo": "~/shared_dataset/zenodo.16459292/extracted/PIE",
  "n_runs": 36864,
  "n_draws_per_moi": 1024,
  "modes_total": {
