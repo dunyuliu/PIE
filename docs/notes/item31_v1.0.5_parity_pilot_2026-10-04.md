@@ -5,7 +5,58 @@ full 6,964-radius regression population. Read-only diagnosis; `pie/shootp.py`
 and the Zenodo v1.0.5 copy were never modified in place. Harness:
 `item31_v1.0.5_parity_pilot_2026-10-04_scripts/`.
 
-## Verdict
+## Verdict — CORRECTED 2026-10-04 (conductor, post-audit; see addendum below)
+
+**The original 29/30 "HEAD-over-constrains" headline below is WRONG as
+stated and must not be read as evidence of Newton line-search/warm-start
+over-constraint.** `verify_v105_root.py` only reproduced `mercmodel_box`
+(`pie/shootp.py:319-358`, the bounded-Newton's MID-SOLVE trial-rejection
+rule, `CHI_MIN=None`). It never reproduced the SEPARATE, POST-CONVERGENCE
+check `pie/driverp.py:287-288`: `if (chi_li<0).any(): error_code[k] =
+CHI_OUTSIDE_ADMISSIBLE_BOX`. That check runs on every converged solution's
+full radial profile, independent of `mercmodel_box` and independent of
+whether a bounded line search was even active, and it DOES enforce a chi>=0
+floor — the exact opposite of what `mercmodel_box`'s `CHI_MIN=None`
+disables. **All 29 of the sampled "over-constrains" cases have negative
+`chi_li_icb`** (conductor-checked against the raw `classification.json`
+`verify` dicts, range roughly -0.001 to -0.023), so every one of them would
+ALSO be flagged `error_code=4` by HEAD's actual production code via
+`driverp.py:287-288`, regardless of the bounded Newton's behavior. This is
+not a Newton-robustness artifact; `pie/shootp.py:329-334`'s own docstring
+already documents it as a **deliberate v1.2.0 policy decision**: 21.8% of
+v1.0.5's published converged rows have negative `chi_li_icb` and are
+treated as physically inadmissible under v1.2.0+, "since v1.2.0."
+
+**Corrected classification of the 30 sampled radii:**
+
+| Classification | Count | % |
+|---|---|---|
+| Correctly-rejects under `mercmodel_box`'s upper (eutectic) bound | 1 | 3.3% |
+| **Undetermined by this pilot — confounded by the separate, deliberate v1.2.0 chi>=0 post-hoc policy (`driverp.py:287-288`), not a test of Newton over-constraint** | 29 | 96.7% |
+
+**Coverage caveat:** item 18/30's own population breakdown has error_code=4
+(CHI_OUTSIDE_ADMISSIBLE_BOX) at ~39% of the 6,964 regressed radii, code 1
+(NEWTON_MAXIT) ~10%, code 2 (SINGULAR_JACOBIAN) <0.5%, others the remainder.
+This pilot's 278 candidates and 30-row sample are **100% error_code=4 by
+construction** (the sampling method selected only pre-stop radii that
+carried code 4) — it says nothing about the other ~61% of the regressed
+population (NEWTON_MAXIT, SINGULAR_JACOBIAN, etc.), which were not sampled
+and remain fully open.
+
+**Net effect: this pilot does not confirm or refute lars-eriksson's original
+over-constraint-vs-correct-rejection question for the CHI_OUTSIDE_BOX
+population.** It surfaces a different, better-evidenced finding instead: the
+dominant share of the sampled CHI_OUTSIDE_BOX population traces to a
+documented, deliberate v1.2.0 chi>=0 admissibility policy that is orthogonal
+to the bounded-Newton line-search mechanism this pilot was designed to
+probe. Whether that v1.2.0 policy itself is the right physical call (v1.0.5
+published rows down to chi_li_icb~-0.045 as valid) is a separate, open
+physics question, not addressed here, and not something this pilot was
+scoped to answer.
+
+---
+
+### Original (superseded) verdict text, kept for audit trail — DO NOT read as current
 
 Of 30 sampled "pre-stop" radii (v1.0.5 converged and published a row; HEAD's
 own sweep reaches the same radius via warm-start and records
@@ -29,7 +80,9 @@ by 0.0017).
 Across all 14 sampled compositions, 278 pre-stop candidates were found and
 **100% carry `head_error_code=4`** (none `MISSING`, no other error code
 appeared) — consistent with item18a's finding that the regression is
-CHI_OUTSIDE_ADMISSIBLE_BOX-dominated.
+CHI_OUTSIDE_ADMISSIBLE_BOX-dominated. **[SUPERSEDED: this 100% figure is a
+sampling artifact of this pilot's own candidate selection, not a population
+statistic — see coverage caveat above.]**
 
 ## Methodology
 
