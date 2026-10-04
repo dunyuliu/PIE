@@ -711,8 +711,13 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
         end = time.time()
 
         csv_path = job.pmetadata_file(src_dir)
+        # Item 30: count the rows actually on disk whenever the csv exists,
+        # not only on returncode == 0 -- a job that crashed mid-sweep still
+        # wrote real rows, and reporting n_rows=0 hid that partial output.
+        # A missing csv on a nonzero rc is the expected crash-before-output
+        # case, not a read error; on rc == 0 it stays a read_error.
         n_rows, counts, read_error = 0, {}, None
-        if returncode == 0:
+        if returncode == 0 or csv_path.exists():
             try:
                 n_rows, counts = summarize_error_codes(csv_path)
             except (OSError, ValueError) as e:

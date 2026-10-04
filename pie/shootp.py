@@ -105,6 +105,20 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     gr0        = 4*np.pi*G*rho*(r0*a)/(3*ga)
     # initial P, gr0, T to integrate from core to inner core boundary.
     y0         = [v[0], gr0, v[1]]
+    # Item 30: a line-search trial iterate can push eosInnerCore outside its
+    # domain and return a non-finite rho, so y0 is non-finite and solve_ivp
+    # raises a bare ValueError that driverp's per-radius SolverError handler
+    # does not catch -- killing the whole sweep. Raise it as a SolverError
+    # here (own code, same pattern as the getk2/getpotvsr guards) so the
+    # Newton line search rejects the trial, or the radius gets a failure row.
+    if not np.all(np.isfinite(y0)):
+        raise SolverError(
+            ErrorCode.NONFINITE_ICB_DENSITY,
+            'shoot_mercmodel: non-finite ICB density rho=%r from eosInnerCore -> non-finite y0' % (rho,),
+            context={'rho_icb': float(rho), 'P_icb_GPa': float(P1/1E+9), 'T_icb': float(T1),
+                     'chi_icb': {k: float(val) for k, val in chi_icb.items()},
+                     'y0': [float(c) for c in y0], 'ricb': ricb},
+        )
 
     #Shoot In solid inner core 
 	# scipy.integrate.solve_ivp solves an initial value problem for a system of ODEs.
