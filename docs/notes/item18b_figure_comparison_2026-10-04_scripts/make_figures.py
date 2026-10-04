@@ -34,7 +34,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-ZEN = Path("/home/utig5/dliu/shared_dataset/zenodo.16459292/extracted/Plotting and Analysis Scripts/For Monte Carlo Study")
+import os
+ZEN = Path(os.path.expanduser(
+    "~/shared_dataset/zenodo.16459292/extracted/Plotting and Analysis Scripts/For Monte Carlo Study"))
 SCRIPT_DIR = Path(__file__).parent
 CACHE = SCRIPT_DIR / "cache"
 FIGDIR = SCRIPT_DIR.parent / "item18b_figure_comparison_2026-10-04_figs"

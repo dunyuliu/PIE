@@ -31,9 +31,14 @@ from pathlib import Path
 
 import pandas as pd
 
-ZEN = Path("/home/utig5/dliu/shared_dataset/zenodo.16459292/extracted/Plotting and Analysis Scripts/For Monte Carlo Study")
-ITEM18A = Path("/home/utig5/dliu/PIE/docs/notes/item18a_population_rerun_2026-10-03_scripts")
-RESULTS = Path("/home/utig5/dliu/PIE/.claude/worktrees/agent-a7d2fd536939b904f/pie/results")
+import os
+ZEN = Path(os.path.expanduser(
+    "~/shared_dataset/zenodo.16459292/extracted/Plotting and Analysis Scripts/For Monte Carlo Study"))
+ITEM18A = Path(__file__).resolve().parent.parent / "item18a_population_rerun_2026-10-03_scripts"
+import os as _os
+RESULTS = Path(_os.environ.get(
+    "PIE_ITEM18A_RAW_RESULTS",
+    "CHANGE_ME_set_PIE_ITEM18A_RAW_RESULTS_env_var_to_the_item18a_raw_results_dir"))
 OUTDIR = Path(__file__).parent / "cache"
 OUTDIR.mkdir(exist_ok=True)
 

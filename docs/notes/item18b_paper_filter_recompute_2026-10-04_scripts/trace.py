@@ -1,7 +1,10 @@
 import csv
 from pathlib import Path
-ITEM18A = Path("/home/utig5/dliu/PIE/docs/notes/item18a_population_rerun_2026-10-03_scripts")
-RESULTS = Path("/home/utig5/dliu/PIE/.claude/worktrees/agent-a7d2fd536939b904f/pie/results")
+ITEM18A = Path(__file__).resolve().parent.parent / "item18a_population_rerun_2026-10-03_scripts"
+import os as _os
+RESULTS = Path(_os.environ.get(
+    "PIE_ITEM18A_RAW_RESULTS",
+    "CHANGE_ME_set_PIE_ITEM18A_RAW_RESULTS_env_var_to_the_item18a_raw_results_dir"))
 sample_rows = list(csv.DictReader(open(ITEM18A/"main_sample.csv")))
 sample_rows = [r for r in sample_rows if r["light"]=="S+Si" and r["moi"]=="genova" and float(r["chi_Si_icb"])>0]
 for r in sample_rows:
