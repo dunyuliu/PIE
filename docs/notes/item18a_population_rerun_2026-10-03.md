@@ -15,12 +15,13 @@ Works with caveats. The census is complete and cross-checked; a full
 census-level re-run is infeasible on knox (~100 h wall), so a stratified
 size-weighted sample of 1,400 runs (93 strata) is running. The pilot already
 shows three things a reviewer must know before any before/after number is
-read: (i) ~30% of sampled non-finished runs crash the v1.6.0 code with an
-*uncaught* `ValueError` before writing a single row; (ii) the re-run is not a
-superset of the published run — 259 of 783 radii the published v1.0.5 code
-converged on fail in v1.6.0; (iii) on 1 of 95 recovered rows the warm-start
-sweep and the cold-start single-radius solver converge to different Newton
-roots (chi_Si_icb 0.11 vs 0.22, isnow 2 vs 0).
+read: (i) 20 of 72 sampled non-finished runs crash the v1.6.0 code with an
+*uncaught* `ValueError` at radius index 31–37 (ricb 1.55–1.85 Mm), losing
+the rest of the sweep; (ii) the re-run is not a superset of the published
+run — 335 of 1,153 radii the published v1.0.5 code converged on fail in
+v1.6.0; (iii) on 1 of ~95 recovered rows the warm-start sweep and the
+cold-start single-radius solver converge to different Newton roots
+(chi_Si_icb 0.11 vs 0.22, isnow 2 vs 0).
 
 ## 1. Census (deliverable 1) — `census.py` -> `census_runs.csv`, `census_summary.json`
 
@@ -78,8 +79,8 @@ failing radii (Newton maxit + cold fallback) cost more than converged ones.
   400+ strata whose floor alone exceeds the budget. Stage is kept in
   `main_sample.csv` as a descriptive variable. 6/93 strata are fully
   enumerated; 7 strata have N_h < 10 (direction only).
-- Pilot runs stay in the main frame: `robust_runner` sentinels resume them
-  for free; the 20 crashed ones re-crash (~80 s each).
+- Pilot runs stay in the main frame: `robust_runner` sentinels resume the 47
+  complete ones for free; the 25 partial ones (no sentinel) are re-run.
 
 ## 3. Methodology statement (deliverable 3)
 
@@ -100,9 +101,9 @@ Two solvers are in play and the choice is explicit:
   cross-check rather than silently picking one. Disagreement is recorded
   here, not acted on.
 
-Pilot cross-check (100 recovered admissible rows, 4 workers, mean 4.4 s per
-cold solve): 95/100 reconverge cold; 94 of those agree with the warm row to
-|dchi_li_icb| < 1e-6 and 93/95 agree on isnow. Exceptions: 5 cold failures
+Pilot cross-check (113 recovered admissible rows, 4 workers, mean ~4.4 s per
+cold solve): 108/113 reconverge cold; 107 of those agree with the warm row to
+|dchi_li_icb| < 1e-6 and 106/108 agree on isnow. Exceptions: 5 cold failures
 (`SolverError`; warm-start-only recoveries, same class as the 39th row of the
 predecessor note); 1 row (genova S+Si 0.09, ricb 1,900 km) converges to a
 *different root* (warm chi_Si_icb 0.1105, isnow 2; cold 0.2179, isnow 0;
@@ -133,13 +134,13 @@ same runner command on `main_manifest.csv`, `--status-log pie/results/main_statu
 
 | quantity | value |
 |---|---|
-| sampled / finished within 27 min | 72 / 67 |
-| **re-run crashed, no csv** | **20/67** — all `ValueError: All components of the initial state y0 must be finite` from `scipy.integrate.solve_ivp` at `pie/shootp.py:117` (`shoot_mercmodel`), via `mercmodel_trial` (`shootp.py:301`). `pie/driverp.py` catches only `lc.SolverError` (lines 171-204), so the process dies before the first row; robust_runner records PROCESS_CRASHED, writes no sentinel. Hits S+Si 19, S 1; spread over modes detJ0 10, crash 8, maxit 2 and all stages. |
-| pre-stop rows (radii the published run reached), 47 runs | 783; max rel diff chi_li_icb/rcmb vs published 1.2e-4; isnow mismatches 0; **259 failed in the re-run** (v1.6.0 is not a superset of v1.0.5 on these runs) |
-| beyond-stop radii | 1,097; error codes 4 CHI_OUTSIDE_BOX 853, 0 CONVERGED 100, 3 NONFINITE_SHOOT 73, 5 RICB_GE_RCMB 43, 1 NEWTON_MAXIT 28 |
-| converged = admissible | 100 (code 4 already excludes outside-box rows); warm 96, cold-fallback 4; in 19 of 47 runs |
+| sampled / completed 40 radii / partial | 72 / 47 / 25 (20 crashed mid-sweep, 5 hit the 3,600 s timeout at 29–37 radii) |
+| **re-run crashed mid-sweep** | **20/72** — all `ValueError: All components of the initial state y0 must be finite` from `scipy.integrate.solve_ivp` at `pie/shootp.py:117` (`shoot_mercmodel`), via `mercmodel_trial` (`shootp.py:301`), at radius index 31–37 (ricb 1.55–1.85 Mm). `pie/driverp.py` catches only `lc.SolverError` (lines 171-204), so the process dies and the remaining 3–9 radii are never attempted; robust_runner records PROCESS_CRASHED with `n_rows 0` (it does not read the csv on a non-zero return code, hiding the 31–37 rows that were written) and writes no sentinel, so a resume re-runs the whole job. Hits S+Si 19, S 1; modes detJ0 10, crash 8, maxit 2; all stages. Rows the crashed jobs did write are analysed; the lost radii count as zero. |
+| pre-stop rows (radii the published run reached), 72 runs | 1,153; max rel diff chi_li_icb/rcmb vs published 2.9e-4; isnow mismatches 0; **335 failed in the re-run** (v1.6.0 is not a superset of v1.0.5 on these runs) |
+| beyond-stop radii attempted | 1,584 (of 1,763 in the sample); error codes 4 CHI_OUTSIDE_BOX 1,307, 0 CONVERGED 113, 3 NONFINITE_SHOOT 83, 5 RICB_GE_RCMB 43, 1 NEWTON_MAXIT 35, 2 SINGULAR_JACOBIAN 3 |
+| converged = admissible | 113 (code 4 already excludes outside-box rows); in 25 of 72 runs |
 | snow-bearing among them | 8 (genova S+Si 0.09 x2, genova S x3, margot S+Si 0.05 x1, margot S+Si 0.02 x2); all at ricb >= 1,400 km |
-| by mode (runs / beyond / converged / snow) | detJ0 32/473/37/2; crash_lt 24/457/15/3; newton_maxit 8/164/48/3; crash_at_1.95Mm 3/3/0/0 |
+| wall per job incl. the 5 timeouts | mean 452 s, median 232 s, p90 396 s (`pilot_snowfraction.json`) |
 | Si-only runs in the pilot | 4: two `crash_at_1.95Mm` (1 radius beyond, code 5), two `newton_maxit` at 10 m (39 x code 4, 1 x code 5) — zero converged Si rows |
 
 ## 4. Before/after snow fraction (deliverable 4) — `snowfraction.py main` -> `main_table.md`, `main_snowfraction.json`
@@ -207,10 +208,11 @@ physics question for rafael-santos, not settled here.
 
 ## 7. What a reviewer would attack
 
-- The 20/67 uncaught-`ValueError` crash class: a v1.6.0 robustness gap, not
-  a physics result; route to lars-eriksson (bug) — not fixed here (read-only).
-  Those runs contribute zero recoveries, biasing A and S low.
-- 259/783 pre-stop rows that v1.0.5 converged but v1.6.0 does not: the
+- The 20/72 uncaught-`ValueError` crash class (and robust_runner's `n_rows 0`
+  on a non-zero return code): v1.6.0 robustness gaps, not physics results;
+  route to lars-eriksson (bug) — not fixed here (read-only). The lost upper
+  radii contribute zero recoveries, biasing A and S low.
+- 335/1,153 pre-stop rows that v1.0.5 converged but v1.6.0 does not: the
   "after" dataset is not published + additions; a true re-publication would
   change existing rows too. This note only adds rows (as the brief asked).
 - Root non-uniqueness (1/95 rows): recovered rows depend on the start.

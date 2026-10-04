@@ -103,23 +103,33 @@ def analyse_run(r, ends):
         if e is None:
             out["status"] = "not_done"
             return out
-        # crashed in the re-run too (uncaught exception, no csv): contributes
-        # zero added rows; the traceback's last frame is kept for the note.
         tail = e.get("stderr_tail", "").strip().splitlines()
-        out.update(status="done", rerun_crashed=True, runner_status=e["status"], duration_s=e["duration_s"],
+        out.update(status="done", runner_status=e["status"], duration_s=e["duration_s"],
                    git_sha=e.get("git_sha"), git_src_dirty=e.get("git_src_dirty"),
-                   crash_last_line=tail[-1] if tail else "", **ZERO_BEYOND)
-        return out
-    sent = json.load(open(sentinel))
-    out.update(status="done", duration_s=sent["end_time"] - sent["start_time"], runner_status=sent["status"],
-               git_sha=sent.get("git_sha"), git_src_dirty=sent.get("git_src_dirty"))
+                   crash_last_line=tail[-1] if tail else "")
+        n_csv = sum(1 for _ in open(cf)) - 1 if cf.exists() else 0
+        if n_csv <= 0:
+            # crashed in the re-run too (uncaught exception before the first
+            # row; at most a csv header): contributes zero added rows.
+            out.update(rerun_crashed=True, **ZERO_BEYOND)
+            return out
+        # runner timeout (returncode None) or crash after some rows: pie writes
+        # the csv row by row, so the radii it reached are analysed; the rest
+        # count as zero added rows.
+        out["rerun_timeout"] = True
+        out["rerun_partial_kind"] = "timeout" if e.get("returncode") is None else "crash_after_rows"
+    else:
+        sent = json.load(open(sentinel))
+        out.update(status="done", duration_s=sent["end_time"] - sent["start_time"], runner_status=sent["status"],
+                   git_sha=sent.get("git_sha"), git_src_dirty=sent.get("git_src_dirty"))
     new = list(csv.DictReader(open(cf)))
     pub = list(csv.DictReader(open(ZENODO / r["csv"])))
     k0 = len(pub)
-    if len(new) != len(RS):
-        out["n_rows_rerun"] = len(new)
+    out["n_rows_rerun"] = len(new)
+    if len(new) != len(RS) and not out.get("rerun_timeout"):
         out["status"] = "unexpected_row_count"
         return out
+    k0 = min(k0, len(new))
     # regression check on the rows the published run did reach
     rel = 0.0
     isnow_mismatch = 0
@@ -232,12 +242,17 @@ def main(name):
     rows = [analyse_run(r, ends) for r in sample]
     done = [r for r in rows if r["status"] == "done"]
     crashed = [r for r in done if r.get("rerun_crashed")]
+    timeouts = [r for r in done if r.get("rerun_timeout")]
     json.dump(dict(n_sample=len(sample), n_done=len(done),
                    statuses=dict(Counter(r["status"] for r in rows)), rows=rows),
               open(HERE / f"{name}_rerun_rows.json", "w"), indent=1, default=str)
     dur = np.array([r["duration_s"] for r in done]) if done else np.array([0.0])
     summary = dict(
-        n_sample=len(sample), n_done=len(done), n_rerun_crashed=len(crashed),
+        n_sample=len(sample), n_done=len(done), n_rerun_crashed_no_rows=len(crashed), n_rerun_partial=len(timeouts),
+        rerun_partial_kinds=dict(Counter(r["rerun_partial_kind"] for r in timeouts)),
+        rerun_partial_rows_reached={k: sorted(r["n_rows_rerun"] for r in timeouts if r["rerun_partial_kind"] == k)
+                                    for k in sorted({r["rerun_partial_kind"] for r in timeouts})},
+        rerun_partial_last_lines=dict(Counter(r["crash_last_line"] for r in timeouts if r["rerun_partial_kind"] != "timeout")),
         rerun_crashed_by={"|".join(k): v for k, v in Counter((r["light"], r["mode"], r["stage"]) for r in crashed).items()},
         rerun_crash_last_lines=dict(Counter(r["crash_last_line"] for r in crashed)) if crashed else {},
         wall_per_job_s=dict(mean=float(dur.mean()), median=float(np.median(dur)), p90=float(np.percentile(dur, 90)),

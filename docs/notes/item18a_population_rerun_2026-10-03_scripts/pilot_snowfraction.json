@@ -1,55 +1,84 @@
 {
  "summary": {
   "n_sample": 72,
-  "n_done": 67,
-  "n_rerun_crashed": 20,
-  "rerun_crashed_by": {
-   "S+Si|crash_lt_1.95Mm|10m": 7,
-   "S+Si|detJ0|50km-1.45Mm": 4,
-   "S+Si|detJ0|>=1.5Mm": 2,
-   "S|detJ0|>=1.5Mm": 1,
-   "S+Si|crash_lt_1.95Mm|50km-1.45Mm": 1,
-   "S+Si|detJ0|10m": 3,
-   "S+Si|newton_maxit|50km-1.45Mm": 1,
-   "S+Si|newton_maxit|>=1.5Mm": 1
+  "n_done": 72,
+  "n_rerun_crashed_no_rows": 0,
+  "n_rerun_partial": 25,
+  "rerun_partial_kinds": {
+   "crash_after_rows": 20,
+   "timeout": 5
   },
-  "rerun_crash_last_lines": {
+  "rerun_partial_rows_reached": {
+   "crash_after_rows": [
+    31,
+    32,
+    33,
+    33,
+    34,
+    34,
+    34,
+    34,
+    34,
+    34,
+    35,
+    35,
+    35,
+    36,
+    36,
+    36,
+    36,
+    37,
+    37,
+    37
+   ],
+   "timeout": [
+    29,
+    30,
+    34,
+    34,
+    37
+   ]
+  },
+  "rerun_partial_last_lines": {
    "ValueError: All components of the initial state `y0` must be finite.": 20
   },
+  "rerun_crashed_by": {},
+  "rerun_crash_last_lines": {},
   "wall_per_job_s": {
-   "mean": 216.7340312324353,
-   "median": 224.4115173816681,
-   "p90": 363.8949476242065,
-   "max": 462.5548167228699,
-   "total_cpu_s": 14521.180092573166
+   "mean": 451.8112636605899,
+   "median": 232.1536214351654,
+   "p90": 396.2315466403961,
+   "max": 3602.058844089508,
+   "total_cpu_s": 32530.41098356247
   },
   "by_stage_wall_s": {
-   "10m": 195.54640936000007,
-   "50km-1.45Mm": 290.6100974082947,
-   ">=1.5Mm": 156.02696985356948
+   "10m": 422.62787233988445,
+   "50km-1.45Mm": 434.5733534253162,
+   ">=1.5Mm": 518.7572465570349
   },
   "prestop": {
-   "rows": 783,
-   "max_rel_diff": 0.00012148376889943691,
+   "rows": 1153,
+   "max_rel_diff": 0.00028883515344924564,
    "isnow_mismatch": 0,
-   "rerun_failed": 259
+   "rerun_failed": 335
   },
   "beyond": {
-   "rows": 1097,
-   "converged": 100,
-   "admissible": 100,
+   "rows": 1584,
+   "converged": 113,
+   "admissible": 113,
    "admissible_snow": 8,
-   "runs_with_admissible": 19,
+   "runs_with_admissible": 25,
    "error_codes": {
     "5": 43,
-    "1": 28,
-    "4": 853,
-    "3": 73,
-    "0": 100
+    "1": 35,
+    "2": 3,
+    "3": 83,
+    "4": 1307,
+    "0": 113
    },
    "admissible_start": {
-    "warm": 96,
-    "cold": 4
+    "warm": 106,
+    "cold": 7
    }
   },
   "by_mode_beyond": {
@@ -64,43 +93,44 @@
     }
    },
    "crash_lt_1.95Mm": {
-    "runs": 24,
-    "beyond": 457,
-    "converged": 15,
-    "admissible": 15,
+    "runs": 27,
+    "beyond": 772,
+    "converged": 17,
+    "admissible": 17,
     "snow": 3,
     "error_codes": {
-     "1": 27,
-     "4": 385,
+     "1": 32,
+     "2": 3,
+     "3": 18,
+     "4": 688,
      "5": 14,
-     "3": 16,
-     "0": 15
+     "0": 17
     }
    },
    "detJ0": {
-    "runs": 32,
-    "beyond": 473,
-    "converged": 37,
-    "admissible": 37,
+    "runs": 34,
+    "beyond": 635,
+    "converged": 44,
+    "admissible": 44,
     "snow": 2,
     "error_codes": {
-     "0": 37,
-     "1": 1,
-     "3": 49,
-     "4": 366,
+     "0": 44,
+     "1": 3,
+     "3": 57,
+     "4": 511,
      "5": 20
     }
    },
    "newton_maxit": {
     "runs": 8,
-    "beyond": 164,
-    "converged": 48,
-    "admissible": 48,
+    "beyond": 174,
+    "converged": 52,
+    "admissible": 52,
     "snow": 3,
     "error_codes": {
-     "4": 102,
+     "4": 108,
      "5": 6,
-     "0": 48,
+     "0": 52,
      "3": 8
     }
    }

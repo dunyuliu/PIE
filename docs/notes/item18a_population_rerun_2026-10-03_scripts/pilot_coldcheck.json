@@ -1,25 +1,25 @@
 {
  "provenance": {
-  "git_sha": "d7d9941a201a9266708a913707b5b4bd9989f5be",
+  "git_sha": "3d956d104a574d90d74e470641c003909f658cc4",
   "python": "3.12.15",
   "numpy": "2.5.3",
   "scipy": "1.18.1",
   "host": "knox",
   "workers": 4,
   "load_at_start": [
-   25.18359375,
-   13.00439453125,
-   11.15380859375
+   25.54638671875,
+   26.787109375,
+   27.17626953125
   ],
   "cpu_count": 64,
   "solver": "testsys/pielib.py::solve_full_model, cold start",
-  "n_rows": 100
+  "n_rows": 113
  },
  "summary": {
-  "n": 100,
-  "cold_ok": 95,
+  "n": 113,
+  "cold_ok": 108,
   "cold_failed": 5,
-  "isnow_agree": 93,
+  "isnow_agree": 106,
   "isnow_disagree": [
    {
     "moi": "genova",
@@ -70,7 +70,7 @@
     "exc": "SolverError"
    }
   ],
-  "mean_dt_s": 4.430706453323364
+  "mean_dt_s": 4.571639174908663
  },
  "rows": [
   {
@@ -86,7 +86,7 @@
    "status": "failed",
    "exc": "SolverError",
    "message": "getk2: ricb=0.799394 >= rcmb=0.8 (nd) or grid fully inside the inner core (nrs=400)",
-   "dt_s": 1.3527512550354004
+   "dt_s": 1.3883309364318848
   },
   {
    "moi": "genova",
@@ -103,7 +103,7 @@
    "cold_chi_li_icb": 0.21794590881769463,
    "cold_rcmb": 2001346.9697213243,
    "cold_admissible": true,
-   "dt_s": 5.562407493591309
+   "dt_s": 5.484010934829712
   },
   {
    "moi": "genova",
@@ -120,7 +120,7 @@
    "cold_chi_li_icb": 0.15607582700115588,
    "cold_rcmb": 1991068.6505965572,
    "cold_admissible": true,
-   "dt_s": 6.836898326873779
+   "dt_s": 6.917920112609863
   },
   {
    "moi": "genova",
@@ -137,7 +137,7 @@
    "cold_chi_li_icb": 0.0068529502289299,
    "cold_rcmb": 1926541.3099309714,
    "cold_admissible": true,
-   "dt_s": 7.52299952507019
+   "dt_s": 7.44956374168396
   },
   {
    "moi": "genova",
@@ -154,7 +154,7 @@
    "cold_chi_li_icb": 0.0013362325385749881,
    "cold_rcmb": 1943766.5812959785,
    "cold_admissible": true,
-   "dt_s": 3.8568050861358643
+   "dt_s": 3.810530424118042
   },
   {
    "moi": "genova",
@@ -171,7 +171,7 @@
    "cold_chi_li_icb": 0.0014107780407512111,
    "cold_rcmb": 1943702.819925866,
    "cold_admissible": true,
-   "dt_s": 3.438779592514038
+   "dt_s": 3.482417345046997
   },
   {
    "moi": "genova",
@@ -188,7 +188,7 @@
    "cold_chi_li_icb": 0.001490874129450364,
    "cold_rcmb": 1943640.0024483523,
    "cold_admissible": true,
-   "dt_s": 3.5960640907287598
+   "dt_s": 3.533940076828003
   },
   {
    "moi": "genova",
@@ -205,7 +205,7 @@
    "cold_chi_li_icb": 0.13831719882606058,
    "cold_rcmb": 2021469.1584798023,
    "cold_admissible": true,
-   "dt_s": 10.54242205619812
+   "dt_s": 10.731052160263062
   },
   {
    "moi": "genova",
@@ -222,7 +222,7 @@
    "cold_chi_li_icb": 0.001579501659310238,
    "cold_rcmb": 1943580.4025473364,
    "cold_admissible": true,
-   "dt_s": 4.021869897842407
+   "dt_s": 3.993382215499878
   },
   {
    "moi": "genova",
@@ -239,7 +239,7 @@
    "cold_chi_li_icb": 0.0016799772476667352,
    "cold_rcmb": 1943526.5118275713,
    "cold_admissible": true,
-   "dt_s": 3.5629212856292725
+   "dt_s": 3.6186435222625732
   },
   {
    "moi": "genova",
@@ -256,7 +256,7 @@
    "cold_chi_li_icb": 0.001795777707262118,
    "cold_rcmb": 1943480.8934741127,
    "cold_admissible": true,
-   "dt_s": 3.671489715576172
+   "dt_s": 3.631967306137085
   },
   {
    "moi": "genova",
@@ -273,7 +273,7 @@
    "cold_chi_li_icb": 0.0019305026532772133,
    "cold_rcmb": 1943446.2083147967,
    "cold_admissible": true,
-   "dt_s": 3.5904440879821777
+   "dt_s": 3.6463851928710938
   },
   {
    "moi": "genova",
@@ -290,7 +290,7 @@
    "cold_chi_li_icb": 0.0020879624600730756,
    "cold_rcmb": 1943425.2652040122,
    "cold_admissible": true,
-   "dt_s": 3.582597255706787
+   "dt_s": 3.5425472259521484
   },
   {
    "moi": "genova",
@@ -307,7 +307,7 @@
    "cold_chi_li_icb": 0.0022726411272881173,
    "cold_rcmb": 1943421.0123289614,
    "cold_admissible": true,
-   "dt_s": 3.6389870643615723
+   "dt_s": 3.682802200317383
   },
   {
    "moi": "genova",
@@ -324,7 +324,7 @@
    "cold_chi_li_icb": 0.0024893002373202865,
    "cold_rcmb": 1943436.602502346,
    "cold_admissible": true,
-   "dt_s": 3.722409963607788
+   "dt_s": 3.7014658451080322
   },
   {
    "moi": "genova",
@@ -341,7 +341,7 @@
    "cold_chi_li_icb": 0.002743646626890066,
    "cold_rcmb": 1943475.7218210264,
    "cold_admissible": true,
-   "dt_s": 3.6367275714874268
+   "dt_s": 3.6895837783813477
   },
   {
    "moi": "genova",
@@ -358,7 +358,7 @@
    "cold_chi_li_icb": 0.0030419478497755665,
    "cold_rcmb": 1943542.2466005955,
    "cold_admissible": true,
-   "dt_s": 3.6254613399505615
+   "dt_s": 3.589949607849121
   },
   {
    "moi": "genova",
@@ -375,7 +375,7 @@
    "cold_chi_li_icb": 0.003391720034316017,
    "cold_rcmb": 1943640.6920355335,
    "cold_admissible": true,
-   "dt_s": 3.767634391784668
+   "dt_s": 3.7143917083740234
   },
   {
    "moi": "genova",
@@ -392,7 +392,7 @@
    "cold_chi_li_icb": 0.0038025576540752165,
    "cold_rcmb": 1943776.7204688436,
    "cold_admissible": true,
-   "dt_s": 3.7640175819396973
+   "dt_s": 3.7299513816833496
   },
   {
    "moi": "genova",
@@ -409,7 +409,7 @@
    "cold_chi_li_icb": 0.004285409465733733,
    "cold_rcmb": 1943956.4784910535,
    "cold_admissible": true,
-   "dt_s": 3.666091203689575
+   "dt_s": 3.7113096714019775
   },
   {
    "moi": "genova",
@@ -426,7 +426,7 @@
    "cold_chi_li_icb": 0.004853479161824024,
    "cold_rcmb": 1944187.0777038157,
    "cold_admissible": true,
-   "dt_s": 3.6581344604492188
+   "dt_s": 3.6931440830230713
   },
   {
    "moi": "genova",
@@ -443,7 +443,7 @@
    "cold_chi_li_icb": 0.005523743597502144,
    "cold_rcmb": 1944477.438047024,
    "cold_admissible": true,
-   "dt_s": 3.790760040283203
+   "dt_s": 3.7189300060272217
   },
   {
    "moi": "genova",
@@ -460,7 +460,7 @@
    "cold_chi_li_icb": 0.006318124853259791,
    "cold_rcmb": 1944838.7483824105,
    "cold_admissible": true,
-   "dt_s": 3.211466073989868
+   "dt_s": 3.1715118885040283
   },
   {
    "moi": "genova",
@@ -477,7 +477,7 @@
    "cold_chi_li_icb": 0.007264519896570048,
    "cold_rcmb": 1945284.6078515109,
    "cold_admissible": true,
-   "dt_s": 3.145453691482544
+   "dt_s": 3.1742308139801025
   },
   {
    "moi": "genova",
@@ -494,7 +494,7 @@
    "cold_chi_li_icb": 0.008399586197081902,
    "cold_rcmb": 1945832.223038358,
    "cold_admissible": true,
-   "dt_s": 3.155975580215454
+   "dt_s": 3.179172992706299
   },
   {
    "moi": "genova",
@@ -511,7 +511,7 @@
    "cold_chi_li_icb": 0.009772674762032495,
    "cold_rcmb": 1946503.695754081,
    "cold_admissible": true,
-   "dt_s": 3.2719037532806396
+   "dt_s": 3.2246921062469482
   },
   {
    "moi": "genova",
@@ -528,7 +528,7 @@
    "cold_chi_li_icb": 0.011450799964133973,
    "cold_rcmb": 1947327.5728722464,
    "cold_admissible": true,
-   "dt_s": 3.275918483734131
+   "dt_s": 3.253465175628662
   },
   {
    "moi": "genova",
@@ -545,7 +545,7 @@
    "cold_chi_li_icb": 0.013528813307877837,
    "cold_rcmb": 1948342.169243262,
    "cold_admissible": true,
-   "dt_s": 3.2296276092529297
+   "dt_s": 3.2557601928710938
   },
   {
    "moi": "genova",
@@ -562,7 +562,7 @@
    "cold_chi_li_icb": 0.016144119368429993,
    "cold_rcmb": 1949599.384423607,
    "cold_admissible": true,
-   "dt_s": 3.2123446464538574
+   "dt_s": 3.187311887741089
   },
   {
    "moi": "genova",
@@ -579,7 +579,7 @@
    "cold_chi_li_icb": 0.019505684660111707,
    "cold_rcmb": 1951173.1509899732,
    "cold_admissible": true,
-   "dt_s": 3.3208470344543457
+   "dt_s": 3.2591021060943604
   },
   {
    "moi": "genova",
@@ -596,7 +596,7 @@
    "cold_chi_li_icb": 0.02395121607411702,
    "cold_rcmb": 1953174.0872358577,
    "cold_admissible": true,
-   "dt_s": 3.3279643058776855
+   "dt_s": 3.2782373428344727
   },
   {
    "moi": "genova",
@@ -613,7 +613,7 @@
    "cold_chi_li_icb": 0.030070568096885252,
    "cold_rcmb": 1955776.7036673923,
    "cold_admissible": true,
-   "dt_s": 3.2415759563446045
+   "dt_s": 3.276219129562378
   },
   {
    "moi": "genova",
@@ -630,7 +630,7 @@
    "cold_chi_li_icb": 0.039047294551671094,
    "cold_rcmb": 1959296.2434776558,
    "cold_admissible": true,
-   "dt_s": 3.220815658569336
+   "dt_s": 3.1835737228393555
   },
   {
    "moi": "genova",
@@ -647,7 +647,7 @@
    "cold_chi_li_icb": 0.0522423246165403,
    "cold_rcmb": 1964359.4354456246,
    "cold_admissible": true,
-   "dt_s": 3.635319471359253
+   "dt_s": 3.584392547607422
   },
   {
    "moi": "genova",
@@ -664,7 +664,24 @@
    "cold_chi_li_icb": 0.07413266842356102,
    "cold_rcmb": 1972600.637917783,
    "cold_admissible": true,
-   "dt_s": 4.4451823234558105
+   "dt_s": 4.409637451171875
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.3445093191045514,
+   "CMC": 0.4282003180158708,
+   "light": "S+Si",
+   "chi_Si_icb": 0.11,
+   "composition": "S+Si_0.11",
+   "ricb_m": 1500010.0,
+   "warm_chi_li_icb": 0.15065297338817824,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.15065297337936637,
+   "cold_rcmb": 2049855.1342838444,
+   "cold_admissible": true,
+   "dt_s": 4.30583643913269
   },
   {
    "moi": "genova",
@@ -681,75 +698,41 @@
    "cold_chi_li_icb": 0.1690522909129377,
    "cold_rcmb": 1988442.040827164,
    "cold_admissible": true,
-   "dt_s": 8.206639766693115
+   "dt_s": 8.252843856811523
   },
   {
    "moi": "genova",
-   "CMR2": 0.33203287421820504,
-   "CMC": 0.44429034428396275,
+   "CMR2": 0.3445093191045514,
+   "CMC": 0.4282003180158708,
    "light": "S+Si",
-   "chi_Si_icb": 0.0,
-   "composition": "S+Si_0.00",
-   "ricb_m": 1400010.0,
-   "warm_chi_li_icb": 0.15630865696399188,
+   "chi_Si_icb": 0.11,
+   "composition": "S+Si_0.11",
+   "ricb_m": 1550010.0,
+   "warm_chi_li_icb": 0.1721793288125755,
    "warm_isnow": 0,
    "status": "ok",
    "cold_isnow": 0,
-   "cold_chi_li_icb": 0.15630865693490661,
-   "cold_rcmb": 1997104.4353462954,
+   "cold_chi_li_icb": 0.1721793288339938,
+   "cold_rcmb": 2056261.8202447142,
    "cold_admissible": true,
-   "dt_s": 7.241515636444092
+   "dt_s": 5.355762958526611
   },
   {
    "moi": "genova",
-   "CMR2": 0.33533047128260224,
-   "CMC": 0.43992124973240887,
+   "CMR2": 0.3445093191045514,
+   "CMC": 0.4282003180158708,
    "light": "S+Si",
-   "chi_Si_icb": 0.02,
-   "composition": "S+Si_0.02",
-   "ricb_m": 1350010.0,
-   "warm_chi_li_icb": 0.13656669366255192,
+   "chi_Si_icb": 0.11,
+   "composition": "S+Si_0.11",
+   "ricb_m": 1450010.0,
+   "warm_chi_li_icb": 0.1324995881021168,
    "warm_isnow": 0,
    "status": "ok",
    "cold_isnow": 0,
-   "cold_chi_li_icb": 0.13656669360727952,
-   "cold_rcmb": 2005924.356151188,
+   "cold_chi_li_icb": 0.13249958812447019,
+   "cold_rcmb": 2044458.0172189127,
    "cold_admissible": true,
-   "dt_s": 8.713358402252197
-  },
-  {
-   "moi": "genova",
-   "CMR2": 0.32853185649159816,
-   "CMC": 0.44902494867730625,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 250010.0,
-   "warm_chi_li_icb": 1.0006198704449764e-05,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 9.920521374767656e-06,
-   "cold_rcmb": 1940871.1940740445,
-   "cold_admissible": true,
-   "dt_s": 7.513819694519043
-  },
-  {
-   "moi": "genova",
-   "CMR2": 0.32853185649159816,
-   "CMC": 0.44902494867730625,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 350010.0,
-   "warm_chi_li_icb": 0.0002802781921661559,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 0.0002802758405973939,
-   "cold_rcmb": 1940800.1401050717,
-   "cold_admissible": true,
-   "dt_s": 3.5797455310821533
+   "dt_s": 8.417931079864502
   },
   {
    "moi": "genova",
@@ -766,7 +749,75 @@
    "cold_chi_li_icb": 0.00013541348257609212,
    "cold_rcmb": 1940829.9395555435,
    "cold_admissible": true,
-   "dt_s": 4.130984306335449
+   "dt_s": 4.0566465854644775
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.33203287421820504,
+   "CMC": 0.44429034428396275,
+   "light": "S+Si",
+   "chi_Si_icb": 0.0,
+   "composition": "S+Si_0.00",
+   "ricb_m": 1400010.0,
+   "warm_chi_li_icb": 0.15630865696399188,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.15630865693490661,
+   "cold_rcmb": 1997104.4353462954,
+   "cold_admissible": true,
+   "dt_s": 7.369845151901245
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.32853185649159816,
+   "CMC": 0.44902494867730625,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 250010.0,
+   "warm_chi_li_icb": 1.0006198704449764e-05,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 9.920521374767656e-06,
+   "cold_rcmb": 1940871.1940740445,
+   "cold_admissible": true,
+   "dt_s": 7.459524393081665
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.33533047128260224,
+   "CMC": 0.43992124973240887,
+   "light": "S+Si",
+   "chi_Si_icb": 0.02,
+   "composition": "S+Si_0.02",
+   "ricb_m": 1350010.0,
+   "warm_chi_li_icb": 0.13656669366255192,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.13656669360727952,
+   "cold_rcmb": 2005924.356151188,
+   "cold_admissible": true,
+   "dt_s": 8.5309419631958
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.32853185649159816,
+   "CMC": 0.44902494867730625,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 350010.0,
+   "warm_chi_li_icb": 0.0002802781921661559,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.0002802758405973939,
+   "cold_rcmb": 1940800.1401050717,
+   "cold_admissible": true,
+   "dt_s": 3.539778470993042
   },
   {
    "moi": "genova",
@@ -783,24 +834,7 @@
    "cold_chi_li_icb": 0.000448242813355255,
    "cold_rcmb": 1940784.3815238476,
    "cold_admissible": true,
-   "dt_s": 4.287608861923218
-  },
-  {
-   "moi": "genova",
-   "CMR2": 0.32853185649159816,
-   "CMC": 0.44902494867730625,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 500010.0,
-   "warm_chi_li_icb": 0.0008706755404015545,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 0.0008706758073187988,
-   "cold_rcmb": 1940806.577917089,
-   "cold_admissible": true,
-   "dt_s": 3.6081368923187256
+   "dt_s": 4.209277153015137
   },
   {
    "moi": "genova",
@@ -817,7 +851,7 @@
    "cold_chi_li_icb": 0.0006433980299458204,
    "cold_rcmb": 1940785.437297448,
    "cold_admissible": true,
-   "dt_s": 4.28264594078064
+   "dt_s": 4.249611854553223
   },
   {
    "moi": "genova",
@@ -834,7 +868,7 @@
    "cold_chi_li_icb": 0.001135497674493603,
    "cold_rcmb": 1940851.2534794344,
    "cold_admissible": true,
-   "dt_s": 3.645392894744873
+   "dt_s": 3.578455924987793
   },
   {
    "moi": "genova",
@@ -843,49 +877,15 @@
    "light": "S",
    "chi_Si_icb": null,
    "composition": "S",
-   "ricb_m": 650010.0,
-   "warm_chi_li_icb": 0.0018056465442214122,
+   "ricb_m": 500010.0,
+   "warm_chi_li_icb": 0.0008706755404015545,
    "warm_isnow": 0,
    "status": "ok",
    "cold_isnow": 0,
-   "cold_chi_li_icb": 0.0018056468601455058,
-   "cold_rcmb": 1941028.398104928,
+   "cold_chi_li_icb": 0.0008706758073187988,
+   "cold_rcmb": 1940806.577917089,
    "cold_admissible": true,
-   "dt_s": 3.6636202335357666
-  },
-  {
-   "moi": "genova",
-   "CMR2": 0.32853185649159816,
-   "CMC": 0.44902494867730625,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 750010.0,
-   "warm_chi_li_icb": 0.0027253836470666993,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 0.0027253836164961593,
-   "cold_rcmb": 1941359.1325644478,
-   "cold_admissible": true,
-   "dt_s": 3.6717936992645264
-  },
-  {
-   "moi": "genova",
-   "CMR2": 0.32853185649159816,
-   "CMC": 0.44902494867730625,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 700010.0,
-   "warm_chi_li_icb": 0.0022288601081840455,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 0.0022288601049959135,
-   "cold_rcmb": 1941171.4958613792,
-   "cold_admissible": true,
-   "dt_s": 3.749032497406006
+   "dt_s": 3.6985411643981934
   },
   {
    "moi": "genova",
@@ -902,7 +902,7 @@
    "cold_chi_li_icb": 0.0014443524988533721,
    "cold_rcmb": 1940923.4867609767,
    "cold_admissible": true,
-   "dt_s": 4.351044178009033
+   "dt_s": 4.275794267654419
   },
   {
    "moi": "genova",
@@ -911,15 +911,49 @@
    "light": "S",
    "chi_Si_icb": null,
    "composition": "S",
-   "ricb_m": 900010.0,
-   "warm_chi_li_icb": 0.004824496250069021,
+   "ricb_m": 700010.0,
+   "warm_chi_li_icb": 0.0022288601081840455,
    "warm_isnow": 0,
    "status": "ok",
    "cold_isnow": 0,
-   "cold_chi_li_icb": 0.004824496095447473,
-   "cold_rcmb": 1942280.1839480828,
+   "cold_chi_li_icb": 0.0022288601049959135,
+   "cold_rcmb": 1941171.4958613792,
    "cold_admissible": true,
-   "dt_s": 3.2018544673919678
+   "dt_s": 3.596986770629883
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.32853185649159816,
+   "CMC": 0.44902494867730625,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 650010.0,
+   "warm_chi_li_icb": 0.0018056465442214122,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.0018056468601455058,
+   "cold_rcmb": 1941028.398104928,
+   "cold_admissible": true,
+   "dt_s": 3.7231414318084717
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.32853185649159816,
+   "CMC": 0.44902494867730625,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 750010.0,
+   "warm_chi_li_icb": 0.0027253836470666993,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.0027253836164961593,
+   "cold_rcmb": 1941359.1325644478,
+   "cold_admissible": true,
+   "dt_s": 3.731790542602539
   },
   {
    "moi": "genova",
@@ -936,7 +970,7 @@
    "cold_chi_li_icb": 0.0033099818436787523,
    "cold_rcmb": 1941599.372602173,
    "cold_admissible": true,
-   "dt_s": 3.6384997367858887
+   "dt_s": 3.753370761871338
   },
   {
    "moi": "genova",
@@ -945,15 +979,15 @@
    "light": "S",
    "chi_Si_icb": null,
    "composition": "S",
-   "ricb_m": 850010.0,
-   "warm_chi_li_icb": 0.004001650306773654,
+   "ricb_m": 900010.0,
+   "warm_chi_li_icb": 0.004824496250069021,
    "warm_isnow": 0,
    "status": "ok",
    "cold_isnow": 0,
-   "cold_chi_li_icb": 0.004001650300047864,
-   "cold_rcmb": 1941902.3059496423,
+   "cold_chi_li_icb": 0.004824496095447473,
+   "cold_rcmb": 1942280.1839480828,
    "cold_admissible": true,
-   "dt_s": 3.713521957397461
+   "dt_s": 3.2076351642608643
   },
   {
    "moi": "genova",
@@ -970,7 +1004,24 @@
    "cold_chi_li_icb": 0.005810127480249148,
    "cold_rcmb": 1942748.5159943139,
    "cold_admissible": true,
-   "dt_s": 3.2720863819122314
+   "dt_s": 3.229276180267334
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.32853185649159816,
+   "CMC": 0.44902494867730625,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 850010.0,
+   "warm_chi_li_icb": 0.004001650306773654,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.004001650300047864,
+   "cold_rcmb": 1941902.3059496423,
+   "cold_admissible": true,
+   "dt_s": 3.6253511905670166
   },
   {
    "moi": "genova",
@@ -987,7 +1038,7 @@
    "cold_chi_li_icb": 0.007000945739926014,
    "cold_rcmb": 1943327.1799112665,
    "cold_admissible": true,
-   "dt_s": 3.2655208110809326
+   "dt_s": 3.26066517829895
   },
   {
    "moi": "genova",
@@ -1004,7 +1055,7 @@
    "cold_chi_li_icb": 0.008454204470411128,
    "cold_rcmb": 1944041.7832395874,
    "cold_admissible": true,
-   "dt_s": 3.1814682483673096
+   "dt_s": 3.2541377544403076
   },
   {
    "moi": "genova",
@@ -1021,7 +1072,7 @@
    "cold_chi_li_icb": 0.010250502839606141,
    "cold_rcmb": 1944926.646292422,
    "cold_admissible": true,
-   "dt_s": 3.229196786880493
+   "dt_s": 3.283860921859741
   },
   {
    "moi": "genova",
@@ -1038,7 +1089,7 @@
    "cold_chi_li_icb": 0.01250540751814682,
    "cold_rcmb": 1946027.921441948,
    "cold_admissible": true,
-   "dt_s": 3.334801435470581
+   "dt_s": 3.165297508239746
   },
   {
    "moi": "genova",
@@ -1055,7 +1106,7 @@
    "cold_chi_li_icb": 0.015392443585203692,
    "cold_rcmb": 1947410.8803910506,
    "cold_admissible": true,
-   "dt_s": 3.3296473026275635
+   "dt_s": 3.2580225467681885
   },
   {
    "moi": "genova",
@@ -1072,24 +1123,7 @@
    "cold_chi_li_icb": 0.01918681224479934,
    "cold_rcmb": 1949172.0488885785,
    "cold_admissible": true,
-   "dt_s": 3.2111806869506836
-  },
-  {
-   "moi": "genova",
-   "CMR2": 0.32853185649159816,
-   "CMC": 0.44902494867730625,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 1300010.0,
-   "warm_chi_li_icb": 0.024353045391463202,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 0.024353045302140157,
-   "cold_rcmb": 1951459.370079383,
-   "cold_admissible": true,
-   "dt_s": 3.2390408515930176
+   "dt_s": 3.2811896800994873
   },
   {
    "moi": "genova",
@@ -1106,7 +1140,24 @@
    "cold_chi_li_icb": 0.03176856001385501,
    "cold_rcmb": 1954527.3464392205,
    "cold_admissible": true,
-   "dt_s": 3.343628168106079
+   "dt_s": 3.1761226654052734
+  },
+  {
+   "moi": "genova",
+   "CMR2": 0.32853185649159816,
+   "CMC": 0.44902494867730625,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 1300010.0,
+   "warm_chi_li_icb": 0.024353045391463202,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.024353045302140157,
+   "cold_rcmb": 1951459.370079383,
+   "cold_admissible": true,
+   "dt_s": 3.2837767601013184
   },
   {
    "moi": "genova",
@@ -1123,7 +1174,7 @@
    "cold_chi_li_icb": 0.043450998157307096,
    "cold_rcmb": 1958893.9892494315,
    "cold_admissible": true,
-   "dt_s": 3.317544460296631
+   "dt_s": 3.3041393756866455
   },
   {
    "moi": "genova",
@@ -1140,7 +1191,7 @@
    "cold_chi_li_icb": 0.06071477732851574,
    "cold_rcmb": 1965579.291923442,
    "cold_admissible": true,
-   "dt_s": 4.223881244659424
+   "dt_s": 4.301006555557251
   },
   {
    "moi": "genova",
@@ -1157,7 +1208,7 @@
    "cold_chi_li_icb": 0.15168697006013884,
    "cold_rcmb": 1983451.6328690243,
    "cold_admissible": true,
-   "dt_s": 6.0214293003082275
+   "dt_s": 5.908970832824707
   },
   {
    "moi": "genova",
@@ -1174,7 +1225,7 @@
    "cold_chi_li_icb": 0.15126813763596225,
    "cold_rcmb": 1983324.5816377173,
    "cold_admissible": true,
-   "dt_s": 6.754051685333252
+   "dt_s": 6.616425275802612
   },
   {
    "moi": "margot",
@@ -1189,7 +1240,7 @@
    "status": "failed",
    "exc": "SolverError",
    "message": "getk2: ricb=0.799394 >= rcmb=0.8 (nd) or grid fully inside the inner core (nrs=400)",
-   "dt_s": 0.9651331901550293
+   "dt_s": 0.9407374858856201
   },
   {
    "moi": "margot",
@@ -1206,7 +1257,7 @@
    "cold_chi_li_icb": 0.041351669081069894,
    "cold_rcmb": 1970449.6507810717,
    "cold_admissible": true,
-   "dt_s": 3.85977840423584
+   "dt_s": 3.944491386413574
   },
   {
    "moi": "margot",
@@ -1223,7 +1274,7 @@
    "cold_chi_li_icb": 0.024141357350994694,
    "cold_rcmb": 1965656.807209102,
    "cold_admissible": true,
-   "dt_s": 3.8879055976867676
+   "dt_s": 3.8124613761901855
   },
   {
    "moi": "genova",
@@ -1240,7 +1291,7 @@
    "cold_chi_li_icb": 0.14322408560322997,
    "cold_rcmb": 1980812.1411152454,
    "cold_admissible": true,
-   "dt_s": 8.495590209960938
+   "dt_s": 8.447064638137817
   },
   {
    "moi": "margot",
@@ -1257,7 +1308,7 @@
    "cold_chi_li_icb": 0.042188901557308214,
    "cold_rcmb": 1957818.01745971,
    "cold_admissible": true,
-   "dt_s": 3.9031896591186523
+   "dt_s": 3.971231460571289
   },
   {
    "moi": "margot",
@@ -1274,7 +1325,56 @@
    "cold_chi_li_icb": 0.024519120453849925,
    "cold_rcmb": 1952884.4631782419,
    "cold_admissible": true,
-   "dt_s": 3.3941586017608643
+   "dt_s": 3.2957301139831543
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.3418746455455814,
+   "CMC": 0.4311404835675304,
+   "light": "S+Si",
+   "chi_Si_icb": 0.09,
+   "composition": "S+Si_0.09",
+   "ricb_m": 1450010.0,
+   "warm_chi_li_icb": 0.1348738989078191,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.1348738989078191,
+   "cold_rcmb": 2034382.7269726377,
+   "cold_admissible": true,
+   "dt_s": 6.67664098739624
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.32866346690777587,
+   "CMC": 0.4484708975620945,
+   "light": "S+Si",
+   "chi_Si_icb": 0.05,
+   "composition": "S+Si_0.05",
+   "ricb_m": 1800010.0,
+   "warm_chi_li_icb": 0.07604346289597677,
+   "warm_isnow": 1,
+   "status": "failed",
+   "exc": "SolverError",
+   "message": "Line search failed at Newton iteration 8: no admissible step down to alpha=0.000976562 (trial chi_li_icb=0.210605 > bound 0.210574)",
+   "dt_s": 12.219876766204834
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.3418746455455814,
+   "CMC": 0.4311404835675304,
+   "light": "S+Si",
+   "chi_Si_icb": 0.09,
+   "composition": "S+Si_0.09",
+   "ricb_m": 1500010.0,
+   "warm_chi_li_icb": 0.15640730754358437,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.15640730747044054,
+   "cold_rcmb": 2040160.941910197,
+   "cold_admissible": true,
+   "dt_s": 9.527885913848877
   },
   {
    "moi": "margot",
@@ -1291,39 +1391,22 @@
    "cold_chi_li_icb": 0.1679291473116371,
    "cold_rcmb": 2039090.6373196545,
    "cold_admissible": true,
-   "dt_s": 5.111576795578003
+   "dt_s": 5.256966590881348
   },
   {
    "moi": "margot",
-   "CMR2": 0.32866346690777587,
-   "CMC": 0.4484708975620945,
+   "CMR2": 0.3410440203243698,
+   "CMC": 0.43219054202976626,
    "light": "S+Si",
-   "chi_Si_icb": 0.05,
-   "composition": "S+Si_0.05",
-   "ricb_m": 1800010.0,
-   "warm_chi_li_icb": 0.07604346289597677,
-   "warm_isnow": 1,
+   "chi_Si_icb": 0.08,
+   "composition": "S+Si_0.08",
+   "ricb_m": 1450010.0,
+   "warm_chi_li_icb": 0.14372229096690362,
+   "warm_isnow": 0,
    "status": "failed",
    "exc": "SolverError",
-   "message": "Line search failed at Newton iteration 8: no admissible step down to alpha=0.000976562 (trial chi_li_icb=0.210605 > bound 0.210574)",
-   "dt_s": 12.439293384552002
-  },
-  {
-   "moi": "margot",
-   "CMR2": 0.3343268958502485,
-   "CMC": 0.44087389267665,
-   "light": "S+Si",
-   "chi_Si_icb": 0.05,
-   "composition": "S+Si_0.05",
-   "ricb_m": 1550010.0,
-   "warm_chi_li_icb": 0.15212244665235722,
-   "warm_isnow": 0,
-   "status": "ok",
-   "cold_isnow": 0,
-   "cold_chi_li_icb": 0.15212244681668607,
-   "cold_rcmb": 2008071.6368291148,
-   "cold_admissible": true,
-   "dt_s": 7.094318151473999
+   "message": "Newton solver did not converge within maxit=12 iterations",
+   "dt_s": 11.5431489944458
   },
   {
    "moi": "margot",
@@ -1340,39 +1423,58 @@
    "cold_chi_li_icb": 0.16628527944718086,
    "cold_rcmb": 2034846.2320326278,
    "cold_admissible": true,
-   "dt_s": 4.21788215637207
+   "dt_s": 4.319171905517578
   },
   {
    "moi": "margot",
-   "CMR2": 0.3410440203243698,
-   "CMC": 0.43219054202976626,
+   "CMR2": 0.3343268958502485,
+   "CMC": 0.44087389267665,
    "light": "S+Si",
-   "chi_Si_icb": 0.08,
-   "composition": "S+Si_0.08",
-   "ricb_m": 1450010.0,
-   "warm_chi_li_icb": 0.14372229096690362,
-   "warm_isnow": 0,
-   "status": "failed",
-   "exc": "SolverError",
-   "message": "Newton solver did not converge within maxit=12 iterations",
-   "dt_s": 11.535686492919922
-  },
-  {
-   "moi": "margot",
-   "CMR2": 0.34549859646944514,
-   "CMC": 0.42661823088776357,
-   "light": "S",
-   "chi_Si_icb": null,
-   "composition": "S",
-   "ricb_m": 850010.0,
-   "warm_chi_li_icb": 0.13400319758868973,
+   "chi_Si_icb": 0.05,
+   "composition": "S+Si_0.05",
+   "ricb_m": 1550010.0,
+   "warm_chi_li_icb": 0.15212244665235722,
    "warm_isnow": 0,
    "status": "ok",
    "cold_isnow": 0,
-   "cold_chi_li_icb": 0.13400319758061813,
-   "cold_rcmb": 2030401.2985036315,
+   "cold_chi_li_icb": 0.15212244681668607,
+   "cold_rcmb": 2008071.6368291148,
    "cold_admissible": true,
-   "dt_s": 6.609750509262085
+   "dt_s": 6.730350971221924
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.3471218501455297,
+   "CMC": 0.4246232265073625,
+   "light": "S+Si",
+   "chi_Si_icb": 0.09,
+   "composition": "S+Si_0.09",
+   "ricb_m": 1250010.0,
+   "warm_chi_li_icb": 0.1381650901430886,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.1381650901498295,
+   "cold_rcmb": 2051330.0663707955,
+   "cold_admissible": true,
+   "dt_s": 5.115636587142944
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.3471218501455297,
+   "CMC": 0.4246232265073625,
+   "light": "S+Si",
+   "chi_Si_icb": 0.09,
+   "composition": "S+Si_0.09",
+   "ricb_m": 1300010.0,
+   "warm_chi_li_icb": 0.15195356116248218,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.1519535611806681,
+   "cold_rcmb": 2055706.3746120904,
+   "cold_admissible": true,
+   "dt_s": 4.3032941818237305
   },
   {
    "moi": "margot",
@@ -1389,7 +1491,24 @@
    "cold_chi_li_icb": 0.14165502076265632,
    "cold_rcmb": 2034690.699652498,
    "cold_admissible": true,
-   "dt_s": 6.31881046295166
+   "dt_s": 6.008466720581055
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.34549859646944514,
+   "CMC": 0.42661823088776357,
+   "light": "S",
+   "chi_Si_icb": null,
+   "composition": "S",
+   "ricb_m": 850010.0,
+   "warm_chi_li_icb": 0.13400319758868973,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.13400319758061813,
+   "cold_rcmb": 2030401.2985036315,
+   "cold_admissible": true,
+   "dt_s": 6.697977542877197
   },
   {
    "moi": "margot",
@@ -1406,7 +1525,7 @@
    "cold_chi_li_icb": 0.12943116265560503,
    "cold_rcmb": 2058682.0147269869,
    "cold_admissible": true,
-   "dt_s": 7.394490480422974
+   "dt_s": 7.59555459022522
   },
   {
    "moi": "margot",
@@ -1423,7 +1542,92 @@
    "cold_chi_li_icb": 0.1342953120957888,
    "cold_rcmb": 2060475.772770129,
    "cold_admissible": true,
-   "dt_s": 6.473987102508545
+   "dt_s": 6.370976209640503
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.34207708571809564,
+   "CMC": 0.43088533594871786,
+   "light": "S+Si",
+   "chi_Si_icb": 0.11,
+   "composition": "S+Si_0.11",
+   "ricb_m": 1600010.0,
+   "warm_chi_li_icb": 0.15646899311654067,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.15646899310474943,
+   "cold_rcmb": 2042670.8961967386,
+   "cold_admissible": true,
+   "dt_s": 4.168709993362427
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.34207708571809564,
+   "CMC": 0.43088533594871786,
+   "light": "S+Si",
+   "chi_Si_icb": 0.11,
+   "composition": "S+Si_0.11",
+   "ricb_m": 1650010.0,
+   "warm_chi_li_icb": 0.18503827833193914,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.18503827822561425,
+   "cold_rcmb": 2050488.7339756144,
+   "cold_admissible": true,
+   "dt_s": 5.462311267852783
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.35010483871485554,
+   "CMC": 0.4210053209805744,
+   "light": "S+Si",
+   "chi_Si_icb": 0.12,
+   "composition": "S+Si_0.12",
+   "ricb_m": 1300010.0,
+   "warm_chi_li_icb": 0.1388060726163603,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.13880607259863922,
+   "cold_rcmb": 2065455.3360610618,
+   "cold_admissible": true,
+   "dt_s": 4.3107171058654785
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.35010483871485554,
+   "CMC": 0.4210053209805744,
+   "light": "S+Si",
+   "chi_Si_icb": 0.12,
+   "composition": "S+Si_0.12",
+   "ricb_m": 1250010.0,
+   "warm_chi_li_icb": 0.12838432572050584,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.12838432572050584,
+   "cold_rcmb": 2061627.0573171056,
+   "cold_admissible": true,
+   "dt_s": 5.172007322311401
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.35010483871485554,
+   "CMC": 0.4210053209805744,
+   "light": "S+Si",
+   "chi_Si_icb": 0.12,
+   "composition": "S+Si_0.12",
+   "ricb_m": 1350010.0,
+   "warm_chi_li_icb": 0.15090995420211883,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.15090995420299022,
+   "cold_rcmb": 2069830.52765579,
+   "cold_admissible": true,
+   "dt_s": 5.207345962524414
   },
   {
    "moi": "margot",
@@ -1440,7 +1644,7 @@
    "cold_chi_li_icb": 0.00031017378862618184,
    "cold_rcmb": 1952311.214664645,
    "cold_admissible": true,
-   "dt_s": 3.7671191692352295
+   "dt_s": 3.707066059112549
   },
   {
    "moi": "margot",
@@ -1457,7 +1661,7 @@
    "cold_chi_li_icb": 0.0006642991056325947,
    "cold_rcmb": 1952390.5220286285,
    "cold_admissible": true,
-   "dt_s": 4.195034027099609
+   "dt_s": 4.300696849822998
   },
   {
    "moi": "margot",
@@ -1474,7 +1678,7 @@
    "cold_chi_li_icb": 0.0010764980397926038,
    "cold_rcmb": 1952503.4965766082,
    "cold_admissible": true,
-   "dt_s": 4.3420891761779785
+   "dt_s": 4.152097940444946
   },
   {
    "moi": "margot",
@@ -1489,7 +1693,7 @@
    "status": "failed",
    "exc": "SolverError",
    "message": "Newton solver did not converge within maxit=12 iterations",
-   "dt_s": 8.113969802856445
+   "dt_s": 8.260773181915283
   },
   {
    "moi": "margot",
@@ -1506,7 +1710,7 @@
    "cold_chi_li_icb": 0.001557436193849696,
    "cold_rcmb": 1952655.9689774662,
    "cold_admissible": true,
-   "dt_s": 4.39236855506897
+   "dt_s": 4.314981937408447
   },
   {
    "moi": "margot",
@@ -1523,7 +1727,7 @@
    "cold_chi_li_icb": 0.002119869371870367,
    "cold_rcmb": 1952854.5935927613,
    "cold_admissible": true,
-   "dt_s": 3.6706156730651855
+   "dt_s": 3.7515954971313477
   },
   {
    "moi": "margot",
@@ -1540,7 +1744,7 @@
    "cold_chi_li_icb": 0.0027813981271783673,
    "cold_rcmb": 1953108.555574468,
    "cold_admissible": true,
-   "dt_s": 3.781726837158203
+   "dt_s": 3.626701593399048
   },
   {
    "moi": "margot",
@@ -1557,7 +1761,7 @@
    "cold_chi_li_icb": 0.0035639747162959303,
    "cold_rcmb": 1953428.7901126663,
    "cold_admissible": true,
-   "dt_s": 3.705453872680664
+   "dt_s": 3.752892255783081
   },
   {
    "moi": "margot",
@@ -1574,7 +1778,7 @@
    "cold_chi_li_icb": 0.004496098776893565,
    "cold_rcmb": 1953828.9360304407,
    "cold_admissible": true,
-   "dt_s": 3.8113343715667725
+   "dt_s": 3.772620439529419
   },
   {
    "moi": "margot",
@@ -1591,7 +1795,7 @@
    "cold_chi_li_icb": 0.005615769524850266,
    "cold_rcmb": 1954326.5319556538,
    "cold_admissible": true,
-   "dt_s": 3.7121787071228027
+   "dt_s": 3.7836639881134033
   },
   {
    "moi": "margot",
@@ -1608,7 +1812,7 @@
    "cold_chi_li_icb": 0.006974504454294213,
    "cold_rcmb": 1954944.1970716324,
    "cold_admissible": true,
-   "dt_s": 3.8161072731018066
+   "dt_s": 3.6482417583465576
   },
   {
    "moi": "margot",
@@ -1625,7 +1829,7 @@
    "cold_chi_li_icb": 0.008643376896575539,
    "cold_rcmb": 1955711.6812477098,
    "cold_admissible": true,
-   "dt_s": 3.7203216552734375
+   "dt_s": 3.7596395015716553
   },
   {
    "moi": "margot",
@@ -1642,7 +1846,7 @@
    "cold_chi_li_icb": 0.010724903441925655,
    "cold_rcmb": 1956669.7277612558,
    "cold_admissible": true,
-   "dt_s": 3.8577873706817627
+   "dt_s": 3.800536870956421
   },
   {
    "moi": "margot",
@@ -1659,7 +1863,7 @@
    "cold_chi_li_icb": 0.013369798442506822,
    "cold_rcmb": 1957874.269962181,
    "cold_admissible": true,
-   "dt_s": 3.682823419570923
+   "dt_s": 3.810830593109131
   },
   {
    "moi": "margot",
@@ -1676,7 +1880,7 @@
    "cold_chi_li_icb": 0.01681321209964482,
    "cold_rcmb": 1959407.2225957299,
    "cold_admissible": true,
-   "dt_s": 3.8321681022644043
+   "dt_s": 3.6636009216308594
   },
   {
    "moi": "margot",
@@ -1693,7 +1897,7 @@
    "cold_chi_li_icb": 0.02144747874102937,
    "cold_rcmb": 1961395.319976518,
    "cold_admissible": true,
-   "dt_s": 3.746885299682617
+   "dt_s": 3.782137393951416
   },
   {
    "moi": "margot",
@@ -1710,7 +1914,7 @@
    "cold_chi_li_icb": 0.027984923699583563,
    "cold_rcmb": 1964046.1166891316,
    "cold_admissible": true,
-   "dt_s": 3.852980136871338
+   "dt_s": 3.7866568565368652
   },
   {
    "moi": "margot",
@@ -1727,7 +1931,7 @@
    "cold_chi_li_icb": 0.03795702078881496,
    "cold_rcmb": 1967761.7176184994,
    "cold_admissible": true,
-   "dt_s": 3.7063491344451904
+   "dt_s": 3.7975995540618896
   },
   {
    "moi": "margot",
@@ -1744,7 +1948,7 @@
    "cold_chi_li_icb": 0.05472412762662912,
    "cold_rcmb": 1973507.6871271085,
    "cold_admissible": true,
-   "dt_s": 3.485067367553711
+   "dt_s": 3.3233325481414795
   },
   {
    "moi": "margot",
@@ -1761,7 +1965,24 @@
    "cold_chi_li_icb": 0.08900147166216299,
    "cold_rcmb": 1985119.430026734,
    "cold_admissible": true,
-   "dt_s": 5.150954246520996
+   "dt_s": 5.256296396255493
+  },
+  {
+   "moi": "margot",
+   "CMR2": 0.3316199104681969,
+   "CMC": 0.4444727091081451,
+   "light": "S+Si",
+   "chi_Si_icb": 0.03,
+   "composition": "S+Si_0.03",
+   "ricb_m": 1550010.0,
+   "warm_chi_li_icb": 0.15897195750188772,
+   "warm_isnow": 0,
+   "status": "ok",
+   "cold_isnow": 0,
+   "cold_chi_li_icb": 0.15897195750188772,
+   "cold_rcmb": 1997983.014607319,
+   "cold_admissible": true,
+   "dt_s": 7.283023357391357
   }
  ]
 }
