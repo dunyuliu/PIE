@@ -219,6 +219,7 @@ column:
 | 4 | light-element fraction outside its admissible range (also after line-search backtracking) |
 | 5 | inner-core radius reached the core-mantle boundary |
 | 6 | Si above the liquidus table's maximum (by design; checked once before the sweep) |
+| 7 | non-finite ICB density from `eosInnerCore` (non-finite ODE initial state; a per-radius failure since item 30, previously an uncaught `ValueError` that killed the sweep) |
 
 History: before v1.2.0 `error_code` was always 0 and a failure silently
 truncated the csv; in v1.2.0 failures were recorded only in the jsonl log

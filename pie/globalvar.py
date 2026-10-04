@@ -93,6 +93,11 @@ class ErrorCode(enum.IntEnum):
                                      # radius -- outside the model's physical domain
     SI_ABOVE_LIQUIDUS_MAX       = 6  # chi_Si_icb above the liquidus table's max Si%wt --
                                      # an intentional, by-design stop, not a solver bug
+    NONFINITE_ICB_DENSITY       = 7  # eosInnerCore returned a non-finite density at the
+                                     # centre/ICB, so the ODE initial state y0 is non-finite
+                                     # (a Newton trial iterate left the EoS domain); caught
+                                     # before solve_ivp so it is a per-radius failure row,
+                                     # not a process-killing ValueError (item 30)
 
 ERROR_CODE_DESCRIPTIONS = {
     ErrorCode.CONVERGED:                 "converged",
@@ -102,6 +107,7 @@ ERROR_CODE_DESCRIPTIONS = {
     ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX:"chi_li outside admissible box (negative or > eutectic)",
     ErrorCode.RICB_GE_RCMB:              "ricb >= rcmb: outside physical domain",
     ErrorCode.SI_ABOVE_LIQUIDUS_MAX:     "chi_Si_icb above liquidus max Si%wt (by design)",
+    ErrorCode.NONFINITE_ICB_DENSITY:     "shoot: non-finite ICB density from eosInnerCore (y0 non-finite)",
 }
 
 # Structured per-run solver log (PATHWAY_FORWARD.md item 15): one JSONL
