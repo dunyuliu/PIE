@@ -259,7 +259,7 @@ dispatching session rather than removing a live child's worktree.
   resolved it to a pure-additive 27-file/0-deletion diff).
 - CI caught a real repo-hygiene violation on first push (`fast` failed):
   4 scripts (jordan-kim's `analyze.py`/`trace.py`, marta-silva's
-  `build_rowsets.py`/`make_figures.py`) hardcoded `/home/utig5/...` absolute
+  `build_rowsets.py`/`make_figures.py`) hardcoded `/home/<user>/...` absolute
   paths. Fixed directly (both authors finished, not live; mechanical,
   self-verified per rule -- `ZEN` now uses the project's `~/shared_dataset`
   expanduser convention, `ITEM18A` resolves relative to the script's own
