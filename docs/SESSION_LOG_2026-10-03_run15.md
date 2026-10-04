@@ -81,26 +81,111 @@ open-ended: run until item 18(a) is AUDITED-PASS or blocked.
   sections, then I independently re-derive before landing (gate axis 3) and
   diff the worktree's shared-file edits against current main (gate axis 4).
 
+## Item 18(a) landing, board items 30/31, and priya-nair audit (continued, 2026-10-04)
+
+- dunyu-liu's run completed: `docs/notes/item18a_population_rerun_2026-10-03.md`
+  (main stratified sample 1,400 runs/93 strata, 4.22h wall; 326/1,400 mid-sweep
+  crashes; 52 timeouts; 23,608 pre-stop rows, 6,964 (30%) failing vs v1.0.5;
+  1,098 converged=admissible (3.6%), 135 snow-bearing (12%); cold-check
+  977/1,098 reconverge, 28 different roots, 20/135 snow flips). PR #70 opened,
+  head `7afc3a1`.
+- Dispatched a second pair (2-specialist cap): `priya-nair` to independently
+  audit PR #70 from the raw `pie/results/` outputs (read-only), and
+  `lars-eriksson` to read-only-audit the crash class (uncaught `ValueError:
+  y0 must be finite` at `pie/shootp.py:117`, `driverp.py` catching only
+  `SolverError`, `robust_runner.py` masking partial csv on nonzero rc) and the
+  convergence-regression count (6,964 radii v1.0.5 converged that v1.6.0
+  fails). I re-read all three file:line claims directly against current HEAD
+  before accepting them (`pie/shootp.py:95-125`, `pie/driverp.py:165-210`,
+  `pie/robust_runner.py:705-730`) — confirmed as described.
+- Once lars's slot freed, dispatched `zofia-kaminska` again (still within the
+  2-cap, priya still running) to open board rows for lars's two findings.
+  Result: items 30 (P1, sweep crash + masked partial output) and 31 (P2,
+  convergence regression, owner scope question) added, PR #71, squash
+  `40cccfb`. CI green (fast 6m32s, fast-latest 9m40s).
+- priya-nair's audit returned PASS on all 6 claim categories (section-4
+  table bit-for-bit; design weights exact; CI95 formula confirmed-as-coded;
+  cold-check counts near-exact with path-sensitivity noise on intermediates;
+  Si-only mechanism confirmed at `pie/libCore.py:238-250`,
+  `pie/shootp.py:201-214,305-357`; census totals exact). This had initially
+  reached me only as an internal task-notification, not a durable record —
+  the dispatching session (owner) flagged this explicitly and blocked the
+  merge until the audit was on the record. Fixed by posting the full
+  per-claim PASS/FAIL table with raw-file provenance as PR #70 comment
+  `#5977099181`.
+- PR #70's first CI run (`37180456976`) failed: `test_repo_hygiene.py`
+  caught two leaked machine-local absolute paths (`docs/notes/
+  item18a_population_rerun_2026-10-03.md:136`, and `...scripts/
+  census_summary.json`'s `"zenodo"` field). Fixed via a scratch clone (not
+  dunyu-liu's live worktree, which had already exited) — redacted both to
+  `<repo>/` and `~/shared_dataset/...` respectively, committed `eda0220`
+  (`Agent: wei-lin`). Re-run `37181101447`: green (fast 9m41s, fast-latest
+  4m48s).
+- Gate axis 4 before merge: diffed PR #70's `PATHWAY_FORWARD.md` and
+  `.gitignore` edits against `origin/main` — both clean, append-only (new
+  item-18a row; `.gitignore` adds `pie/results/` only), no reverted content.
+  Merged (squash) -> `44f946d`. Local branch delete deferred (still checked
+  out in dunyu-liu's worktree; remote branch deleted).
+- Mechanical board update (conductor's own, not Zofia's — state-column only,
+  no re-scoping): updated item 18a's status line from "UNAUDITED — pending
+  priya-nair" to "AUDITED-PASS (priya-nair, PR #70 comment ...)" citing the
+  now-durable audit record. Committed directly to main (docs-only,
+  conductor-owned log/board pattern) -> `cbdd3bb`.
+
+## Item 18 final state
+
+Item 18(a) is now AUDITED-PASS (priya-nair, full detail in the PR #70 PASS/
+FAIL comment and in `PATHWAY_FORWARD.md` row 18a). No number has gone to
+coauthors. The owner's erratum/comment decision (item 18's long-standing open
+item) remains the owner's — reporting the snow-fraction result to the owner
+is the next action, not yet sent as of this log entry.
+
+## Board items 30/31 — not yet routed to a fix
+
+Both are open, confirmed (lars-eriksson + my own file:line re-read), not yet
+fixed:
+- Item 30 (P1): `pie/shootp.py:117`'s uncaught `ValueError` crashes 326/1,400
+  sweep jobs; `pie/driverp.py` catches only `SolverError`;
+  `pie/robust_runner.py:705-730` masks partial csv (`n_rows=0`) on nonzero
+  rc. Needs iris-vermeulen regression test first (rule 10), then a fix
+  dispatch (likely dunyu-liu, per the item-29(a) pattern), gated through the
+  normal PR+CI+patch-release cycle. **Not yet dispatched this session** —
+  no free specialist slot was used for it before the two-cap queue emptied
+  into item 18a's merge; next conductor turn should dispatch iris-vermeulen
+  first.
+- Item 31 (P2): convergence regression vs v1.0.5 (6,964/23,608 radii), a
+  deliberate-tradeoff candidate from item 17's line-search change. lars's
+  verdict: cannot be resolved by a read-only audit; needs an owner scope
+  decision before any investigation command is meaningful. **Escalating to
+  the owner**, per the standing rule that routing ambiguity needing a human
+  call is not mine to resolve silently.
+
 ## Open, not yet actioned
 
-- Regression flag above (`pie/shootp.py:117` ValueError; 259/783 pre-stop
-  convergence loss vs v1.0.5) needs independent confirmation and, if real, a
-  board row + lars-eriksson audit. Deliberately not interrupting dunyu-liu's
-  in-flight run to chase it.
-- PR #70 not yet reviewed/merged (waiting on completion).
-- priya-nair audit of item 18(a) not yet dispatched (waiting on dunyu-liu's
-  final deliverable).
+- Item 30: needs iris-vermeulen (test) then a fix dispatch — not yet started.
+- Item 31: owner scope decision needed before investigation.
+- Snow-fraction result report to owner: not yet sent (next action).
+- Worktree reaping (dunyu-liu, zofia-kaminska x2, priya-nair, lars-eriksson):
+  deferred to milestone close, `git status --ignored` check first per
+  standing rule.
 
-## Phase table so far (CDT; `TZ=America/Chicago date -d <iso>` on recorded
+## Phase table (CDT; `TZ=America/Chicago date -d <iso>` on recorded
 timestamps)
 
 | Phase | Est | Actual | Status |
 |---|---|---|---|
-| Orient | 10 min | ~10 min (19:35-19:45 CDT approx.) | done |
-| Dispatch zofia + dunyu-liu (parallel) | 5 min | ~5 min (19:45-19:50 CDT approx.) | done |
-| zofia board-hygiene mission (background) | 20 min | ~3h35m (wall, mostly idle wait on agent; agent's own tool time 215,086 ms) | done, PR #69 merged `6cbc3bb` |
-| Gate + merge PR #69 | 10 min | ~10 min (CI watch + verify + merge, completed 2026-10-04 00:48:16 UTC = 19:48:16 CDT) | done |
-| dunyu-liu item 18(a) mission (background, in flight) | not yet estimated (population re-run — pilot timing only known so far) | in progress; interim checkpoint at agent tool-time 2,657,644 ms | in progress |
+| Orient | 10 min | ~10 min | done |
+| Dispatch zofia + dunyu-liu (parallel) | 5 min | ~5 min | done |
+| zofia board-hygiene mission 1 (items 9/28/29) | 20 min | ~3h35m wall | done, PR #69 `6cbc3bb` |
+| Gate + merge PR #69 | 10 min | ~10 min | done |
+| dunyu-liu item 18(a) mission | not pre-estimated | ~4.2h run wall + agent overhead | done, PR #70 head `7afc3a1` |
+| Dispatch priya-nair + lars-eriksson (parallel) | 15 min | ~1-2h wall (audit + file:line read-only audit) | done |
+| zofia board-hygiene mission 2 (items 30/31) | 15 min | ~30-45 min | done, PR #71 `40cccfb` |
+| Audit-on-record fix (coordinator-flagged gap) | n/a (unplanned) | ~15 min (compose + post PR comment) | done, comment `#5977099181` |
+| PR #70 CI-fix (machine-local path redaction) | n/a (unplanned) | ~20 min (diagnose + scratch clone + fix + re-push) | done, `eda0220`, CI green |
+| Gate + merge PR #70 | 15 min | ~15 min | done, `44f946d` |
+| Board mechanical update (item 18a AUDITED-PASS) | 5 min | ~5 min | done, `cbdd3bb` |
 
-HEAD at this checkpoint: `6cbc3bb` (origin/main). No tags cut this session.
-PR #69 merged. PR #70 open, not yet gated.
+HEAD at this checkpoint: `cbdd3bb` (origin/main, pushed). Tags: none cut this
+session. PRs: #69, #70, #71 merged. Items 30/31 remain open for the next
+conductor turn / owner decision.
