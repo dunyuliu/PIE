@@ -1,0 +1,14 @@
+{
+ "moi": "margot",
+ "CMR2": "0.35803504145230963",
+ "CMC": "0.411680374641858",
+ "light": "S+Si",
+ "chi_Si_icb": "0.05",
+ "source_beyond_error_codes": {
+  "2": 1,
+  "4": 34
+ },
+ "status": "exception",
+ "exc": "TimeoutExpired(['/home/utig5/dliu/PIE/.venv/bin/python3', '-m', 'pie', 'p', '0.35803504145230963', '0.411680374641858', 'S+Si', 'Edmund', '0.05'], 1200)",
+ "wall_s": 1210.3437955379486
+}
