@@ -4,8 +4,8 @@ import json, os, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 V105_SRC = os.path.join(HERE, "v105_src")
-HEAD_ROOT = "/home/utig5/dliu/PIE/.claude/worktrees/agent-ac348a4ee8c2b6362"
-PYEXE = "/home/utig5/dliu/PIE/.venv/bin/python3"  # HEAD: the pinned/supported env (PROJECT_RULES rule 3c)
+HEAD_ROOT = "<machine-local-path-redacted>"
+PYEXE = "<machine-local-path-redacted>"  # HEAD: the pinned/supported env (PROJECT_RULES rule 3c)
 PYEXE_V105 = os.path.join(HERE, "v105_venv", "bin", "python3")  # v1.0.5: scipy<1.14 (has interp2d, which
                                                    # v1.0.5's coreEos.meltingDataFromFile calls directly --
                                                    # removed in scipy>=1.14, so the pinned HEAD venv cannot

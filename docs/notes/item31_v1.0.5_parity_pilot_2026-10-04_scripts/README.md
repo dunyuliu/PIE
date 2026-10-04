@@ -26,7 +26,7 @@ debug I/O was added.
 python3 run_batch.py <n_workers>     # -> results/run_*.json (14 samples)
 python3 classify.py <n_sample> <seed>  # -> classification.json
 ```
-`run_pair.py` runs v1.0.5 (legacy venv) and HEAD (`/home/utig5/dliu/PIE/.venv`)
+`run_pair.py` runs v1.0.5 (legacy venv) and HEAD (`<machine-local-path-redacted>
 each in its own subprocess/cwd on the same composition args, never importing
 v1.0.5 into the HEAD process. `classify.py` matches v1.0.5-converged radii to
 HEAD's `pMetaData_*.csv` rows at the same `ricb` (meters; `dr=50e3` grid and
