@@ -189,3 +189,45 @@ timestamps)
 HEAD at this checkpoint: `cbdd3bb` (origin/main, pushed). Tags: none cut this
 session. PRs: #69, #70, #71 merged. Items 30/31 remain open for the next
 conductor turn / owner decision.
+
+## Worktree/branch cleanup (2026-10-04, consilium shared-disk request)
+
+Verified each target against `git worktree list` + `git status --porcelain --ignored` +
+`git cherry` before touching anything (none held evidence beyond build caches/venvs;
+all four remote branches showed 0 unmerged commits against `origin/main`).
+
+Removed worktrees + local branches:
+- `agent-a62d1a46b03278269` (haruto-nakamura, v1.6.1 release `3cf3d1d`, tagged/published) — branch `worktree-agent-a62d1a46b03278269`
+- `agent-aae137eb8bd738464` (zofia-kaminska, item-30 board close, PR #73 squash `c2246f0`) — branch `worktree-agent-aae137eb8bd738464`
+- `agent-a6d5a0a2a345a3a58` (zofia-kaminska, items 9/28/29, PR #69 squash `6cbc3bb`) — branch `zofia-kaminska/close-item29-board-audit`
+- `agent-a79bc90d464f865c6` (dunyu-liu, item-30 fix, PR #72 squash `133967a`) — branch `dunyu-liu/item30-fix`
+- `agent-ad50f582249bd680a` (iris-vermeulen, item-30 regression tests, folded into PR #72) — branch `iris-vermeulen/item30-regression-tests`
+- `agent-a3787c6a46df5728f` (zofia-kaminska, board items 30/31 opened, PR #71 squash `40cccfb`) — branch `worktree-agent-a3787c6a46df5728f`
+
+Deleted remote branches (confirmed 0 unmerged commits vs `origin/main` via `git cherry`):
+`board/item20-core-mass`, `docs/board-item7-8-fixes`, `testsys-truth-regression-anchors`,
+`v1.2.0-error-codes-logging`.
+
+Kept, per the consilium request's own list: `agent-a7d2fd536939b904f` (dunyu-liu's
+original item-18a worktree, raw `pie/results/` ~2.7GB, needed for 18(b) until its
+audit runs), `agent-ac0791fdea4a873d5` (dunyu-liu's stopped item-18b attempt --
+zero commits, flagged below), `agent-ac134d96bd0721c4c` (jordan-kim's completed
+item-18b analysis, commit `6602e92`), and the scratchpad worktree
+`item18b-figs` (marta-silva's in-progress figure regen, branch
+`marta-silva/item18b-figure-comparison`).
+
+**Flagged, not actioned:** the request's "keep... (jordan's ac0791fd, marta's
+ac134d96...)" parenthetical mislabels ownership -- `ac0791fd` is actually
+dunyu-liu's stopped, zero-commit item-18b attempt (not jordan's), and `ac134d96`
+is actually jordan-kim's completed work (not marta's; marta's real output is the
+separate scratchpad worktree). Net effect on what gets kept vs removed was
+unaffected (both IDs were in the keep list either way), so no action was
+needed to correct it, but noted here in case it reflects a stale view upstream.
+
+**Not actioned, holding:** `agent-a95e98e6d7e2a33e7` was listed as "locked;
+check what they were first" alongside `aae137eb`. Checked: this is
+marta-silva's dispatch worktree, and she is LIVE right now (dispatched this
+session, not yet returned a completion notification) -- her real work lives in
+the separate scratchpad worktree (`item18b-figs`), but `a95e98e6`'s `.claude`
+worktree slot is still her active lock. Did not touch it; flagging back to the
+dispatching session rather than removing a live child's worktree.
