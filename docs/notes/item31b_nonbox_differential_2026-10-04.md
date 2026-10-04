@@ -85,11 +85,11 @@ item exists to test does not apply to them.
 
 | head_error_code | sampled (verified) | HEAD-correctly-rejects | HEAD-over-constrains | inconclusive |
 |---|---|---|---|---|
-| 4 (CHI_OUTSIDE_ADMISSIBLE_BOX) | 130 (8+92+30 across 3 batches) | **130 (100%)** | 0 | 0 |
+| 4 (CHI_OUTSIDE_ADMISSIBLE_BOX) | 138 (8+100+30 across 3 batches) | **138 (100%)** | 0 | 0 |
 | 1 (NEWTON_MAXIT) | 1 (the only matched instance found) | 0 | **1 (100%)** | 0 |
 | 2 (SINGULAR_JACOBIAN) | 0 (none found in the matched-prestop population) | -- | -- | -- |
 
-All 130 sampled code-4 radii fail check 2 (`driverp.py:287-288`'s
+All 138 sampled code-4 radii fail check 2 (`driverp.py:287-288`'s
 post-convergence `chi>=0` test) -- every one of them passes `mercmodel_box`
 (check 1) but has a negative value somewhere in its converged `chi_li`
 profile. **This sharpens item 31's original corrected verdict from
@@ -173,7 +173,7 @@ root-comparison method cannot even be applied.
 ## 4. Recommendation
 
 1. **Code 4 (~39% of the full regressed population): close as
-   correctly-rejects.** 130/130 sampled radii fail HEAD's own
+   correctly-rejects.** 138/138 sampled radii fail HEAD's own
    `driverp.py:287-288` chi>=0 post-check -- this is the documented,
    deliberate v1.2.0 policy operating as designed, not a Newton-robustness
    question. Item 31's corrected verdict (section on code 4) is now fully
@@ -186,15 +186,18 @@ root-comparison method cannot even be applied.
    Newton (not HEAD's) at those specific beyond-prestop radii, to get an
    independent v1.0.5-equivalent root there to compare against -- not
    assumed free; see cost estimate below.
-3. **The one matched NEWTON_MAXIT instance is a genuine, mechanistically-
-   traced HEAD-over-constrains case** (growth_max=100 line-search guard
-   rejecting a self-correcting large step on an ill-conditioned radius,
-   after ordinary roundoff divergence from v1.3.2's linear-solve change).
-   If the owner wants this fixed rather than just understood: raising
-   `growth_max` (e.g. to 150-200) or adding a fallback that accepts the
-   full step when the half-step alternative itself fails to make progress
-   within a few iterations are both testable, bounded changes -- scope for
-   a follow-up, not this diagnostic.
+3. **Anecdotal, n=1, not a headline finding:** the single matched NEWTON_MAXIT
+   instance is a mechanistically-traced HEAD-over-constrains case
+   (growth_max=100 line-search guard rejecting a self-correcting large step
+   on an ill-conditioned radius, after ordinary roundoff divergence from
+   v1.3.2's linear-solve change) -- but it is one sample out of 864 matched
+   candidates and does not establish a rate or a pattern for code 1/2.
+   If the owner wants this one instance fixed rather than just understood:
+   raising `growth_max` (e.g. to 150-200) or adding a fallback that accepts
+   the full step when the half-step alternative itself fails to make
+   progress within a few iterations are both testable, bounded changes --
+   scope for a follow-up, not this diagnostic, and not justified by n=1
+   alone.
 4. **Papercut (not blocking, logged to `~/code/papercuts.md`)**: the
    landed `run_pair.py`/`classify.py` (item 31, PR #79) reference a
    `v105_src` scratch directory that was never created under that name
