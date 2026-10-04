@@ -85,6 +85,14 @@ def test_nonfinite_icb_density_mid_sweep_does_not_crash_the_whole_job(sys_argv_p
 
     monkeypatch.setattr(shootp.eos, "eosInnerCore", poison_first_call)
 
+    # The sweep's post-convergence bookkeeping (plot + hdf snapshot) touches
+    # a real './results/<case>/' directory and real HDF5 writes, neither of
+    # which this fast test should depend on -- stub them out exactly as
+    # testsys/unit/test_sweep_policy.py:159-161 does for the same reason.
+    monkeypatch.setattr(driverp.vis, "plot_isnow", lambda *a, **k: a[-1])
+    monkeypatch.setattr(driverp.pd.Series, "to_hdf", lambda *a, **k: None)
+    monkeypatch.setattr(driverp.pd.DataFrame, "to_hdf", lambda *a, **k: None)
+
     # This call currently raises `ValueError: All components of the
     # initial state y0 must be finite.` out of scipy.integrate.solve_ivp,
     # uncaught by driverp()/solve_radius -- i.e. this test ERRORS on
