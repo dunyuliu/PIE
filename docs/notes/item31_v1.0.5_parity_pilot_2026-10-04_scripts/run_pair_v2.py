@@ -13,8 +13,8 @@ import json, os, subprocess, sys, time, shutil, csv as csvmod, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 V105_SRC = os.path.join(HERE, "v105_src_instrumented")
-HEAD_ROOT = "/home/utig5/dliu/PIE/.claude/worktrees/agent-ac348a4ee8c2b6362"
-PYEXE = "/home/utig5/dliu/PIE/.venv/bin/python3"
+HEAD_ROOT = "<machine-local-path-redacted>"
+PYEXE = "<machine-local-path-redacted>"
 PYEXE_V105 = os.path.join(HERE, "v105_venv", "bin", "python3")
 RM_A = 2439360.0
 

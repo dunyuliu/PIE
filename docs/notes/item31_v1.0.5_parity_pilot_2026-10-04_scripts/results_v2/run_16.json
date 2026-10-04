@@ -9,6 +9,6 @@
   "4": 33
  },
  "status": "exception",
- "exc": "TimeoutExpired(['/home/utig5/dliu/PIE/.venv/bin/python3', '-m', 'pie', 'p', '0.3189418189299668', '0.46214071423592523', 'S+Si', 'Edmund', '0.04'], 1200)",
+ "exc": "TimeoutExpired(['<machine-local-path-redacted>', '-m', 'pie', 'p', '0.3189418189299668', '0.46214071423592523', 'S+Si', 'Edmund', '0.04'], 1200)",
  "wall_s": 1204.954316854477
 }

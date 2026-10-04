@@ -7,6 +7,6 @@
  "source_prestop_rerun_failed": 24,
  "source_prestop_rows": 32,
  "status": "exception",
- "exc": "TimeoutExpired(['/home/utig5/dliu/PIE/.venv/bin/python3', '-m', 'pie', 'p', '0.3383198104386025', '0.43603417668257244', 'S+Si', 'Edmund', '0.09'], 1200)",
+ "exc": "TimeoutExpired(['<machine-local-path-redacted>', '-m', 'pie', 'p', '0.3383198104386025', '0.43603417668257244', 'S+Si', 'Edmund', '0.09'], 1200)",
  "wall_s": 1447.4958295822144
 }
