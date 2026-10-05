@@ -1,7 +1,7 @@
 site_name: PIE
-site_url: https://dunyu-liu.github.io/PIE/
-repo_url: https://github.com/dunyu-liu/PIE
-repo_name: dunyu-liu/PIE
+site_url: https://dunyuliu.github.io/PIE/
+repo_url: https://github.com/dunyuliu/PIE
+repo_name: dunyuliu/PIE
 edit_uri: ''
 
 # This file lives at docs/user/mkdocs.yml so the repo root stays clean

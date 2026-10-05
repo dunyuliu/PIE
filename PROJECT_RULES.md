@@ -42,8 +42,10 @@ board item 28 — `util/plot/`, `util/run/`; relocation of existing scripts, not
 new scope, and no physics code), `historical_versions/` (frozen zips/tars of prior versions, read-only —
 see rule 7), `testsys/` and `.github/` (in scope for this project like `pie/`
 — CI config and the test suite, maintained by whoever is doing the current
-campaign work; no separate team owns them). `results/` is a run artifact, not
-tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
+campaign work; no separate team owns them), `.githooks/` (board item 33's
+opt-in pre-commit path-hygiene hook; `core.hooksPath` is not a tracked git
+setting, so this directory is how the hook ships in the repo at all). `results/`
+is a run artifact, not tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
 a session's own working notes go in `docs/notes/` (create the directory only
 when the first note needs it).
 
