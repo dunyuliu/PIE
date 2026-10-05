@@ -1,0 +1,62 @@
+[
+ {
+  "moi": "genova",
+  "CMR2": "0.32551095379721556",
+  "CMC": "0.45319212235143497",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "liquidus_eq": "Edmund",
+  "source_prestop_rerun_failed": 27,
+  "source_prestop_rows": 32
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.32728338927564954",
+  "CMC": "0.4507378157091692",
+  "light": "S",
+  "chi_Si_icb": "0.00",
+  "liquidus_eq": "Edmund",
+  "source_prestop_rerun_failed": 19,
+  "source_prestop_rows": 31
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.340188451574478",
+  "CMC": "0.4336390589311449",
+  "light": "S+Si",
+  "chi_Si_icb": "0.10",
+  "liquidus_eq": "Edmund",
+  "source_prestop_rerun_failed": 20,
+  "source_prestop_rows": 34
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.33836446961032873",
+  "CMC": "0.4359766265349538",
+  "light": "S+Si",
+  "chi_Si_icb": "0.09",
+  "liquidus_eq": "Edmund",
+  "source_prestop_rerun_failed": 24,
+  "source_prestop_rows": 34
+ },
+ {
+  "moi": "genova",
+  "CMR2": "0.3416081493861436",
+  "CMC": "0.43183688757158123",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "liquidus_eq": "Edmund",
+  "source_prestop_rerun_failed": 3,
+  "source_prestop_rows": 30
+ },
+ {
+  "moi": "margot",
+  "CMR2": "0.32656220561348254",
+  "CMC": "0.4513565791335241",
+  "light": "Si",
+  "chi_Si_icb": "0.00",
+  "liquidus_eq": "Edmund",
+  "source_prestop_rerun_failed": 23,
+  "source_prestop_rows": 39
+ }
+]
