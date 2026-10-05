@@ -22,6 +22,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 13a. The stranger-clone check runs in an isolated, from-scratch environment.
 14. Every paper that uses PIE output records its Zenodo DOIs and a matching git tag.
 15. Shared machines: cap PIE's parallelism to leave headroom for others.
+16. An audit confirms the question and population, not just the arithmetic.
 
 ---
 
@@ -412,4 +413,34 @@ is the enforcement mechanism — it derives the single `PIE_WORKERS` cap that
 both xdist and every in-test process pool read, so the two never double up.
 The knox `xargs` launcher recipe in README's "Large ensemble Monte Carlo
 simulation" section is the other consumer of the same knob.
+
+---
+
+## 16. An audit confirms the question and population, not just the arithmetic
+
+Before signing off a quantitative or verification claim, an auditor restates
+(a) the exact population/subset the claim is drawn from and (b) the exact
+question being answered, and confirms both match what the task brief
+actually asked — not just that the arithmetic inside the stated check is
+correct. A claim can be computed exactly right and still answer a question
+nobody asked.
+
+**Rationale**: a check that is internally consistent can still be checking
+the wrong thing; verifying its arithmetic gives false confidence that the
+headline is right.
+
+**Incident (2026-10-04)**: item 31's pilot (PR #79) verifier omitted
+`pie/driverp.py:287-288`'s post-convergence `chi>=0` check; lars-eriksson's
+and priya-nair's audits passed the verifier's fidelity and count arithmetic
+without noticing it was missing a production check entirely — the headline
+reversed from "HEAD-over-constrains" to "undetermined" once caught. Days
+later, item 31c (PR #85) ran its `sort_models` filter check against HEAD's
+own all-NaN failed-row diagnostics instead of v1.0.5's published row — both
+audits again passed the check's internal consistency without noticing it was
+answering the wrong question.
+
+**How to apply**: an audit sign-off states, in one line each, the population
+the check ran over and the question the task brief asked, before stating the
+check passed. If either line can't be written, the audit is incomplete, not
+passing.
 
