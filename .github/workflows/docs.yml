@@ -1,0 +1,75 @@
+name: Build and publish the PIE docs site
+
+# Board item 34: a MkDocs Material site built from docs/user/, published to
+# GitHub Pages on a tag push so each release publishes docs matching its
+# own code. On a pull request (and on push to main) this workflow only
+# BUILDS (--strict), the same command a human runs locally before
+# committing -- nothing is deployed until a tag actually lands. Pushing to
+# main must never trigger a deploy: GitHub Pages is not enabled for this
+# repo yet, and a push-to-main deploy trigger would leave a permanently
+# failing deploy job on main the moment this workflow merges.
+on:
+  pull_request:
+    paths:
+      - 'docs/user/**'
+      - '.github/workflows/docs.yml'
+  push:
+    branches: [main]
+    tags: ['v*']
+
+concurrency:
+  group: docs-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install MkDocs and the Material theme
+        run: pip install -r docs/user/requirements.txt
+
+      - name: Regenerate the parameter and error-code reference, fail if stale
+        run: python3 docs/user/gen_params.py --check
+
+      - name: Build the docs site (strict -- any warning fails the build)
+        run: mkdocs build --strict -f docs/user/mkdocs.yml
+
+      # Branch/PR runs stop here: build only, nothing deployed.
+      - name: Upload the built site as a workflow artifact
+        if: github.event_name != 'push' || github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pie-docs-site
+          path: docs/user-site
+          retention-days: 7
+
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/user-site
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-22.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

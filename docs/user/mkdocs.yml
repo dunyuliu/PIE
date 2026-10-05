@@ -1,0 +1,45 @@
+site_name: PIE
+site_url: https://dunyu-liu.github.io/PIE/
+repo_url: https://github.com/dunyu-liu/PIE
+repo_name: dunyu-liu/PIE
+edit_uri: ''
+
+# This file lives at docs/user/mkdocs.yml so the repo root stays clean
+# (PROJECT_RULES.md rule 1). docs_dir therefore has to point back at this
+# same directory (mkdocs' own default, "docs/" relative to the config
+# file, would otherwise look for docs/user/docs/, which does not exist).
+docs_dir: .
+# Must be OUTSIDE docs_dir (mkdocs refuses a site_dir nested inside
+# docs_dir); built into docs/user-site, a sibling of docs/user/, which is
+# gitignored -- the build output is a byproduct, not a tracked file.
+site_dir: ../user-site
+
+theme:
+  name: material
+  palette:
+    scheme: default
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Running a case: running-a-case.md
+  - Model overview: model-overview.md
+  - Parameters: parameters.md
+  - Output files: outputs.md
+  - Benchmarks: benchmarks.md
+  - Troubleshooting: troubleshooting.md
+  - Citing: citing.md
+
+# strict: not set here -- `mkdocs build --strict` (the CI/local gate
+# command) passes it on the command line so a plain `mkdocs build` (e.g. a
+# quick local preview) is never accidentally blocked by a warning.
+markdown_extensions:
+  - tables
+  - fenced_code
+
+# gen_params.py itself and this file's requirements.txt are tooling, not
+# documentation pages or page assets -- excluded so the built site does not
+# ship them as static downloads.
+exclude_docs: |
+  gen_params.py
+  requirements.txt
