@@ -1,22 +1,50 @@
 # Item 31c -- direct sampling of error_code 1/2 across the full matched-prestop population
 
-**AUDITED-PASS (lars-eriksson + priya-nair, 2026-10-04).** lars-eriksson
+**AUDITED-PASS (lars-eriksson + priya-nair, 2026-10-04; sort_models claim
+re-verified by priya-nair, 2026-10-04).** First pass: lars-eriksson
 independently confirmed `verify_v105_root_v3.py` faithfully reproduces HEAD's
 production acceptance chain PER-ROW liquidus (si-only chi_max switch at
 shootp.py:349-350, the liquidus-independent S/S+Si formula at shootp.py:
 352-353, the S+Si pre-sweep si_gate at driverp.py:137-139, and the three
 pre-existing mercmodel_box/chi-profile/rs>=rcmb checks carried over from v2
 without regression) at exact file:line, including a numeric spot-check of
-both sampled code-1 rows' chi_max/si_gate values -- no discrepancies.
-priya-nair independently re-derived every headline count directly from the
-raw `classification_v2b/v2c/v3_full/v3_trial.json` files (496/368/5717
+both sampled code-1 rows' chi_max/si_gate values -- no discrepancies. This
+audit scoped verifier fidelity only, not the sort_models claim, and stands
+unaffected by the correction below. priya-nair independently re-derived
+every headline count directly from the raw
+`classification_v2b/v2c/v3_full/v3_trial.json` files (496/368/5717
 candidates, 1/0/2 code-1, 0 code-2 each, 6581/3/0/6578 combined) and the
 306-composition exhaustive-census claim (268 newly run + 38 already covered
 = 306, confirmed against `main_rerun_rows.json`'s independent recount) --
 all CONFIRMED, the apparent 262+20+18=300 arithmetic gap resolved by the
 6-row trial batch omitted from that quick sum. Both sampled code-1 rows'
 `full_head_accept=True` and `sort_models` NaN diagnostics were independently
-confirmed as literal JSON values, not prose claims.
+confirmed as literal JSON values, not prose claims -- the arithmetic was
+correct, but see the correction below on what the sort_models check was
+actually measuring.
+
+**Correction (2026-10-04, found by the conductor, not by either first-pass
+audit):** the original sort_models section ran the paper's filter predicates
+against HEAD's own failed-row diagnostics (`isnow`/`Tcmb`/`chi_S_bulk`, all
+NaN by construction since `error_code!=0` means HEAD never converged at that
+row) -- a tautological check that was guaranteed to read "fails every
+filter" regardless of any real physics, and answers the wrong question. The
+question that matters is whether **v1.0.5's published row** at each
+(composition, ricb) point passes the paper's filters and lands in the Fig 2
+heat-map range. Direct inspection of the raw Zenodo archive
+(`~/shared_dataset/zenodo.16459292/extracted/PIE/work.genova/results/`)
+found there is no published row to check at all: all 3 sampled code-1 radii
+are **beyond the maximum radius v1.0.5's own published sweep reached** for
+that exact composition (see "sort_models survival (Task 3) -- CORRECTED
+2026-10-04" below for the per-point table). This is a stronger conclusion
+than a corrected filter-pass/fail would have been -- these 3 points, by
+construction, cannot have affected the paper, even though they sit within
+Fig 2's nominal ricb<=1800 km axis range. priya-nair independently
+re-verified this specific claim against the raw `pMetaData_<chi>.csv`
+(exact `ricb` column, no row at the requested radius) and the
+`DataSi%wt<chi>_R*.h5` filenames (independent cross-check via a second file
+type) for all 3 compositions -- CONFIRMED for all 3 points, with exact
+max-ricb values matching the table below.
 
 Status: **analysis complete, read-only** (no `pie/` solver/policy code touched).
 Follow-on to item31b (`item31b_nonbox_differential_2026-10-04.md`, PR #82,
@@ -100,14 +128,20 @@ compositions exceeded the 1200 s HEAD-subprocess timeout and are recorded as
 candidate counting by `prestop_candidates()`'s existing exception-skip, not a
 new failure mode.
 
-Extrapolated: the dominant cost is the full-population census itself (already
-run, not a projection) at **~89 minutes wall / 262 compositions / 28-way
-parallel** ~= **20.4 s/composition amortized**. Re-running the full item18a
-1400-composition population (not just the 306 prestop-failing ones) at the
-same rate would cost **~= 1400 x 20.4 s / parallelism ~= 8 hours wall at
-28-way**, i.e. this 306-composition exhaustive census was already the
-cost-bounded, representative option -- a further "~30/code" draw would have
-added no information once the true population size (3 and 0) was known.
+Measured, not projected: the 306-composition exhaustive census (the entire
+candidate pool this question could possibly draw from) ran in **~89 minutes
+wall at 28-way parallel**, ~20.4 s/composition amortized. For scale only
+(not an alternative that was run): extrapolating that same per-composition
+rate to item18a's full 1400-composition population (not just the 306
+prestop-failing ones) would cost **~8 hours wall at 28-way** -- i.e. roughly
+5x the time, for a population that cannot contain any additional code-1/2
+instances beyond the 306 already covered (code 1/2 only arise where
+`prestop_rerun_failed>0`). A "~30/code" partial sample was therefore both
+unreachable (the population has only 3 code-1, 0 code-2 rows total) and, had
+it been reachable, would have cost less than the 89-minute exhaustive run
+that was actually performed -- the exhaustive census was chosen because it
+was cheap enough to just do and removes all sampling uncertainty, not
+because any alternative was more expensive.
 
 ## Task 2/3 -- classification and sort_models survival, exhaustive (not sampled)
 
@@ -149,26 +183,48 @@ line-search artifact (growth_max=100 cap) near a specific (moi, radius, chi)
 neighborhood, not a broad algorithmic defect -- now reinforced by exhaustive
 rather than partial coverage.
 
-### sort_models survival (Task 3)
+### sort_models survival (Task 3) -- CORRECTED 2026-10-04
 
-Read directly from the Zenodo bundle's
-`Plotting and Analysis Scripts/For Monte Carlo Study/sort_models.py`
-(paper-facing filter script, not part of `pie/`), not inferred:
-- `"all"` filter applies **only to folders matching `*S+Si_Edmund`** by glob
-  -- structurally inapplicable to S-only/Si-only rows (none of this pilot's 3
-  code-1 rows are S-only/Si-only, so this doesn't matter here, but is noted
-  for completeness).
-- `sl`: `isnow in (1.0, 3.0)`.
-- `goodTCMB`: `1700 <= Tcmb <= 2100`.
-- `goodTCMB_sl`, `goodTCMB_goodchiS` (`chi_S_bulk < 0.02`) compose the above.
+**The first pass of this section ran `sort_models`' filters against HEAD's
+own failed-row diagnostics (all NaN by construction, since `error_code=1`
+means HEAD never reached a converged downstream solve) and reported "fails
+every filter" -- that check is tautological and was flagged as wrong: it
+answers "does the row that failed look like a failure", not the question
+that decides paper impact, which is whether **v1.0.5's published root**
+at that (composition, radius) point would have passed the paper's filters
+and landed in a published figure.**
 
-All 3 code-1 rows **fail every sort_models filter**, for a uniform, mechanical
-reason: `isnow`, `Tcmb`, `chi_S_bulk` are all `NaN` on these rows, because
-HEAD never wrote a converged downstream solve at this radius (`error_code=1`
-means the row IS the failure point) -- `NaN` compared against any numeric
-threshold is `False` in every predicate. This is not evidence of a parity gap
-in sort_models; it is the expected consequence of filtering on diagnostics
-that only exist for converged rows.
+Re-derived directly from the Zenodo archive (`~/shared_dataset/
+zenodo.16459292/extracted/PIE/work.genova/results/<composition>/`), reading
+the actual published `pMetaData_<chi>.csv` files and `DataSi%wt<chi>_R*.h5`
+filenames for each of the 3 compositions -- a few minutes, no runs:
+
+| # | composition dir | chi_Si_icb | requested ricb | max published ricb for this composition | published row at this radius? |
+|---|---|---|---|---|---|
+| 1 | `CMR2_0.33720309225290551_CMC_0.43747819456340975_S+Si_Edmund` | 0.09 | 1,650,010 m (1650.01 km) | 1,600,000 m (1600 km, `DataSi%wt0.09_R1600.0.h5`) | **no -- 50.01 km beyond max** |
+| 2 | `CMR2_0.33861967373120566_CMC_0.43564804836797444_S+Si_Edmund` | 0.10 | 1,650,010 m (1650.01 km) | 1,600,000 m (1600 km, `DataSi%wt0.10_R1600.0.h5`) | **no -- 50.01 km beyond max** |
+| 3 | `CMR2_0.33548584951205618_CMC_0.43971750288293066_S+Si_Edmund` | 0.07 | 1,600,010 m (1600.01 km) | 1,550,000 m (1550 km, `DataSi%wt0.07_R1550.0.h5`) | **no -- 50.01 km beyond max** |
+
+**All 3 code-1 instances occur beyond the maximum radius v1.0.5's own
+published sweep reached for that composition.** The "v1.0.5 root" evaluated
+in Task 2 is not a published result -- it is produced by re-running v1.0.5's
+unmodified source code (`verify_v105_root_v3.py` / `v105_src_instrumented/`)
+past the point where the original campaign's sweep actually stopped
+(`prestop`). There is no row in `pMetaData_*.csv`, no `Data*.h5` file, and
+therefore no entry in any `sort_models` output csv (`all_models_*`,
+`goodTCMB_*`, etc.) at these 3 exact points -- **the question "does v1.0.5's
+published row pass sort_models" has no row to evaluate, which answers it
+more decisively than any filter check could: these 3 points cannot have
+affected the paper, because the paper's own published sweep never produced
+them.** (All 3 requested radii are still inside Fig. 2's nominal axis range,
+ricb <= 1800 km -- the composition's sweep simply stopped short of that
+radius, for reasons internal to the original v1.0.5 run, before reaching it.)
+
+This reframes, rather than overturns, item31b's and this note's Task 2
+conclusion: the 3 instances are real (v1.0.5's solver code, if run further,
+converges where HEAD's Newton does not) but they describe a region the
+published dataset never sampled, not a published result HEAD would
+silently drop.
 
 ## Task 5 -- no solver/policy code touched
 
