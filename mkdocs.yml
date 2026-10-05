@@ -1,0 +1,47 @@
+site_name: PIE Documentation
+site_description: >-
+  PIE (Planetary Interior Evolution) -- user guide for inverting Mercury's
+  present-day interior structure and running the present-day and ensemble
+  workflows.
+repo_url: https://github.com/dunyuliu/PIE
+repo_name: PIE
+
+docs_dir: docs_site/docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Running PIE:
+      - Single case: running/single-case.md
+      - Scheduler sweep: running/scheduler.md
+      - Monte Carlo ensemble: running/monte-carlo.md
+      - Large ensembles (robust_runner): running/robust-runner.md
+  - Project layout: layout.md
+  - Version history: versions.md
+  - Project status: status.md

@@ -1,0 +1,6 @@
+# Docs-site build dependencies only (board item 34). Not part of the
+# package's own pinned runtime manifest (requirements.txt /
+# pyproject.toml) -- the docs site has no coupling to pie's numerical
+# dependencies, so it is pinned separately here.
+mkdocs==1.6.1
+mkdocs-material==9.7.7
