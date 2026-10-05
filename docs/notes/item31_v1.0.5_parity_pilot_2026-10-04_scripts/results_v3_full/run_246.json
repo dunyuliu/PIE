@@ -1,0 +1,13 @@
+{
+ "moi": "margot",
+ "CMR2": "0.3397312319141903",
+ "CMC": "0.4338606114295357",
+ "light": "S+Si",
+ "chi_Si_icb": "0.10",
+ "liquidus_eq": "Edmund",
+ "source_prestop_rerun_failed": 23,
+ "source_prestop_rows": 32,
+ "status": "exception",
+ "exc": "TimeoutExpired(['<path-redacted>/.venv/bin/python3', '-m', 'pie', 'p', '0.3397312319141903', '0.4338606114295357', 'S+Si', 'Edmund', '0.10'], 1200)",
+ "wall_s": 1440.9931559562683
+}

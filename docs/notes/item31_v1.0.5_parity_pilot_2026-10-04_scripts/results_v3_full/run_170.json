@@ -1,0 +1,13 @@
+{
+ "moi": "genova",
+ "CMR2": "0.3410434981251908",
+ "CMC": "0.4325518615981604",
+ "light": "S+Si",
+ "chi_Si_icb": "0.11",
+ "liquidus_eq": "Edmund",
+ "source_prestop_rerun_failed": 23,
+ "source_prestop_rows": 33,
+ "status": "exception",
+ "exc": "TimeoutExpired(['<path-redacted>/.venv/bin/python3', '-m', 'pie', 'p', '0.3410434981251908', '0.4325518615981604', 'S+Si', 'Edmund', '0.11'], 1200)",
+ "wall_s": 1414.8705694675446
+}

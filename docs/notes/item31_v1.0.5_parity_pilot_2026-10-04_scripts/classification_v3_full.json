@@ -1,0 +1,143 @@
+{
+ "n_candidates_total": 5717,
+ "by_head_error_code": {
+  "1.0": 2,
+  "4.0": 5715
+ },
+ "sample": [
+  {
+   "moi": "genova",
+   "light": "S+Si",
+   "chi_Si_icb": "0.10",
+   "liquidus_eq": "Edmund",
+   "CMR2": "0.33861967373120566",
+   "CMC": "0.43564804836797444",
+   "ricb_m": 1650010.0,
+   "head_error_code": 1.0,
+   "v105_normf": 8.082216039774304e-08,
+   "verify": {
+    "CMR2": "0.33861967373120566",
+    "CMC": "0.43564804836797444",
+    "light": "S+Si",
+    "liquidus_eq": "Edmund",
+    "chi_Si_icb": "0.10",
+    "ricb_m": 1650010.0,
+    "v": [
+     0.786583788427641,
+     0.9264156511702276,
+     0.8297571151325215,
+     0.5973706665828323,
+     0.14210509506706925
+    ],
+    "status": "ok",
+    "normf": 6.862320830284062e-10,
+    "f": [
+     5.652006640488594e-13,
+     1.4489520694382918e-11,
+     -6.860784163009725e-10,
+     -4.1705527920044005e-13,
+     6.624700787938309e-13
+    ],
+    "rcmb_m": 2024076.3163696676,
+    "chi_li_icb": 0.14210509506706925,
+    "Picb_Pa": 13900109634.478346,
+    "chi_max": 0.1857623517583956,
+    "err0": false,
+    "si_gate_pass": true,
+    "si_max_gate": 0.12,
+    "finite_f": true,
+    "finite_fout": true,
+    "box_finite_ok": true,
+    "box_rcmb_ok": true,
+    "box_chimax_ok": true,
+    "box_pass": true,
+    "chi_li_profile_min": 0.0,
+    "chi_profile_negative": false,
+    "ricb_ge_rcmb_final": false,
+    "full_head_accept": true,
+    "admissible": true
+   },
+   "label": "HEAD-over-constrains(a)",
+   "reason": "v1.0.5 root passes ALL of HEAD's own checks (si-gate, mercmodel_box, driverp.py:287-288 chi>=0, driverp.py:252 rs>=rcmb) yet HEAD's csv row for this radius has a non-zero error_code. newton_iters=13 on the HEAD row at this radius (no per-iterate trajectory captured for this batch -- (c) not claimed without that evidence, per task instructions)",
+   "sort_models": {
+    "applicable_all_filter": true,
+    "all": false,
+    "sl": false,
+    "goodTCMB": false,
+    "goodTCMB_sl": false,
+    "goodTCMB_goodchiS": false,
+    "chi_S_bulk": NaN,
+    "chi_Si_icb_pct": 10.0,
+    "isnow": NaN,
+    "Tcmb": NaN
+   }
+  },
+  {
+   "moi": "genova",
+   "light": "S+Si",
+   "chi_Si_icb": "0.07",
+   "liquidus_eq": "Edmund",
+   "CMR2": "0.3354858495120562",
+   "CMC": "0.43971750288293066",
+   "ricb_m": 1600010.0,
+   "head_error_code": 1.0,
+   "v105_normf": 8.090722483932815e-07,
+   "verify": {
+    "CMR2": "0.3354858495120562",
+    "CMC": "0.43971750288293066",
+    "light": "S+Si",
+    "liquidus_eq": "Edmund",
+    "chi_Si_icb": "0.07",
+    "ricb_m": 1600010.0,
+    "v": [
+     0.8103269710679952,
+     0.9650816023862311,
+     0.8242921780225765,
+     0.585485976970185,
+     0.1419846358809663
+    ],
+    "status": "ok",
+    "normf": 1.279256845278877e-10,
+    "f": [
+     -9.926642841051603e-13,
+     1.8817836178186553e-11,
+     -1.2649203906534012e-10,
+     -2.533306897589682e-12,
+     1.7974510768681284e-12
+    ],
+    "rcmb_m": 2010745.3673811522,
+    "chi_li_icb": 0.1419846358809663,
+    "Picb_Pa": 15130225394.724913,
+    "chi_max": 0.17994043604664217,
+    "err0": false,
+    "si_gate_pass": true,
+    "si_max_gate": 0.12,
+    "finite_f": true,
+    "finite_fout": true,
+    "box_finite_ok": true,
+    "box_rcmb_ok": true,
+    "box_chimax_ok": true,
+    "box_pass": true,
+    "chi_li_profile_min": 0.0,
+    "chi_profile_negative": false,
+    "ricb_ge_rcmb_final": false,
+    "full_head_accept": true,
+    "admissible": true
+   },
+   "label": "HEAD-over-constrains(a)",
+   "reason": "v1.0.5 root passes ALL of HEAD's own checks (si-gate, mercmodel_box, driverp.py:287-288 chi>=0, driverp.py:252 rs>=rcmb) yet HEAD's csv row for this radius has a non-zero error_code. newton_iters=13 on the HEAD row at this radius (no per-iterate trajectory captured for this batch -- (c) not claimed without that evidence, per task instructions)",
+   "sort_models": {
+    "applicable_all_filter": true,
+    "all": false,
+    "sl": false,
+    "goodTCMB": false,
+    "goodTCMB_sl": false,
+    "goodTCMB_goodchiS": false,
+    "chi_S_bulk": NaN,
+    "chi_Si_icb_pct": 7.000000000000001,
+    "isnow": NaN,
+    "Tcmb": NaN
+   }
+  }
+ ]
+}

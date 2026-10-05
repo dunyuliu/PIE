@@ -1,0 +1,42 @@
+{
+ "CMR2": "0.33861967373120566",
+ "CMC": "0.43564804836797444",
+ "light": "S+Si",
+ "liquidus_eq": "Edmund",
+ "chi_Si_icb": "0.10",
+ "ricb_m": 1650010.0,
+ "v": [
+  0.786583788427641,
+  0.9264156511702276,
+  0.8297571151325215,
+  0.5973706665828323,
+  0.14210509506706925
+ ],
+ "status": "ok",
+ "normf": 6.862320830284062e-10,
+ "f": [
+  5.652006640488594e-13,
+  1.4489520694382918e-11,
+  -6.860784163009725e-10,
+  -4.1705527920044005e-13,
+  6.624700787938309e-13
+ ],
+ "rcmb_m": 2024076.3163696676,
+ "chi_li_icb": 0.14210509506706925,
+ "Picb_Pa": 13900109634.478346,
+ "chi_max": 0.1857623517583956,
+ "err0": false,
+ "si_gate_pass": true,
+ "si_max_gate": 0.12,
+ "finite_f": true,
+ "finite_fout": true,
+ "box_finite_ok": true,
+ "box_rcmb_ok": true,
+ "box_chimax_ok": true,
+ "box_pass": true,
+ "chi_li_profile_min": 0.0,
+ "chi_profile_negative": false,
+ "ricb_ge_rcmb_final": false,
+ "full_head_accept": true,
+ "admissible": true
+}
