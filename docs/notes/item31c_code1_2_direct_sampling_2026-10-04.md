@@ -1,5 +1,23 @@
 # Item 31c -- direct sampling of error_code 1/2 across the full matched-prestop population
 
+**AUDITED-PASS (lars-eriksson + priya-nair, 2026-10-04).** lars-eriksson
+independently confirmed `verify_v105_root_v3.py` faithfully reproduces HEAD's
+production acceptance chain PER-ROW liquidus (si-only chi_max switch at
+shootp.py:349-350, the liquidus-independent S/S+Si formula at shootp.py:
+352-353, the S+Si pre-sweep si_gate at driverp.py:137-139, and the three
+pre-existing mercmodel_box/chi-profile/rs>=rcmb checks carried over from v2
+without regression) at exact file:line, including a numeric spot-check of
+both sampled code-1 rows' chi_max/si_gate values -- no discrepancies.
+priya-nair independently re-derived every headline count directly from the
+raw `classification_v2b/v2c/v3_full/v3_trial.json` files (496/368/5717
+candidates, 1/0/2 code-1, 0 code-2 each, 6581/3/0/6578 combined) and the
+306-composition exhaustive-census claim (268 newly run + 38 already covered
+= 306, confirmed against `main_rerun_rows.json`'s independent recount) --
+all CONFIRMED, the apparent 262+20+18=300 arithmetic gap resolved by the
+6-row trial batch omitted from that quick sum. Both sampled code-1 rows'
+`full_head_accept=True` and `sort_models` NaN diagnostics were independently
+confirmed as literal JSON values, not prose claims.
+
 Status: **analysis complete, read-only** (no `pie/` solver/policy code touched).
 Follow-on to item31b (`item31b_nonbox_differential_2026-10-04.md`, PR #82,
 AUDITED-PASS), which found error codes 1 (NEWTON_MAXIT) and 2
