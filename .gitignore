@@ -6,3 +6,4 @@ __pycache__/
 pie/commands_launcher
 pie/results/
 *.egg-info/
+docs/user-site/
