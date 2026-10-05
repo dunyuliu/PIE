@@ -2,6 +2,51 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
 
+* v1.6.2; 20261005; patch, docs-only: publishes the new MkDocs user-guide
+  site (board item 34, docs/user/, PR #88) to GitHub Pages at
+  https://dunyuliu.github.io/PIE/, via `.github/workflows/docs.yml`
+  (builds on every push/PR, deploys only on a `v*` tag push). No `pie/`
+  code change of any kind -- `git diff v1.6.1..HEAD -- pie/` is empty,
+  confirmed before this release was cut. Also carries the item-33
+  pre-commit path-hygiene hook (`.githooks/`, PR #84) and the item-31
+  v1.0.5-vs-HEAD audit documentation (PRs #79-86, #89), both already on
+  `main` since v1.6.1 and released here for the first time. Grant: patch
+  release, owner-requested, full ceremony (not the lighter patch cadence).
+  * **Added** (board item 34): `docs/user/` MkDocs Material site --
+    getting-started, running-a-case, model-overview, parameters, outputs,
+    benchmarks, troubleshooting, citing pages; `docs/user/gen_params.py`
+    regenerates the parameter/error-code reference table from
+    `pie/globalvar.py`'s `ErrorCode` enum, gated `--check`-clean in CI
+    before `mkdocs build --strict`.
+  * **Fixed** (found in this release's audit, before tagging): three
+    `docs/user/` files (`mkdocs.yml`'s `site_url`/`repo_url`/`repo_name`,
+    `getting-started.md`'s `git clone` command, `benchmarks.md`'s
+    `testsys/README.md` link) pointed at the wrong GitHub owner
+    (`dunyu-liu`, a 404) instead of the actual `dunyuliu` -- the published
+    quickstart clone command would not have worked. Fixed before the tag.
+  * **Fixed** (repo configuration, found in this release's audit): the
+    `github-pages` deployment environment's branch-policy allowed deploys
+    only from `main`, not from a tag, so `docs.yml`'s tag-triggered
+    `deploy` job would have been rejected outright by GitHub the first
+    time a `v*` tag was pushed. Added a `v*` tag policy to the
+    `github-pages` environment via the GitHub API before tagging.
+  * **Docs**: `PROJECT_RULES.md` rule 1's root whitelist now lists
+    `.githooks/` explicitly (board item 33, previously shipped without an
+    update to the whitelist it falls under); `PATHWAY_FORWARD.md` item 34
+    updated to record the owner's first-deploy approval and both fixes
+    above.
+  * Remaining open issues, not addressed here (non-blocking, see
+    `PATHWAY_FORWARD.md`): item 31's "knox"/internal-host mentions in
+    `docs/user/running-a-case.md` (cosmetic, routed to a follow-up); 12
+    item-31 audit-pilot JSON files under `docs/notes/` still carry
+    truncated machine-local path fragments the hygiene contract test's
+    pattern does not match (owner's path-leak policy is forward-only
+    redaction, not release-blocking, item 33).
+  * Gate: `testsys/run.py -n 4 unit contract integration` on a fresh
+    `uv venv --python 3.12` built from the pinned manifest in this release
+    worktree -- 292 passed, 15 skipped, 3 xfailed, 0 failed, 230.59s.
+    `mkdocs build --strict -f docs/user/mkdocs.yml` and
+    `docs/user/gen_params.py --check` both green on the same tree, post-fix.
 * v1.6.1; 20261004; patch, two independent crash/observability fixes to
   `pie/robust_runner.py` and `pie/shootp.py`, both landed on `main` since
   v1.6.0 and released here for the first time (neither was in any prior

@@ -12,7 +12,7 @@ different Python or unpinned/"latest" packages are untested here.
 Clone the repository first:
 
 ```
-git clone https://github.com/dunyu-liu/PIE.git
+git clone https://github.com/dunyuliu/PIE.git
 cd PIE
 ```
 
@@ -71,6 +71,6 @@ runner) and [Output Files](outputs.md) for what each file contains.
 
 This runs the fast tiers (unit, contract, integration -- the same gate CI
 runs on every push and PR), ~3-5 minutes. See
-[`testsys/README.md`](https://github.com/dunyu-liu/PIE/blob/main/testsys/README.md)
+[`testsys/README.md`](https://github.com/dunyuliu/PIE/blob/main/testsys/README.md)
 for tier definitions and runtimes, including the published-paper parity
 check against Zenodo-archived output.

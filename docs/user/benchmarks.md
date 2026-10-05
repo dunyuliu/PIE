@@ -40,7 +40,7 @@ from the shared published dataset cache, needs a local
 python3 -m pytest testsys/e2e/test_published_wide_sweep.py -m published_wide -v
 ```
 
-See [`testsys/README.md`](https://github.com/dunyu-liu/PIE/blob/main/testsys/README.md)
+See [`testsys/README.md`](https://github.com/dunyuliu/PIE/blob/main/testsys/README.md)
 for the full tier breakdown and runtimes.
 
 ## What each tier actually checks
