@@ -5,6 +5,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 1. Minimal changes; no new files until necessary — and a curated root.
 1a. Git tags are the version source of truth; `CHANGELOG.md` holds the change list.
 1b. `docs/` holds documentation, not artifacts; evidence is cited, not archived.
+1c. The tracked root is mechanically gated: layout, file size, a report-only tidy.
 2. No silent fallbacks, swallowed errors, or placeholder data.
 3. Gate every stage; pass before moving on.
 3a. A refactor of `src/` runs testsys green before and after, one module at a time.
@@ -127,6 +128,54 @@ test itself, so an addition is a reviewable one-line diff to that list,
 not a silent `git add`; (2) the count of tracked files under `docs/`
 outside `docs/user/` stays under a fixed cap, so the allowlist can grow
 one named file at a time but can't quietly regrow into a second pile.
+
+---
+
+## 1c. The tracked root is mechanically gated: layout, file size, a report-only tidy
+
+Rule 1 states the root whitelist as prose; this sub-rule makes it a gate, the
+same pattern rule 1b used for `docs/`. Three checks:
+
+1. **Layout**: the top-level entries returned by
+   `git ls-files | cut -d/ -f1 | sort -u` equal exactly: `CHANGELOG.md`,
+   `CITATION.cff`, `CLAUDE.md`, `LICENSE`, `PATHWAY_FORWARD.md`,
+   `PROJECT_RULES.md`, `README.md`, `pyproject.toml`, `requirements.txt`,
+   `update_log`, `.githooks`, `.github`, `docs`, `historical_versions`,
+   `pie`, `testsys`, `util` — no more, no less. An addition is a
+   reviewable one-line diff to this list, not a silent `git add` at the
+   root.
+2. **File size**: no file tracked by git exceeds 5 MB
+   (`git ls-files -z | xargs -0 du -b | awk '$1>5242880'` is empty).
+3. **Tidy (report-only, never a gate failure, never auto-fixing)**: lists,
+   for a human to action, stale `git worktree` entries
+   (`git worktree list`), remote branches merged into `main` with nothing
+   left pointing at them (`git branch -r --merged origin/main`) and ones
+   that look abandoned, any root-level file or directory not in the list
+   above, and any `results/`-shaped tree that ended up tracked despite
+   rule 1/`.gitignore`. This step only reports; it never deletes a branch,
+   a worktree, or a file — that is a decision for the item's owner, not a
+   check.
+
+**Rationale**: rule 1 named a whitelist in prose and rule 1b did the same
+for `docs/` with no check for a year's worth of commits — `docs/` grew to
+573 tracked files before anyone asked "should this be a gate" (rule 1b's own
+incident). The root is smaller today, but the failure mode is identical: a
+whitelist nobody runs is a comment, not a boundary. Writing the check down
+is also how this sub-rule surfaced that `requirements.txt` — named in rule
+3b's prose ("must agree with `requirements.txt`") and tracked at the root
+since v1.2.0 — was never added to rule 1's own enumerated bullet list; it is
+included in check 1's list above so the gate does not immediately fail on a
+file the project has always kept at the root.
+
+**How to apply**: a contract-tier test (`testsys/contract/`, not yet
+written) implements checks 1 and 2 as hard assertions and check 3 as a
+printed, non-asserting report. Until that test exists, this rule's checks
+1 and 2 are run by hand before a release (rule 13) and check 3 is run
+whenever the board's tidy item is re-checked.
+
+**Tier**: checks 1 and 2 are mechanical once the test lands; check 3 is
+mechanical-but-advisory by design (no pass/fail, only a list). No test
+exists yet — see `PATHWAY_FORWARD.md`'s root-layout item.
 
 ---
 
