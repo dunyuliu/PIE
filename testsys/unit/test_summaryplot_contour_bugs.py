@@ -70,6 +70,10 @@ def _write_fixture_csv(tmp_path):
         [sys.executable, "-c",
          "import sys; sys.argv=['x']+%r\n"
          "import pie.globalvar as gv\n"
+         # board item 28f: parsing is an explicit call now, not an
+         # import-time side effect -- same call pie/main.py (and this
+         # script's own fix, util/plot/summaryPlot.py) make.
+         "gv.parse_argv(sys.argv)\n"
          "print(gv.csvfiles_path)" % ARGV_TAIL],
         cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60,
     )
@@ -138,6 +142,9 @@ def test_non_isnow_contourcond_reaches_contour_scale_without_nameerror(tmp_path,
         "import sys, runpy\n"
         f"sys.argv = ['x'] + {ARGV_TAIL!r}\n"
         "import pie.globalvar as gv\n"
+        # board item 28f: parsing is an explicit call now, not an
+        # import-time side effect.
+        "gv.parse_argv(sys.argv)\n"
         "gv.contourcond = 'chi_li_icb'\n"
         f"runpy.run_path({str(SCRIPT)!r}, run_name='__main__')\n"
     )

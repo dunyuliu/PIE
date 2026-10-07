@@ -17,6 +17,16 @@
 % Here we impose that Tm = Ticb, with snow scenario
 """
 
+import sys
+from . import globalvar
+# board item 28f: globalvar.py no longer parses sys.argv as an import-time
+# side effect (that crashed any unrelated process importing it, e.g.
+# pytest or robust_runner.py's own CLI). Parse it explicitly here, first,
+# before the `from .globalvar import ...` below (and before
+# planet_input/drivere/driverp are imported, which do their own
+# `from .globalvar import ...` of names this populates).
+globalvar.parse_argv(sys.argv)
+
 import numpy as np # loading numpy.
 from .globalvar import ( # loading global variables.
     code_mode, CMR2, light_element, liquidus_eq, dr, model_path,

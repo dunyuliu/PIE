@@ -83,15 +83,12 @@ def _load_error_code():
     """Import `pie/globalvar.py`'s `ErrorCode` enum without re-deriving its
     vocabulary (requirement 3: reuse, don't invent a parallel one).
 
-    `globalvar.py` parses `sys.argv` as main.py's (code_mode, CMR2, CMC,
-    ...) at import time -- the obstacle `testsys/pielib.py` also works
-    around with a placeholder argv. Here the placeholder is ALWAYS
-    substituted for the first import (not only when argv is short): this
-    runner's own CLI argv (`run m.csv --workers 2 ...`) is long enough to
-    pass a length check and then crash on `float(sys.argv[2])`. Only
-    ErrorCode is used from the module, which does not depend on argv.
-    `sys.argv` is restored in `finally`. An already-imported
-    `pie.globalvar` (e.g. inside `pie.main` or a test) is reused as is.
+    Board item 28f: `globalvar.py` no longer parses `sys.argv` as an
+    import-time side effect (it used to, which crashed this runner's own
+    CLI argv -- `run m.csv --workers 2 ...` -- on `float(sys.argv[2])`;
+    `testsys/pielib.py` worked around the same landmine with a placeholder
+    argv). ErrorCode doesn't depend on argv-parsed state at all, so a
+    plain import is now enough; no `sys.argv` substitution needed.
 
     `importlib.import_module("pie.globalvar")`, not a package-relative
     `from . import globalvar`: this module is deliberately runnable as a
@@ -104,20 +101,9 @@ def _load_error_code():
     28e) -- which it already must be for `run_one_job` below to invoke
     `python -m pie`.
     """
-    saved_argv = sys.argv[:]
-    try:
-        if "pie.globalvar" not in sys.modules:
-            sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
-        # globalvar.py does `print(len(sys.argv))` at import; keep that out
-        # of this CLI's machine-readable (JSON) stdout.
-        import contextlib
-        import importlib
-        import io
-        with contextlib.redirect_stdout(io.StringIO()):
-            globalvar = importlib.import_module("pie.globalvar")
-        return globalvar.ErrorCode
-    finally:
-        sys.argv[:] = saved_argv
+    import importlib
+    globalvar = importlib.import_module("pie.globalvar")
+    return globalvar.ErrorCode
 
 
 ErrorCode = _load_error_code()
