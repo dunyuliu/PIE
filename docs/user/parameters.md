@@ -19,7 +19,7 @@ Every entry below is a module-level constant in `pie/globalvar.py`, read by the 
 
 * **`dr`** -- default `50000.0`
 
-  radius increment in meters for the present_day model.
+  Global parameters for both the present_day and evolution model. argv parsing is an explicit function (not run at import time, which would crash any process that imports this module with a foreign argv, e.g. pytest or robust_runner.py's own CLI argv -- see parse_argv's docstring), called once by the real entrypoint (pie/main.py) before anything else imports the names it derives below. radius increment in meters for the present_day model.
 
 * **`max_Si_Steinbruegge2020`** -- default `0.15`
 

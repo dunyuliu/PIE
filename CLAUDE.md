@@ -39,7 +39,7 @@ Batches and large ensembles (knox or TACC Lonestar6), resumable, one
 manifest -- `pie/robust_runner.py` (item 22; kept inside the `pie` package,
 not moved to `util/run/`, because three `testsys/` files import it as
 `from pie import robust_runner` and it self-locates its results dir to the
-package dir; README "Large ensemble Monte Carlo simulation"):
+package dir):
 
 ```bash
 python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
@@ -47,9 +47,98 @@ python3 pie/robust_runner.py run mc.csv                    # knox, PIE_WORKERS-c
 python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then sbatch util/run/TACC.LS6.parallel.run.slurm
 ```
 
-Legacy: `util/run/TACC.LS6.create.parallel.launcher.py` (item 28b; run with
-cwd==`util/run/`, see README) + `util/run/monteCarlo.run.py` (its resume
-check treats a killed draw as finished -- README).
+### Legacy recipe
+
+`util/run/TACC.LS6.create.parallel.launcher.py` (run with the working
+directory set to `util/run/`, where `monteCarlo.run.py` lives and where its
+`./results/` output lands) writes a `commands_launcher` of 1024
+`monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or a plain `xargs`
+pool on knox:
+
+```bash
+cd util/run
+python TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
+nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
+```
+
+Its resume check is weaker than `robust_runner.py`'s: `monteCarlo.run.py`
+skips a draw if the draw's `S+Si` `pMetaData_*.csv` exists, but `pie.main`
+creates that csv (header row) before the sweep starts, so a draw killed
+mid-run is skipped as if finished. Prefer `robust_runner.py`.
+
+## Testing
+
+```bash
+.venv/bin/python3.12 testsys/run.py            # fast tiers: unit + contract + integration, ~3-5 min
+.venv/bin/python3.12 testsys/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~14 min
+```
+
+See `testsys/README.md` for tier definitions and the published-paper parity
+check against Zenodo-archived output.
+
+## Solver
+
+Each present-day model is a 5-unknown shooting problem (P and T at the
+centre, core radius, mantle density, light-element fraction at the
+inner-core boundary) solved by Newton's method with a finite-difference
+Jacobian (`pie/shootp.py`, `mynewtonSys`). The Newton step is bounded:
+
+- direction `dx = J^-1 f` as before; step length `alpha` starts at 1 and is
+  halved while the trial iterate is outside the admissible box -- non-finite
+  residual, `rcmb <= ricb`, `chi_li_icb` above the eutectic at the trial's
+  own P_icb (S, S+Si) or above the liquidus table's Si maximum (Si) -- or
+  while `|f|` grows by more than 100x. Below `alpha = 1e-3` the radius fails
+  with the code of the last rejection.
+- an Armijo decrease test is deliberately NOT used: accepted steps can
+  increase `|f|` (observed up to 18.6x) and those paths converge anyway.
+- a singular Jacobian is `cond(J) > 1e12` (or `LinAlgError`), not an exact
+  `det(J) == 0` compare; a chi column clamped at the eutectic gives
+  `cond = inf` and is caught the same way.
+- the ellipticity grid (`getk2`) at the 10-m first radius (`nrs = 0`) treats
+  the core as fully fluid from the centre (`g(0) = 0`, no inner-core term)
+  instead of wrapping an index to the CMB end and reading uninitialised
+  memory; `xi` is exactly 0 there.
+
+Sweep policy: a failure at one radius is recorded and the sweep continues to
+the next radius, warm-starting from the last *converged* solution; if the
+warm start fails and differs from the generic initial guess, one cold start
+from that guess is tried. Only code 6 (Si above the liquidus cap,
+radius-independent, by design) ends a composition, with a single row.
+
+## Performance options
+
+`coreEos.py`'s `eosAndersonGrueneisen.Gibbs` uses, by default, a vectorised
+21-point Gauss-Kronrod (GK21) evaluation of its `scipy.integrate.quad` call,
+falling back to the real `scipy.integrate.quad` per call whenever
+QUADPACK's own single-panel accept test (replicated from `dqagse.f`) would
+reject it -- measured ~4x faster per call on the pinned environment (see
+`docs/notes/perf_v1.3.3.md` for the full timing table).
+
+`PIE_FAST_QUAD=0` (env var) is the explicit escape hatch back to the
+unconditional `scipy.integrate.quad` call -- identical to the pre-GK21
+behaviour on every environment. `PIE_FAST_QUAD` unset, or set to any other
+value (e.g. `1`), means GK21-on. On the pinned environment
+(`numpy==1.21.5`, `scipy==1.8.0`, `testsys/requirements.txt`), GK21 is
+bit-identical to `scipy.integrate.quad` (max diff 0.0, measured over 237057
+real captured solver (p, T) calls,
+`testsys/unit/test_perf_v1_3_3_gk21_quad.py`). Off the pinned environment
+(e.g. CI's informational `fast-latest` canary, current numpy/scipy),
+`eosAndersonGrueneisen.volume`'s `CubicSpline` does not return exactly the
+same values for a vectorised array call vs one-scalar-call-per-point
+(floating-point non-associativity in `CubicSpline`'s own
+vectorized-vs-scalar code path), so the max relative difference is bounded
+at <=1e-14 rather than exactly 0 there -- far below the solver's own
+convergence tolerance (`ftol=xtol=1e-6`). Set `PIE_FAST_QUAD=0` if you need
+byte-identical pre-GK21 behaviour on an environment you have not verified
+against this bound.
+
+## Outputs and error codes
+
+Full column layout, file naming, and the generated `error_code` table now
+live on the user-facing site (`docs/user/outputs.md`,
+`docs/user/troubleshooting.md`, generated from `pie/globalvar.py`'s
+`ErrorCode` enum and `ERROR_CODE_DESCRIPTIONS` by `docs/user/gen_params.py`)
+-- read those rather than keeping a second copy here.
 
 ## Layout
 
