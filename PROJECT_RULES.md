@@ -4,6 +4,7 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 
 1. Minimal changes; no new files until necessary — and a curated root.
 1a. Git tags are the version source of truth; `CHANGELOG.md` holds the change list.
+1b. `docs/` holds documentation, not artifacts; evidence is cited, not archived.
 2. No silent fallbacks, swallowed errors, or placeholder data.
 3. Gate every stage; pass before moving on.
 3a. A refactor of `src/` runs testsys green before and after, one module at a time.
@@ -78,6 +79,54 @@ zipped externally, `historical_versions/`); don't tag them retroactively.
 **How to apply**: each release PR adds a dated `CHANGELOG.md` entry and bumps
 `CITATION.cff` `version:`; the tag is created after merge (rule 13).
 `update_log` gets no entries dated after 20250708.
+
+---
+
+## 1b. `docs/` holds documentation, not artifacts; evidence is cited, not archived
+
+`docs/` holds only documentation a reader needs: the live user guide
+(`docs/user/**`, the MkDocs site, board item 34) plus a small, explicitly
+bounded allowlist of root-adjacent dev/history docs (dated notes, session
+logs, audits) named in one place a test can read — not an open-ended
+"put the write-up next to the code" dumping ground. Run scripts, their
+outputs, figures, logs, and caches are never tracked under `docs/` — or
+anywhere in the repo — regardless of why they were generated; a
+`.gitignore` entry keeps new ones out but is not itself enforcement.
+Evidence for a board row or a note is the command that produced it, not
+the command's output: when the output artifact itself does not stay in
+the tracked tree, the citation is the tag or commit SHA at which it last
+existed (`` `git show <sha>:path` ``), never a promise that a deleted path
+still means something.
+
+**Rationale**: a "write the note next to the code" habit with no cap
+silently becomes the thing it was meant to document.
+
+**Incident (2026-10-07)**: `docs/` reached 573 tracked files (~138 MB)
+before anyone asked "how many items under docs? That folder should be
+lean" — seven run-artifact trees (`*_scripts`/`*_figs`/`*_measurement`)
+accounted for ~537 files and ~128 MB on their own, all but one of them
+(`item18b_paper_filter_recompute_2026-10-04_scripts`, read at runtime by
+`testsys/contract/test_item18b_isnow_filter.py`) opened by nothing except
+comments and docstrings citing a path — a `git show <sha>:path` would have
+served those citations just as well without keeping the bytes in every
+future clone. Escalating owner instructions (relayed via the conductor,
+2026-10-07): "those should be removed from git" (the artifact trees); no
+history rewrite ("not harmful to leave there," confirmed); "from the next
+tag on" the tracked tree carries none, enforced; then, on seeing the full
+count, "500+ files, who can read them" — prune the `.md` notes too, fold
+closed-item write-ups into one short summary or drop them and cite the
+tag/SHA, target end-state `docs/user/` plus a handful of files.
+
+**How to apply**: before adding a file under `docs/` outside `docs/user/`,
+name it in the allowlist test's own list first, or don't add it — put run
+output in `results/` (gitignored, rule 1) and cite the run by its SHA/tag
+instead. The allowlist test (board item, not yet written) must assert:
+(1) every tracked path under `docs/` is either under `docs/user/**` or
+matches one of a named, explicit set of filenames/patterns kept in the
+test itself, so an addition is a reviewable one-line diff to that list,
+not a silent `git add`; (2) the count of tracked files under `docs/`
+outside `docs/user/` stays under a fixed cap, so the allowlist can grow
+one named file at a time but can't quietly regrow into a second pile.
 
 ---
 
