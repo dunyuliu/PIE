@@ -64,8 +64,10 @@ check treats a killed draw as finished -- README).
   `from x import *` star-imports were narrowed to explicit name lists module
   by module (`PATHWAY_FORWARD.md` item 9, closed for `main.py`/`shootp.py`/
   `solver.py`/`libCore.py`/`planet_input.py`/`summaryPlot.py`/
-  `visualization_present.py`; `shoote.py`/`visualization_evolution.py`
-  excluded, parked under item 11).
+  `visualization_present.py`; `summaryPlot.py`'s two star-imports
+  (`pie.drivere`, `pie.driverp`) were dropped outright rather than narrowed
+  to a non-empty list -- its own code used no name from either module;
+  `shoote.py`/`visualization_evolution.py` excluded, parked under item 11).
 - `util/plot/` — `summaryPlot.py`, `visualization_present.py`,
   `read_plot_datah5.py`, `plotAll.py`/`plotAll.sh` (relocated from `src/` by
   board item 28). `util/run/` — `scheduler.py`, `monteCarlo.run.py`,
