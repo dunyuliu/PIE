@@ -1,13 +1,16 @@
 from . import coreEos as eos
-# Previously relied on `from libCore import *` to transitively re-export
-# globalvar's names (MFe, MFeS, MFeSi, CMC, ...) because libCore.py did
-# `from globalvar import *` itself. libCore.py's own star-import was
-# narrowed to an explicit list of only the names IT uses
-# (PATHWAY_FORWARD.md item 9), so this file now imports globalvar
-# directly, same as shootp.py/shoote.py already do -- no behaviour
-# change, same full globalvar namespace as before.
-from .globalvar import *
-from .libCore import *
+# item 9 (explicit names this file's own code uses -- same main.py/PR #46,
+# shootp.py/PR #49, driverp.py/PR #97 precedent):
+# - globalvar: MFe/MFeS/MFeSi (model_generic masses), max_Si_Edmund2022/
+#   max_Si_Steinbruegge2020 (liquidus-equation branch), CMC -- set
+#   dynamically into globalvar's namespace by parse_argv()'s
+#   globals().update() (item 28f), so this explicit import reads the same
+#   post-parse_argv() value the former star-import did.
+# - libCore: TmFeSSi/TmFeSSi_Steinbruegge2020 (liquidus functions).
+from .globalvar import (
+    CMC, MFe, MFeS, MFeSi, max_Si_Edmund2022, max_Si_Steinbruegge2020,
+)
+from .libCore import TmFeSSi, TmFeSSi_Steinbruegge2020
 from scipy.constants import G
 import numpy as np
 
