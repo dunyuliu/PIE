@@ -216,9 +216,9 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
 
 ## Findings (real bugs found while building this suite -- not fixed here, per constraint)
 
-1. **`pie/planet_input.py:119`** -- `elif mod_type == 'e':` references an
+1. **`pie/planet_input.py:129`** -- `elif mod_type == 'e':` references an
    undefined name (should be `code_mode`, matching the `if code_mode ==
-   'p':` branch at line 62). `planet('e', ...)` always raises
+   'p':` branch at line 72). `planet('e', ...)` always raises
    `NameError`; the evolution-model branch of `planet()` is unreachable
    dead code. Locked in as `testsys/unit/test_planet_input.py::test_planet_evolution_mode_would_ideally_work`
    (`xfail(strict=True)`).

@@ -774,7 +774,8 @@ def write_tacc_launcher(jobs, manifest_path, src_dir=SRC_DIR,
                         python_exe=None, force=False):
     """TACC backend: writes the `commands_launcher` file that the existing
     `util/run/TACC.LS6.parallel.run.slurm`
-    (LAUNCHER_JOB_FILE=commands_launcher, run from src/) consumes unchanged.
+    (LAUNCHER_JOB_FILE=commands_launcher, run from the repo root with the
+    `pie` package installed) consumes unchanged.
     Each line is one job routed back
     through this runner (`robust_runner.py run-one <manifest> --index i`),
     so a TACC job gets the same per-job status record + provenance as a
