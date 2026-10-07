@@ -12,7 +12,7 @@ and `solve_full_model`'s new comment in `tests/conftest.py`).
 
 This file proves the fixture CAN now fail: `MARGOT_S_10M_CASE` below is a
 real, deterministic single-radius solve (CMR2/CMC drawn from
-`docs/notes/solver_v1.3.0_measurement/cases36.json`'s
+`docs/dev/notes/solver_v1.3.0_measurement/cases36.json`'s
 `margot_S_000_crash_stderr_10m` case) that CONVERGES (the Newton solve
 finds a root) but at a physically inadmissible root: `chi_li_icb`
 (sulfur wt fraction at the inner-core boundary) comes out negative,
@@ -31,7 +31,7 @@ pytestmark = pytest.mark.integration
 
 from pielib import solve_full_model
 
-# docs/notes/solver_v1.3.0_measurement/cases36.json:
+# docs/dev/notes/solver_v1.3.0_measurement/cases36.json:
 # "margot_S_000_crash_stderr_10m" (role: measure, published_class
 # margot/S_0.00/crash_stderr/10m -- a composition published with ZERO
 # converged rows that v1.3.0's line-search Newton recovers at ricb=10 m,
@@ -61,7 +61,7 @@ def test_inadmissible_converged_solve_gets_nonzero_error_code():
     assert result["err_flag"] is True, (
         "fixture setup assumption broken: this case no longer converges "
         "to an inadmissible (negative chi_li_icb) root -- re-probe "
-        "docs/notes/solver_v1.3.0_measurement/cases36.json for a fresh "
+        "docs/dev/notes/solver_v1.3.0_measurement/cases36.json for a fresh "
         "known-inadmissible case before trusting this test again"
     )
     assert result["scalars"]["chi_li_icb"] < 0.0, (

@@ -155,7 +155,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     rc,yc,rhof,chi_li, err = odeRK4_snow('rhs_fluid_snow',ricb,rcmb,h,yicb,v[4],scale,param)
     # Restore the err flag libCore.getchi_li_grun sets (chi_li went
     # negative mid-shoot) instead of discarding it into a hard-coded
-    # err0=False (docs/audits/AUDIT_2026-09-29_buglist.md B3;
+    # err0=False (docs/dev/audits/AUDIT_2026-09-29_buglist.md B3;
     # src/libCore.py:142-144 sets it, this used to throw it away).
     err0 = bool(np.any(err))
     
@@ -249,7 +249,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
 
     # getk2 can raise IndexError (ricb=10 m => nrs=0 makes its fluid
     # loop wrap k+nrs-1 to -1 at k=0, reading the CMB end / g[399],
-    # docs/audits/AUDIT_2026-09-29_buglist.md B5) or propagate a
+    # docs/dev/audits/AUDIT_2026-09-29_buglist.md B5) or propagate a
     # SolverError from getpotvsr's SuperLU singular-matrix guard
     # (libCore.py). Both are caught here and turned into a recorded,
     # per-radius SolverError instead.
@@ -332,7 +332,7 @@ def mercmodel_box(x, f, fout, args):
     CMR2; recorded as error_code 4 since v1.2.0) and the Newton paths that
     produced them shoot finitely. A lower bound would reject alpha=1 on
     those paths and break the v1.2.0 identity invariant
-    (docs/notes/solver_v1.3.0.md). What actually killed the published
+    (docs/dev/notes/solver_v1.3.0.md). What actually killed the published
     sweeps was an overshoot to chi ~ -0.06 (S) or above the Si max (Si)
     that makes the fluid-core RK4 return NaN or zeroes a Jacobian column;
     the non-finite test and the upper bound catch those.
@@ -359,7 +359,7 @@ def mercmodel_box(x, f, fout, args):
 # Lower bound on chi_li_icb for a TRIAL iterate. None = no explicit lower
 # bound (a trial with chi so negative that the fluid-core EOS/liquidus root
 # returns NaN is still rejected by the non-finite test above). Measured
-# reason (docs/notes/solver_v1.3.0.md sec. 1.1): v1.2.0 converged -- and the
+# reason (docs/dev/notes/solver_v1.3.0.md sec. 1.1): v1.2.0 converged -- and the
 # published v1.0.5 dataset contains -- rows with chi_li_icb down to about
 # -0.045 (Si-only, low CMR2), and converging paths whose intermediate
 # iterates dip below -0.01; a bound of -0.01 broke the v1.2.0 identity on
@@ -414,7 +414,7 @@ def mynewtonSys(Jfun,x0,varargin,
     sufficient-decrease test was measured and NOT adopted: on 1841
     v1.2.0-converged radii (108 published sweeps) 48 of 3553 steps
     (1.4%, on 32 radii) increase |f| -- by up to 18.6x -- and those paths
-    converge anyway; Armijo would have altered them (docs/notes/
+    converge anyway; Armijo would have altered them (docs/dev/notes/
     solver_v1.3.0.md). growth_max=100 sits 5x above the largest growth
     observed on a converging path.
 
@@ -501,7 +501,7 @@ def mynewtonSys(Jfun,x0,varargin,
                 'Singular Jacobian at Newton iteration %d (cond(J)=%g > %g)' % (k, condJ, cond_max),
                 condJ=condJ)
       try:
-          # v1.3.2 perf fix (docs/notes/perf_v1.3.2.md): same anti-pattern
+          # v1.3.2 perf fix (docs/dev/notes/perf_v1.3.2.md): same anti-pattern
           # as getpotvsr's old inv(A)*rhs -- inv(J)@f formed J's full
           # inverse just to multiply it once by f. np.linalg.solve(J, f)
           # solves J dx = f directly, same dx to roundoff, J unchanged.

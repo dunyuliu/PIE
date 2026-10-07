@@ -15,7 +15,7 @@ pre-existing Newton-solver boundary limitation at CMR2=0.346/CMC=0.424,
 unrelated to quad/GK21, and is NOT part of this perf port's scope to fix.
 Si/Edmund failed to converge at EVERY radius tried (10 m, 500010 m,
 1800000 m) for the same reason -- also pre-existing, also out of scope.
-See docs/notes/perf_v1.3.3.md for how the near-rcmb / high-pressure gap in
+See docs/dev/notes/perf_v1.3.3.md for how the near-rcmb / high-pressure gap in
 this matrix was closed instead: a DIRECT (non-solver) sweep of
 eos.Gibbs/quad over the full admissible pressure domain, which is what
 shows the single-panel claim does NOT hold universally (and why
@@ -37,7 +37,7 @@ subdivision) for every real call in the matrix, and (2) replaying each
 results. The fixture is downsampled (stratified random sample, fixed
 seed) from the full captured set (237057 real calls) to keep the
 committed file small; the full-set check (all 237057, every one bit-
-identical, max diff 0.0) is recorded in docs/notes/perf_v1.3.3.md, not
+identical, max diff 0.0) is recorded in docs/dev/notes/perf_v1.3.3.md, not
 re-run by the test suite every CI run.
 """
 import contextlib

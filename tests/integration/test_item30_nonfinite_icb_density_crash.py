@@ -1,6 +1,6 @@
 """Regression test for PATHWAY_FORWARD.md item 30, bug #1/#2 (board item 30,
 found during the item-18a population re-run,
-docs/notes/item18a_population_rerun_2026-10-03.md):
+docs/dev/notes/item18a_population_rerun_2026-10-03.md):
 
 pie/shootp.py::shoot_mercmodel builds the ODE initial state
 `y0 = [v[0], gr0, v[1]]` from `rho = eos.eosInnerCore(...)[1]`. When a

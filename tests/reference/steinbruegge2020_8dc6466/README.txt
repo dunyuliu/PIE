@@ -35,5 +35,5 @@ libcore.py, or run_models.py to "fix" anything found while comparing
 against PIE; any real bug found in either codebase is reported, not
 patched here.
 
-See docs/notes/steinbruegge_anchor_2026-09-30.md for the full physics
+See docs/dev/notes/steinbruegge_anchor_2026-09-30.md for the full physics
 diff between this code and src/coreEos.py / src/libCore.py / src/shootp.py.

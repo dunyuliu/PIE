@@ -141,7 +141,7 @@ Edmund composition at CMR2=0.346/CMC=0.424 takes **5.5 min** wall time
 (18 of ~40 possible inner-core-radius steps converge before the Newton
 solver hits a singular Jacobian around ricb≈850 km and the run stops --
 reproduced by the golden, so not a tests bug; per
-`docs/audits/AUDIT_2026-09-29_solver-failures.md` this means "no root
+`docs/dev/audits/AUDIT_2026-09-29_solver-failures.md` this means "no root
 found by the local Newton variants tried", NOT an established physical
 limit -- non-existence would need continuation in ricb / fold detection /
 a chi_li_icb scan over [0, eut], none of which has been run). Scaling: **~1.5-2 h** for the full 18-composition
@@ -267,7 +267,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    solution the published run didn't, not the reverse -- not gated as a
    hard failure, see `test_published_wide_sweep.py`'s "soft mismatch"
    handling), but the cause is unconfirmed. Candidates, per
-   `docs/audits/AUDIT_2026-09-29_solver-failures.md` (claims 4b, 5):
+   `docs/dev/audits/AUDIT_2026-09-29_solver-failures.md` (claims 4b, 5):
    (a) at ricb=10 m `getk2` has nrs=0, and the fluid loop at k=0 indexes
    `k+nrs-1 = -1`, wrapping to the CMB end and reading the uninitialised
    `g[399]` (`np.empty`, `pie/shootp.py:426`, loop `:456-460`), so the
@@ -290,8 +290,8 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    dense LAPACK both solve the finite A; "exactly singular" here means A
    contains NaN (797 non-finite entries). Sufficient mechanism,
    unconfirmed as the cause of this flip
-   (`docs/audits/AUDIT_2026-09-29_solver-failures.md` claim 4c;
-   `docs/notes/failure_analysis_2026-09-28.md` §3.2): at ricb=10 m,
+   (`docs/dev/audits/AUDIT_2026-09-29_solver-failures.md` claim 4c;
+   `docs/dev/notes/failure_analysis_2026-09-28.md` §3.2): at ricb=10 m,
    nrs = round(400*ricb/rcmb) = 0 (`pie/shootp.py:421`), so the fluid
    loop at k=0 (`:456-460`) indexes `k+nrs-1 = -1`, wrapping to the CMB
    end and reading `r[399]` and the still-uninitialised `g[399]`

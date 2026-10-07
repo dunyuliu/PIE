@@ -5,7 +5,7 @@ that replaces the exact det(J)==0 float compare, and the getk2 nrs=0
 index fix (bug B5). Toy Jacobians only -- no Mercury shoot -- except the
 getk2 grid test, which calls the real getk2 with polynomial densities.
 
-Design reference: docs/notes/solver_v1.3.0.md. The identity invariant
+Design reference: docs/dev/notes/solver_v1.3.0.md. The identity invariant
 ("every v1.2.0-converged row is unchanged") is gated at integration
 tier by tests/integration/test_v1_2_0_invariant.py, not here.
 """

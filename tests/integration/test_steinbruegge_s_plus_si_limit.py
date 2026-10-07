@@ -19,7 +19,7 @@ Chaining `S+Si(Si=0) == S-only` (this file) with `S-only == vendored
 Steinbruegge code` (test_steinbruegge_anchor.py) gives: the S+Si branch
 with Steinbruegge liquidus is independently verified ONLY at its Si=0
 edge -- genuinely non-zero Si with Steinbruegge liquidus has NO better
-anchor available. Per `docs/notes/steinbruegge_anchor_2026-09-30.md`'s
+anchor available. Per `docs/dev/notes/steinbruegge_anchor_2026-09-30.md`'s
 own "Cannot anchor" list: the vendored Steinbruegge et al. (2020) code
 has no S+Si (3-component) support at all -- it is Fe-S/Fe-Si only (see
 that note's "Physics diff" item 2) -- so a direct independent anchor

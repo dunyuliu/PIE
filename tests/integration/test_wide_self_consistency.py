@@ -11,7 +11,7 @@ case that does NOT converge (Margot CMR2=0.346/CMC=0.426, 'Si',
 'Edmund') -- a convergence failure is part of the regression contract
 here, not a gap in it (it means no root found from the generic cold-start
 guess, not an established physical non-solution; see tests/README.md
-Findings 6 and docs/audits/AUDIT_2026-09-29_solver-failures.md). See wide_sweep/PROVENANCE.md for why that one
+Findings 6 and docs/dev/audits/AUDIT_2026-09-29_solver-failures.md). See wide_sweep/PROVENANCE.md for why that one
 case fails and why that's not a bug.
 
 The full 3-radius x 12-case (36 total) sweep lives in

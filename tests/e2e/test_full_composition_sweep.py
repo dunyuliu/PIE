@@ -81,7 +81,7 @@ def full_run(tmp_path_factory):
     # first failure), and every failed radius costs a warm + a cold Newton
     # attempt (~90 s each on this shared box under load) -- the 900 s budget
     # of v1.2.0 timed out; measured wall is recorded in
-    # docs/notes/solver_v1.3.0.md sec. 4.
+    # docs/dev/notes/solver_v1.3.0.md sec. 4.
     result = run_pie("-m", "pie", "p", "0.346", "0.424", "S", "Edmund",
                       cwd=str(workdir), timeout=5400)
     assert result.returncode == 0, (

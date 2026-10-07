@@ -1,5 +1,5 @@
 """Differential/perf tests for the v1.3.3 performance port (PATHWAY_FORWARD.md
-perf item, docs/notes/perf_v1.3.3.md): eosAndersonGrueneisen.Gibbs's
+perf item, docs/dev/notes/perf_v1.3.3.md): eosAndersonGrueneisen.Gibbs's
 `integrate.quad` call (src/coreEos.py) uses, by DEFAULT since the owner's
 2026-10-02 ruling (PIE_FAST_QUAD defaults to True; an explicit
 PIE_FAST_QUAD=0 is the escape hatch), a vectorised single-GK21-panel
@@ -163,7 +163,7 @@ class TestVolumeVectorisesExactly:
     CPU/SIMD-dependent floating-point nondeterminism across ephemeral
     GitHub-hosted runners, not a pip-resolution difference, and not
     reproducible on demand on any single fixed host -- see
-    docs/notes/perf_v1.3.3.md. So, like the class below, this assertion
+    docs/dev/notes/perf_v1.3.3.md. So, like the class below, this assertion
     is exact ONLY on the pinned environment; off it we bound the
     divergence instead of requiring exact equality."""
 
@@ -199,9 +199,9 @@ class TestVolumeVectorisesExactly:
             # eosAndersonGrueneisen.volume) the constant was already
             # calibrated against -- the ~8.3e-17 absolute divergence
             # measured on CI run 36881055265, against volume values of
-            # O(1) (see docs/notes/perf_v1.3.3.md), i.e. a relative
+            # O(1) (see docs/dev/notes/perf_v1.3.3.md), i.e. a relative
             # divergence of ~8.3e-17, ~1e5x inside this bound. On this
-            # host's resolved numpy/scipy (see docs/notes/perf_v1.3.3.md
+            # host's resolved numpy/scipy (see docs/dev/notes/perf_v1.3.3.md
             # for the exact versions), the measured max_reldiff was
             # exactly 0.0 -- the nondeterminism is CPU/SIMD-dependent
             # across ephemeral runners and does not reproduce on every

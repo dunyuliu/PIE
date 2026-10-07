@@ -179,7 +179,7 @@ def test_write_solver_log_creates_missing_parent_directory(libcore, tmp_path):
 
 # ---------------------------------------------------------------------
 # mynewtonSys: sys.exit() -> SolverError, with iterate history attached
-# (docs/audits/AUDIT_2026-09-29_buglist.md B1)
+# (docs/dev/audits/AUDIT_2026-09-29_buglist.md B1)
 # ---------------------------------------------------------------------
 def test_mynewtonSys_raises_solvererror_not_systemexit_bare_on_singular_jacobian(shootp, globalvar):
     def toy_singular(x, varargin):
@@ -287,7 +287,7 @@ def test_mynewtonSys_log_path_none_is_still_the_default(shootp):
 
 # ---------------------------------------------------------------------
 # libCore.getchi_li_grun: sys.exit() -> SolverError(SI_ABOVE_LIQUIDUS_MAX)
-# (docs/audits/AUDIT_2026-09-29_buglist.md item 16's error-code table)
+# (docs/dev/audits/AUDIT_2026-09-29_buglist.md item 16's error-code table)
 # ---------------------------------------------------------------------
 def test_getchi_li_grun_raises_on_si_above_edmund_max(sys_argv_p, globalvar):
     sys_argv_p(light_element="S+Si", liquidus_eq="Edmund", chi_Si_icb=0.20)
@@ -320,11 +320,11 @@ def test_getchi_li_grun_does_not_raise_when_si_within_bounds(sys_argv_p, globalv
 
 # ---------------------------------------------------------------------
 # libCore.getpotvsr: uncaught SuperLU RuntimeError -> SolverError
-# (docs/audits/AUDIT_2026-09-29_buglist.md B2, libCore.py:266)
+# (docs/dev/audits/AUDIT_2026-09-29_buglist.md B2, libCore.py:266)
 # ---------------------------------------------------------------------
 def test_getpotvsr_wraps_superlu_singular_matrix(libcore, globalvar, monkeypatch):
     # v1.3.2: the single-rhs linear solve is spsolve(A, rhs), not
-    # inv(A)*rhs (perf fix, docs/notes/perf_v1.3.2.md) -- same SuperLU
+    # inv(A)*rhs (perf fix, docs/dev/notes/perf_v1.3.2.md) -- same SuperLU
     # machinery underneath, same try/except governing the call, so the
     # monkeypatch target moves from `inv` to `spsolve` but the protection
     # being tested (a SuperLU singular-matrix RuntimeError becomes a

@@ -6,7 +6,7 @@ directory is a derived COPY, patched for one documented purpose: item 23(c)
 on `PATHWAY_FORWARD.md` asked whether the Fe-Si disagreement between PIE and
 the published Steinbruegge (2020) code at `ricb > 10 m` is fully explained by
 physics-diff item 1 in
-`docs/notes/steinbruegge_anchor_2026-09-30.md` (the published code uses pure
+`docs/dev/notes/steinbruegge_anchor_2026-09-30.md` (the published code uses pure
 fcc-Fe in its inner-core ODE / r0-density call, but FeSi density in its own
 moment-of-inertia polynomial -- internally inconsistent for `li_el='Si'`).
 
@@ -29,7 +29,7 @@ JSON output):
 
 `coreEos.py` is copied verbatim, unmodified (it already has `solidFccFeSi`;
 no new EOS code needed). This is exactly the "2-line patch" the anchor note
-(`docs/notes/steinbruegge_anchor_2026-09-30.md` "Fe-Si STB with FeSi
+(`docs/dev/notes/steinbruegge_anchor_2026-09-30.md` "Fe-Si STB with FeSi
 inner-core ODE" line) refers to.
 
 This mirrors PIE's own `src/shootp.py` convention

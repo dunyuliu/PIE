@@ -78,7 +78,7 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
     # get gruneisan, bulk and density for P,T at r0 
     P1=P*v[0]
     T1=T*v[1]
-    # PATCH (item23c-fesi-anchor, docs/notes/steinbruegge_anchor_2026-09-30.md
+    # PATCH (item23c-fesi-anchor, docs/dev/notes/steinbruegge_anchor_2026-09-30.md
     # physics-diff item 1): the published code used pure fcc-Fe at r0 even
     # for li_el='Si', inconsistent with its OWN FeSi density used in the
     # MoI polynomial below (line ~115). This patch makes r0 density use

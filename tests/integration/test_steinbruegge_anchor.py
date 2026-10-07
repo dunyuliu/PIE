@@ -6,7 +6,7 @@ pinned commit 8dc64663c574bc9dc1b3ecbb74252fbb3b1a2383, MIT). This is
 INDEPENDENT CODE (a different repository, not a copy of `src/`), so
 agreement is a truth-anchor pass in `PROJECT_RULES.md` rule 5's sense,
 not a same-code regression check -- see
-`docs/notes/steinbruegge_anchor_2026-09-30.md` for the full physics
+`docs/dev/notes/steinbruegge_anchor_2026-09-30.md` for the full physics
 diff this file's tolerances are derived from (measured worst-case
 differences, not assumed noise floors).
 
@@ -36,7 +36,7 @@ as ~0.8.
 
 Tolerances (measured worst-case on this box, 2026-09-30, 3 runs each
 at ricb in {10 m, 500 km, 1000 km} for Fe-S, 1 run at ricb=10 m for
-Fe-Si -- see docs/notes/steinbruegge_anchor_2026-09-30.md "Results"):
+Fe-Si -- see docs/dev/notes/steinbruegge_anchor_2026-09-30.md "Results"):
   Fe-S:  rcmb <=1.03e-5 m (bound 0.01 m), rhom <=1.44e-11 rel (bound
          1e-8), Pcmb/Picb <=4.14e-11 rel (bound 1e-7), Tcmb
          <=4.3e-7 K (bound 1e-3 K), chi_li_icb/chi_li_in <=5.8e-11
@@ -48,7 +48,7 @@ Fe-Si -- see docs/notes/steinbruegge_anchor_2026-09-30.md "Results"):
 Every bound above is the measured worst case rounded up by roughly an
 order of magnitude or more, not an assumed number.
 
-Fe-Si is anchored ONLY at ricb=10 m. `docs/notes/steinbruegge_anchor_
+Fe-Si is anchored ONLY at ricb=10 m. `docs/dev/notes/steinbruegge_anchor_
 2026-09-30.md` "Physics diff" item 1 documents that at larger ricb the
 vendored code's Fe-Si branch is internally inconsistent (pure fcc-Fe in
 the inner-core ODE but FeSi density in the MoI polynomial), while PIE's
@@ -58,7 +58,7 @@ the note), and that divergence is not a PIE bug. Asserting parity at
 larger Fe-Si ricb would be asserting the vendored code's inconsistency
 onto PIE; not done here.
 
-core_mass has no vendored-code counterpart (`docs/notes/...` "PIE-only
+core_mass has no vendored-code counterpart (`docs/dev/notes/...` "PIE-only
 outputs") -- the `test_core_mass_quadrature_bias_is_bounded` case below
 checks it against an INDEPENDENT oracle instead (`numpy.trapz` on the
 same PIE-computed density/radius profile PIE's own `get_mass_core`
@@ -252,7 +252,7 @@ def test_core_mass_quadrature_bias_is_bounded():
         assert not (rel_bias > 4e-3), (
             "ricb=%s m: PIE core_mass=%r vs trapz oracle=%r, rel "
             "bias=%r exceeds the documented 4e-3 bound (see "
-            "docs/notes/steinbruegge_anchor_2026-09-30.md 'Core "
+            "docs/dev/notes/steinbruegge_anchor_2026-09-30.md 'Core "
             "mass' finding) -- if this bias got WORSE, something "
             "regressed; if it got better, PATHWAY_FORWARD.md item "
             "12/20 may be closeable, tighten this bound then, don't "
