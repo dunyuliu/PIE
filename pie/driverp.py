@@ -1,7 +1,15 @@
 import numpy as np
 from . import shootp as lc
 import glob,os,sys
-from .globalvar import *
+from .globalvar import ( # loading global variables (item 9: explicit names
+    # driverp.py's own code uses -- grepped via ast.walk against
+    # globalvar.py's top-level names; matches the main.py/PR #46 and
+    # shootp.py/PR #49 precedent).
+    ErrorCode, chi_Si_icb, csvfiles_path, ftol, liquidus_eq, maxit,
+    max_Si_Edmund2022, max_Si_Steinbruegge2020, model_path,
+    pMetaDataFileName, presentDataName, presentday_columns,
+    pSolverLogFileName, xtol,
+)
 import pandas as pd
 import csv # added 6/30/2022
 
