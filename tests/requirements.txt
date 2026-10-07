@@ -1,0 +1,18 @@
+# Exact pins = the dev-box environment (Python 3.12, uv-resolved) on which
+# tests/run.py all is green and on which parity with the published Zenodo
+# v1.0.5 output was re-established post-py312 migration. Change a pin only
+# together with a green tests/run.py all under the new version.
+#
+# These pins are the reference environment. src/ no longer uses the removed
+# scipy interp2d (ported to RectBivariateSpline in v1.1.1); the CI job
+# `fast-latest` runs the same tiers on current numpy/scipy/pandas with pins
+# stripped (non-blocking canary as of v1.5.0 -- see README "CI").
+numpy==2.5.3
+scipy==1.18.1
+matplotlib==3.11.2
+h5py==3.16.0
+pandas==3.0.6
+tables==3.11.1  # pandas read_hdf/to_hdf backend (the .h5 fixtures)
+pytest==9.1.1
+pytest-xdist==3.8.0  # tests/run.py -n / PIE_WORKERS
+pyyaml==6.0.3  # only for tests/contract/test_ci_and_cli.py's YAML check

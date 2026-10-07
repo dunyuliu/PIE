@@ -16,7 +16,7 @@ item 28e). No compiled component, no MPI, no conda.
 Target interpreter: Python 3.12, exact pins in `requirements.txt` (the single
 source of truth; `pyproject.toml`'s `[project.dependencies]` must match it —
 `PROJECT_RULES.md` rule 3b, enforced by
-`testsys/contract/test_dependency_pins_match.py`). Setup is
+`tests/contract/test_dependency_pins_match.py`). Setup is
 `uv pip install -e .` (editable install of the `pie` package) into a venv
 built against that pin set — see README.md's Quickstart for the exact
 commands. `PROJECT_RULES.md` rule 3c: the pinned manifest is the one
@@ -37,7 +37,7 @@ is equivalent to `python -m pie p ...`.
 
 Batches and large ensembles (knox or TACC Lonestar6), resumable, one
 manifest -- `pie/robust_runner.py` (item 22; kept inside the `pie` package,
-not moved to `util/run/`, because three `testsys/` files import it as
+not moved to `util/run/`, because three `tests/` files import it as
 `from pie import robust_runner` and it self-locates its results dir to the
 package dir):
 
@@ -69,11 +69,11 @@ mid-run is skipped as if finished. Prefer `robust_runner.py`.
 ## Testing
 
 ```bash
-.venv/bin/python3.12 testsys/run.py            # fast tiers: unit + contract + integration, ~3-5 min
-.venv/bin/python3.12 testsys/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~14 min
+.venv/bin/python3.12 tests/run.py            # fast tiers: unit + contract + integration, ~3-5 min
+.venv/bin/python3.12 tests/run.py all        # all tiers incl. e2e + published_wide (needs ~/shared_dataset), ~14 min
 ```
 
-See `testsys/README.md` for tier definitions and the published-paper parity
+See `tests/README.md` for tier definitions and the published-paper parity
 check against Zenodo-archived output.
 
 ## Solver
@@ -118,10 +118,10 @@ reject it -- measured ~4x faster per call on the pinned environment (see
 unconditional `scipy.integrate.quad` call -- identical to the pre-GK21
 behaviour on every environment. `PIE_FAST_QUAD` unset, or set to any other
 value (e.g. `1`), means GK21-on. On the pinned environment
-(`numpy==1.21.5`, `scipy==1.8.0`, `testsys/requirements.txt`), GK21 is
+(`numpy==1.21.5`, `scipy==1.8.0`, `tests/requirements.txt`), GK21 is
 bit-identical to `scipy.integrate.quad` (max diff 0.0, measured over 237057
 real captured solver (p, T) calls,
-`testsys/unit/test_perf_v1_3_3_gk21_quad.py`). Off the pinned environment
+`tests/unit/test_perf_v1_3_3_gk21_quad.py`). Off the pinned environment
 (e.g. CI's informational `fast-latest` canary, current numpy/scipy),
 `eosAndersonGrueneisen.volume`'s `CubicSpline` does not return exactly the
 same values for a vectorised array call vs one-scalar-call-per-point
@@ -166,7 +166,7 @@ live on the user-facing site (`docs/user/outputs.md`,
 - `pie/test.py` and `pie/main_abbey_plot.py` (then `src/test.py`/
   `src/main_abbey_plot.py`) were dead/scratch files pending triage
   (`PATHWAY_FORWARD.md` item 9); confirmed unreferenced anywhere in
-  `src/`/`testsys/` and broken when run on current `src/` (undefined names
+  `src/`/`tests/` and broken when run on current `src/` (undefined names
   from stale `globalvar.py`/`planet_input.py` APIs), so both were deleted
   before the `pie/` rename. `pie/TEST_visualization_evolution.py` was triaged
   the same way but kept — `pie/drivere.py` imports it, so it is not dead,
@@ -181,7 +181,7 @@ live on the user-facing site (`docs/user/outputs.md`,
 ## Version state (as of 2026-10-03)
 
 - v1.0.5 (tag on `683a51d`): the code archived with Dunnigan et al. 2026
-  (Zenodo 10.5281/zenodo.16929504). v1.1.0: first tested baseline (testsys,
+  (Zenodo 10.5281/zenodo.16929504). v1.1.0: first tested baseline (tests,
   CI, rules, citation) with `src/` byte-identical to v1.0.5.
 - v1.0.2/v1.0.3 were zipped externally but never tagged; don't tag them.
 - v1.1.1 (2026-09-29): scipy interp2d port to RectBivariateSpline.
@@ -216,7 +216,7 @@ live on the user-facing site (`docs/user/outputs.md`,
 
 - `pie/coreEos.py`'s `get_mass_core` was missing a factor of `pi` until fixed
   at `bb37b0a` (v1.0.5, then `src/coreEos.py`) — a reminder that nothing in
-  this codebase has been tested against an independent check until `testsys/`
+  this codebase has been tested against an independent check until `tests/`
   lands.
 - The S+Si (two-light-element) case now has a regression anchor: the Zenodo
   dataset (10.5281/zenodo.16459292) for Dunnigan et al. 2026 JGR Planets
