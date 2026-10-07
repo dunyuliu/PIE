@@ -2,68 +2,114 @@
 
 import sys
 import enum
-n = len(sys.argv)
-print(n)
-if n!=6 and n!=7:
-    print('!!!')
-    print('Error! Please type in CMR2, CMC, S/Si/S+Si, Steinbrugge/Edmund, chi_Si_icb/none')
-    print('!!!')
+
 # Global parameters for both the present_day and evolution model.
-# Main adjustables.
-#model_mode = 'e' # 'e'/'p', that will switch between evolution/present_day models.
-code_mode        = sys.argv[1] #input("code_mode (e, p, or plot) = ") # allows user to input the type of model (present or evolution OR make contour plots) in terminal -- added 6/23/2022
-CMR2             = float(sys.argv[2]) #'margot' # 'margot' or 'genova'
-CMC              = float(sys.argv[3]) # CMC value.
-#CMR2             = 'genova'
-light_element    = sys.argv[4] #'S+Si' # light element combination ('S', 'Si', 'S+Si') -- added 7/12/2022
-liquidus_eq      = sys.argv[5] #'Steinbruegge' # Steinbruegge for Steinbruegge2020 or Edmund for Edmund2022.
-#liquidus_eq    = 'Edmund'
-
-if light_element == 'S+Si' and code_mode!='plot':
-    chi_Si_icb   = float(sys.argv[6]) #float(input("chi_Si_icb = ")) # allows user to input chi_Si_icb value in terminal -- added 6/16/2022
-else:
-    chi_Si_icb   = 0.0
-
+# board item 28f: argv parsing used to run unconditionally at IMPORT time
+# (crashing any process that imports this module with a foreign argv, e.g.
+# pytest or robust_runner.py's own CLI argv -- see parse_argv's docstring).
+# It is now an explicit function, called once by the real entrypoint
+# (pie/main.py) before anything else imports the names it derives below.
 dr = 50e3 # radius increment in meters for the present_day model.
-#CMR2 = input("CMR2 (margot or genova) = ") # allows user to customize MOI value used -- added 6/27/2022
 
-max_Si_Steinbruegge2020 = 0.15 # Maximum Si%wt for calculating liquidus temperature based on Steinbruegge et al. (2020). Shouldn't be exceeded. 
-max_Si_Edmund2022       = 0.12 # Maximum Si%wt for calculating liquidus temperature based on Edmund et al. (2022). Shouldn't be exceeded. 
-# Paths for the present day model.
-#model_path              = './CMR2_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq + '/'
-model_path              = './results/CMR2_'+"{:.17f}".format(CMR2)+'_CMC_'+"{:.17f}".format(CMC)+'_'+light_element+'_'+liquidus_eq+'/'
-#present_output_path     = model_path + model0 + 'present_Si%wt_'+str(chi_Si_icb) # Root path to data and figures by the present day model.
-presentFigureName     = model_path + 'FigSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to figures by the present day model.
-presentDataName       = model_path + 'DataSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to data by the present day model.
+max_Si_Steinbruegge2020 = 0.15 # Maximum Si%wt for calculating liquidus temperature based on Steinbruegge et al. (2020). Shouldn't be exceeded.
+max_Si_Edmund2022       = 0.12 # Maximum Si%wt for calculating liquidus temperature based on Edmund et al. (2022). Shouldn't be exceeded.
 ice                     = 300 # inner core extension for plots in km.
 
-# Paths for the evolution model.
-evolution_output_path       = './TEST_results_evolution_Model_Si%wt_'+str(round(chi_Si_icb,3))  # Root path to data and figures by the evolution model.
-path_to_present_day_models  = model_path  # Path to the output of the data created by the present day model. 
-evolution_figure_path       = evolution_output_path + '_fig/' # Path to figures by the evolution model.
-evolution_data_path         = evolution_output_path + '_data/' # Path to data by the evolution model.
-
-# Paths for csv files that contain df variables from drivere.py and are used for making the contour plots, as well as the contour plots -- added 6/27/2022
-contour_plotting_path       = model_path #'./contour_plotting_' + CMR2 + '_' + light_element
-csvfiles_path               = model_path
-#presentday_data_filename    = 'present_day_' + str(round(CMR2,4)) + '_' + str(round(CMC,4)) + '_'+ str(round(chi_Si_icb,3)) + '.csv'
-pMetaDataFileName           = 'pMetaData_'+"{:.2f}".format(chi_Si_icb)+'.csv'
-compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
-# board item 24: was commented out, leaving util/plot/summaryPlot.py's
-# references to contourplot_file undefined (NameError on every run); given
-# the directory prefix compiled_data_file above already uses, rather than
-# a bare filename that would land in whatever cwd summaryPlot.py is run
-# from.
-contourplot_file            = contour_plotting_path + '/plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
 presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'chi_S_bulk', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code',
                                'start', 'newton_iters', 'resid_norm']  # v1.3.0: appended (format change; see README 'Outputs and error codes')
 contourcond                 = 'isnow'
 
-# Paths for csv file(s) and figure(s) that contain information on the snow zone bounds and inner core radius as a function of cmb temperature -- added 6/27/2022
-radii_vs_cmbtemp_path       = './radii_cmbtemp_plotting_'+str(chi_Si_icb)
-csv_radii_vs_cmbtemp_filename = '/radii_cmbtemp_data'
 columns_radvtemp            = ['chi_Si_icb', 'present day icr', 'cmb temp', 'inner core radius', 'lb radius sz1', 'ub radius sz1', 'lb radius sz2', 'ub radius sz2', 'lb radius sz3', 'ub radius sz3', 'cmb radius']
 radii_list                  = []
+
+
+def parse_argv(argv=None):
+    """Parse the `main.py`/`pie p` CLI contract --
+    `[prog, code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb?]`
+    -- and set this module's argv-derived attributes (`code_mode`, `CMR2`,
+    `CMC`, `light_element`, `liquidus_eq`, `chi_Si_icb`, and everything
+    derived from them: `model_path`, `presentFigureName`,
+    `presentDataName`, `evolution_output_path`,
+    `path_to_present_day_models`, `evolution_figure_path`,
+    `evolution_data_path`, `contour_plotting_path`, `csvfiles_path`,
+    `pMetaDataFileName`, `compiled_data_file`, `contourplot_file`,
+    `radii_vs_cmbtemp_path`, `csv_radii_vs_cmbtemp_filename`,
+    `pSolverLogFileName`).
+
+    `argv` defaults to `sys.argv`. Called once, early, by the real
+    entrypoint (`pie/main.py`, before its own `from .globalvar import
+    ...`) -- NOT a module-import side effect, so importing
+    `pie.globalvar` (e.g. from pytest, or from `pie/robust_runner.py`'s
+    own unrelated CLI argv) no longer parses whatever argv that foreign
+    process happens to have. Still raises loudly on a malformed argv
+    (board rule: no silent default) -- just as an explicit call site's
+    exception, not a bare import-time crash.
+    """
+    if argv is None:
+        argv = sys.argv
+    n = len(argv)
+    if n != 6 and n != 7:
+        raise ValueError(
+            'Error! Please type in CMR2, CMC, S/Si/S+Si, Steinbrugge/Edmund, '
+            f'chi_Si_icb/none (expected 6 or 7 argv entries, got {n}: {argv!r})'
+        )
+    code_mode        = argv[1] #input("code_mode (e, p, or plot) = ") # allows user to input the type of model (present or evolution OR make contour plots) in terminal -- added 6/23/2022
+    CMR2             = float(argv[2]) #'margot' # 'margot' or 'genova'
+    CMC              = float(argv[3]) # CMC value.
+    light_element    = argv[4] #'S+Si' # light element combination ('S', 'Si', 'S+Si') -- added 7/12/2022
+    liquidus_eq      = argv[5] #'Steinbruegge' # Steinbruegge for Steinbruegge2020 or Edmund for Edmund2022.
+
+    if light_element == 'S+Si' and code_mode != 'plot':
+        chi_Si_icb   = float(argv[6]) #float(input("chi_Si_icb = ")) # allows user to input chi_Si_icb value in terminal -- added 6/16/2022
+    else:
+        chi_Si_icb   = 0.0
+
+    # Paths for the present day model.
+    model_path              = './results/CMR2_'+"{:.17f}".format(CMR2)+'_CMC_'+"{:.17f}".format(CMC)+'_'+light_element+'_'+liquidus_eq+'/'
+    presentFigureName     = model_path + 'FigSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to figures by the present day model.
+    presentDataName       = model_path + 'DataSi%wt'+"{:.2f}".format(chi_Si_icb)+'_' # Path to data by the present day model.
+
+    # Paths for the evolution model.
+    evolution_output_path       = './TEST_results_evolution_Model_Si%wt_'+str(round(chi_Si_icb,3))  # Root path to data and figures by the evolution model.
+    path_to_present_day_models  = model_path  # Path to the output of the data created by the present day model.
+    evolution_figure_path       = evolution_output_path + '_fig/' # Path to figures by the evolution model.
+    evolution_data_path         = evolution_output_path + '_data/' # Path to data by the evolution model.
+
+    # Paths for csv files that contain df variables from drivere.py and are used for making the contour plots, as well as the contour plots -- added 6/27/2022
+    contour_plotting_path       = model_path #'./contour_plotting_' + CMR2 + '_' + light_element
+    csvfiles_path               = model_path
+    pMetaDataFileName           = 'pMetaData_'+"{:.2f}".format(chi_Si_icb)+'.csv'
+    compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
+    # board item 24: was commented out, leaving util/plot/summaryPlot.py's
+    # references to contourplot_file undefined (NameError on every run); given
+    # the directory prefix compiled_data_file above already uses, rather than
+    # a bare filename that would land in whatever cwd summaryPlot.py is run
+    # from.
+    contourplot_file            = contour_plotting_path + '/plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
+
+    # Paths for csv file(s) and figure(s) that contain information on the snow zone bounds and inner core radius as a function of cmb temperature -- added 6/27/2022
+    radii_vs_cmbtemp_path       = './radii_cmbtemp_plotting_'+str(chi_Si_icb)
+    csv_radii_vs_cmbtemp_filename = '/radii_cmbtemp_data'
+
+    pSolverLogFileName          = 'solverLog_'+"{:.2f}".format(chi_Si_icb)+'.jsonl'
+
+    globals().update(
+        code_mode=code_mode, CMR2=CMR2, CMC=CMC, light_element=light_element,
+        liquidus_eq=liquidus_eq, chi_Si_icb=chi_Si_icb,
+        model_path=model_path, presentFigureName=presentFigureName,
+        presentDataName=presentDataName,
+        evolution_output_path=evolution_output_path,
+        path_to_present_day_models=path_to_present_day_models,
+        evolution_figure_path=evolution_figure_path,
+        evolution_data_path=evolution_data_path,
+        contour_plotting_path=contour_plotting_path,
+        csvfiles_path=csvfiles_path, pMetaDataFileName=pMetaDataFileName,
+        compiled_data_file=compiled_data_file,
+        contourplot_file=contourplot_file,
+        radii_vs_cmbtemp_path=radii_vs_cmbtemp_path,
+        csv_radii_vs_cmbtemp_filename=csv_radii_vs_cmbtemp_filename,
+        pSolverLogFileName=pSolverLogFileName,
+    )
 
 # Constants
 MFeS                        = (55.845+32.065)
@@ -118,4 +164,5 @@ ERROR_CODE_DESCRIPTIONS = {
 # Newton solve record (iterate history: v, |f|, |dx|, det(J)) or a
 # failure-context record (non-finite counts in A/rho/g, chi_li vs
 # eutectic/admissible box) -- see src/libCore.py's write_solver_log.
-pSolverLogFileName          = 'solverLog_'+"{:.2f}".format(chi_Si_icb)+'.jsonl'
+# (pSolverLogFileName itself is argv-derived -- computed and set by
+# parse_argv() above, not here.)

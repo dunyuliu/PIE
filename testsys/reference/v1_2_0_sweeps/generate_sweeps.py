@@ -63,6 +63,11 @@ with contextlib.redirect_stdout(io.StringIO()):
     if is_pkg:
         sys.path.insert(0, str(pathlib.Path(src).parent))
         gv = importlib.import_module("pie.globalvar")
+        # board item 28f: globalvar.py no longer parses sys.argv as an
+        # import-time side effect -- this child's sys.argv[:] assignment
+        # above only has effect if something calls parse_argv on it, same
+        # as pie/main.py's own real entrypoint does.
+        gv.parse_argv(sys.argv)
         planet_input = importlib.import_module("pie.planet_input")
         lc = importlib.import_module("pie.shootp")
         driverp = importlib.import_module("pie.driverp") if policy == "continue" else None

@@ -8,7 +8,9 @@ would also leave `__name__` as `"pie.main"` instead of `"__main__"`.
 `run_module` on a dotted name keeps `__package__` set to `"pie"`, so
 `pie/main.py`'s own `from .globalvar import ...` style relative imports
 still resolve. `sys.argv` is left untouched here -- it is the real
-process argv, read by `pie/globalvar.py` at import time, same contract as
+process argv; `pie/main.py` passes it to `globalvar.parse_argv()`
+explicitly as its first action (board item 28f: parsing is no longer a
+`pie/globalvar.py` import-time side effect), same CLI contract as
 `python main.py p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` before
 this change (CLAUDE.md "Running").
 """

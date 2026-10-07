@@ -71,13 +71,16 @@ def fluid_core_initial_condition():
     pre-fluid-shoot setup shoot_mercmodel itself does before entering
     odeRK4_snow -- shared across every resolution tested below so the
     ~17 s Newton solve runs once, not 3x."""
-    import sys as _sys
     from pielib import _purge_pie_submodules
-    _sys.argv[:] = ["main.py", "p", str(CMR2), str(CMC), "S", "Edmund"]
     _purge_pie_submodules()
-    from pie import globalvar as gv
+    # `import_src` below purges+re-imports+parses `pie.globalvar` itself
+    # (board item 28f: `parse_argv` is an explicit call, not an
+    # import-time side effect) -- `gv` must be bound AFTER that call, not
+    # before, or it would reference a stale, never-parsed module object
+    # purged out from under it.
     planet_input = import_src("planet_input", CMR2=CMR2, CMC=CMC,
                                light_element="S", liquidus_eq="Edmund")
+    from pie import globalvar as gv
     from pie import shootp as lc
     from pie import solver
     from pie import coreEos as eos

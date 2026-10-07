@@ -4,15 +4,23 @@ discovery but which now only re-exports from this module -- see
 testsys/conftest.py's own short docstring).
 
 Import order matters here more than in most places, because pie's own
-import graph has an environment trap that has nothing to do with the
-physics:
+import graph used to have an environment trap that had nothing to do with
+the physics:
 
-pie/globalvar.py reads sys.argv at IMPORT time (argv[1]=code_mode,
+pie/globalvar.py used to read sys.argv at IMPORT time (argv[1]=code_mode,
 argv[2]=CMR2, argv[3]=CMC, argv[4]=light_element, argv[5]=liquidus_eq,
-optionally argv[6]=chi_Si_icb). Every other pie module imports globalvar
-(directly or via planet_input/libCore), so nothing in pie can be imported
-under pytest without a fake argv in place first. `sys_argv_p` below does
-this per-test; `import_src` mutates sys.argv itself.
+optionally argv[6]=chi_Si_icb), so nothing in pie could be imported under
+pytest without a fake argv in place first. Board item 28f turned that
+parsing into an explicit `globalvar.parse_argv(argv)` function, called
+only by `pie/main.py`'s real entrypoint -- a bare `import pie.globalvar`
+(e.g. during pytest collection) is now always safe, no fake argv needed.
+`import_src`/`solve_full_model` below call `parse_argv()` directly on a
+freshly-imported `pie.globalvar`, instead of faking `sys.argv` and
+relying on import to consume it. `_set_argv`/`sys_argv_p` (still here,
+still argv-based) are kept only because dozens of test files already
+depend on `sys_argv_p` as a fixture parameter; they no longer do any
+load-bearing work (nothing reads `sys.argv` anymore except `parse_argv`
+when called with no argument), but are harmless to leave in place.
 
 Two traps that used to live here no longer apply:
   - pie/libCore.py's TmFeSmelt.dat load is module-relative, not
@@ -57,21 +65,23 @@ SRC = ROOT / "pie"  # the installed package's source directory (board item 28e)
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 
-# Defensive default, not a test input: pie/globalvar.py reads sys.argv[1:6]
-# at IMPORT time (code_mode, CMR2, CMC, light_element, liquidus_eq). Every
-# real test path overwrites sys.argv via _set_argv()/import_src() before
-# solving anything. But under pytest-xdist, a ProcessPoolExecutor result
-# can get unpickled on the CONTROLLER process's background listener THREAD
-# (reconstructing a class instance defined in globalvar/libCore), which
-# imports globalvar for the first time in a process whose sys.argv is
-# xdist's own launch argv (too short) -- crashing with an unrelated
-# IndexError far from any test. Padding here (once, at this module's own
-# import -- triggered by testsys/conftest.py's own import of it, before any
-# xdist worker or thread can race it) makes that first import succeed no
-# matter which thread does it; _set_argv always replaces these values
-# before any test-visible solve.
-if len(sys.argv) < 6:
-    sys.argv[:] = ["main.py", "p", "0.346", "0.424", "S", "Edmund"]
+# Board item 28f replaced, rather than removed, a defensive need here:
+# under pytest-xdist (or a bare ProcessPoolExecutor-based fixture, e.g.
+# test_wide_self_consistency.py/test_v1_2_0_invariant.py), a worker's
+# result can be an EXCEPTION instance whose class is `pie.libCore`'s
+# `SolverError` (a worker catches `BaseException` and returns it rather
+# than raising across the process boundary). Unpickling that instance in
+# the CONTROLLER process imports `pie.libCore` for the first time THERE
+# if nothing already has -- and `pie.libCore` is a genuine, pre-existing
+# consumer of `globalvar.parse_argv()`'s output (`from .globalvar import
+# chi_Si_icb, ...` at its own module level, same category of consumer as
+# `pie/main.py`), so that import fails if the controller's resident
+# `pie.globalvar` was never parsed. A bare `import pie.globalvar` alone
+# is always safe post-28f (confirmed by testsys/contract/
+# test_globalvar_argv_parse.py); `pie.libCore` is not globalvar, and
+# still needs globalvar pre-parsed by the time anything imports it.
+# Fixed below by warming up both, once, at collection time, rather than
+# padding sys.argv for an import-time side effect that no longer exists.
 
 
 def pie_workers():
@@ -120,11 +130,20 @@ def pool_workers(cap):
     return max(1, min(cap, budget))
 
 
-def _set_argv(code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb=None):
+def _argv_for(code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb=None):
+    """Build the CLI-style argv list `pie.globalvar.parse_argv()` expects
+    (board item 28f): `[prog, code_mode, CMR2, CMC, light_element,
+    liquidus_eq, chi_Si_icb?]`. Shared by `_set_argv` (still mutates
+    `sys.argv`, kept only for `sys_argv_p`'s existing call sites) and
+    `import_src`/`solve_full_model` (which call `parse_argv` directly)."""
     argv = ["main.py", code_mode, str(CMR2), str(CMC), light_element, liquidus_eq]
     if chi_Si_icb is not None:
         argv.append(str(chi_Si_icb))
-    sys.argv[:] = argv
+    return argv
+
+
+def _set_argv(code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb=None):
+    sys.argv[:] = _argv_for(code_mode, CMR2, CMC, light_element, liquidus_eq, chi_Si_icb)
 
 
 @pytest.fixture
@@ -201,23 +220,48 @@ def _purge_pie_submodules(names=_PIE_RELOAD_MODULES):
             delattr(_pie, short)
 
 
+def _warm_up_libcore_for_cross_process_unpickling():
+    """Pre-import `pie.globalvar` (parsed) and `pie.libCore` once, in THIS
+    process, so a later unpickle of a worker-returned `pie.libCore.
+    SolverError` (see the module-level comment above `pie_workers()`)
+    always finds `pie.libCore` already in `sys.modules` -- unpickling a
+    class only does `getattr(sys.modules[module], qualname)`, never a
+    fresh import, once that module has been imported successfully one
+    time in this process. `_purge_pie_submodules()` + `import_src`/
+    `solve_full_model` freely replace this placeholder-parsed module
+    later with a properly-parsed one for whichever case is actually under
+    test; this warm-up only needs to have succeeded once, earlier, not to
+    stay current."""
+    import importlib
+    gv = importlib.import_module("pie.globalvar")
+    gv.parse_argv(_argv_for("p", 0.346, 0.424, "S", "Edmund"))
+    importlib.import_module("pie.libCore")
+
+
+_warm_up_libcore_for_cross_process_unpickling()
+
+
 def import_src(modname, CMR2=0.346, CMC=0.424, light_element="S",
                 liquidus_eq="Edmund", chi_Si_icb=None):
     """Import (or re-import) a `pie.<modname>` module with a specific argv
-    in place. `modname` is the bare submodule name (e.g. "globalvar",
-    "shootp"), same as callers used before board item 28e; this now
-    imports `pie.<modname>` (the installed package) instead of inserting
-    `pie/` onto sys.path and importing the bare name.
+    parsed into `pie.globalvar` first. `modname` is the bare submodule
+    name (e.g. "globalvar", "shootp"), same as callers used before board
+    item 28e; this now imports `pie.<modname>` (the installed package)
+    instead of inserting `pie/` onto sys.path and importing the bare name.
 
-    pie/globalvar.py computes several module-level constants (model_path,
-    presentDataName, ...) from argv at import time, so a test that needs a
+    `pie.globalvar.parse_argv()` computes several module-level constants
+    (model_path, presentDataName, ...) from its argv (board item 28f: an
+    explicit call, not an import-time side effect), so a test that needs a
     DIFFERENT CMR2/CMC/light_element than a previously-imported test must
-    force re-execution, not reuse the cached module (which would silently
-    keep the FIRST test's argv baked into its globals).
+    force re-execution and re-parse, not reuse the cached module (which
+    would silently keep the FIRST test's argv baked into its globals).
     """
     import importlib
-    _set_argv("p", CMR2, CMC, light_element, liquidus_eq, chi_Si_icb)
     _purge_pie_submodules()
+    gv = importlib.import_module("pie.globalvar")
+    gv.parse_argv(_argv_for("p", CMR2, CMC, light_element, liquidus_eq, chi_Si_icb))
+    if modname == "globalvar":
+        return gv
     return importlib.import_module(f"pie.{modname}")
 
 
@@ -260,9 +304,9 @@ def solve_full_model(CMR2, CMC, light_element, liquidus_eq, ricb_m,
     independent, so wall time for N cases is ~N/nproc, not ~N serial.
     """
     import importlib
-    _set_argv("p", CMR2, CMC, light_element, liquidus_eq, chi_Si_icb)
     _purge_pie_submodules()
     gv = importlib.import_module("pie.globalvar")
+    gv.parse_argv(_argv_for("p", CMR2, CMC, light_element, liquidus_eq, chi_Si_icb))
     planet_input = importlib.import_module("pie.planet_input")
     lc = importlib.import_module("pie.shootp")
     import numpy as np

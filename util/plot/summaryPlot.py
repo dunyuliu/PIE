@@ -3,6 +3,15 @@
 
 import os, sys
 
+from pie import globalvar
+# board item 28f: globalvar.py no longer parses sys.argv as an import-time
+# side effect -- this script is a real standalone entrypoint (run directly,
+# `python summaryPlot.py plot CMR2 CMC light_element liquidus_eq`, see
+# util/plot/plotAll.py/plotAll.sh), so it must parse its own argv first,
+# same as pie/main.py does, before the `from pie.globalvar import ...`
+# below that depends on the result.
+globalvar.parse_argv(sys.argv)
+
 import numpy as np # loading numpy.
 # board item 28e: pie is an installed package (`uv pip install -e .`), not
 # a sys.path-inserted directory -- import it like any other package.
