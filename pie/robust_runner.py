@@ -43,7 +43,7 @@ liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
 
 6. Backends: `--backend local` runs a capped thread pool, each thread
    driving one `python -m pie` subprocess. `--backend tacc` writes
-   pie/commands_launcher (the file util/run/TACC.LS6.parallel.run.slurm
+   pie/commands_launcher (the file scripts/run/TACC.LS6.parallel.run.slurm
    already reads) with one `robust_runner.py run-one <manifest>
    --index i` line per not-yet-done job, so TACC jobs get the same status
    records/sentinels.
@@ -54,7 +54,7 @@ installed `pie` package directory):
     python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
     python3 pie/robust_runner.py run mc.csv                       # knox
     python3 pie/robust_runner.py run mc.csv --backend tacc        # LS6: then
-    (sbatch util/run/TACC.LS6.parallel.run.slurm)
+    (sbatch scripts/run/TACC.LS6.parallel.run.slurm)
 
 Status log: append-only JSONL, default <src-dir>/results/runner_status.jsonl
 (`--status-log`), one `start` and one `end` record per job attempt.
@@ -254,7 +254,7 @@ def write_manifest(path, jobs):
 
 def mc_jobs(n, seed_base, mean_cmr2=0.346, std_cmr2=0.014, cmc0=0.426,
             liquidus_eq="Edmund", chi_si_values=None):
-    """The Monte Carlo ensemble that util/run/TACC.LS6.create.parallel.launcher.py
+    """The Monte Carlo ensemble that scripts/run/TACC.LS6.create.parallel.launcher.py
     + monteCarlo.run.py + scheduler.py produce today, as an explicit job
     list: draw i uses seed `seed_base + i` and the same draw as
     monteCarlo.run.py (default_rng(seed).normal(mean, std, 1); CMC =
@@ -773,7 +773,7 @@ def write_tacc_launcher(jobs, manifest_path, src_dir=SRC_DIR,
                         launcher_out="commands_launcher", status_log_path=None,
                         python_exe=None, force=False):
     """TACC backend: writes the `commands_launcher` file that the existing
-    `util/run/TACC.LS6.parallel.run.slurm`
+    `scripts/run/TACC.LS6.parallel.run.slurm`
     (LAUNCHER_JOB_FILE=commands_launcher, run from the repo root with the
     `pie` package installed) consumes unchanged.
     Each line is one job routed back

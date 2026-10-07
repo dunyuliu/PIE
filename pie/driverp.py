@@ -20,7 +20,7 @@ def _get_vis():
     only reliable self-reference here, independent of that cache state.
     """
     if 'vis' not in globals():
-        util_plot_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'util', 'plot')
+        util_plot_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'scripts', 'plot')
         if util_plot_dir not in sys.path:
             sys.path.insert(0, util_plot_dir)
         import visualization_present as vis_module
@@ -30,7 +30,7 @@ def _get_vis():
 
 def __getattr__(name):
     """PEP 562 lazy module attribute: `vis` (visualization_present, under
-    util/plot/) is imported only on first access to `driverp.vis` -- by driverp() itself
+    scripts/plot/) is imported only on first access to `driverp.vis` -- by driverp() itself
     (see below) or by a caller/test reaching in to monkeypatch it -- and
     cached in the module namespace exactly like a normal import, so
     behaviour when plotting actually runs is unchanged.

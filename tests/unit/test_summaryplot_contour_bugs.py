@@ -1,4 +1,4 @@
-"""Regression tests for util/plot/summaryPlot.py (PATHWAY_FORWARD.md item 24,
+"""Regression tests for scripts/plot/summaryPlot.py (PATHWAY_FORWARD.md item 24,
 diagnosed by lars-eriksson, fixed here): three bugs that raised/would raise
 NameError the moment the relevant code path ran, because this file is a
 flat top-level script (no functions), so every line executes unconditionally
@@ -38,7 +38,7 @@ import pytest
 pytestmark = pytest.mark.unit
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-SCRIPT = REPO_ROOT / "util" / "plot" / "summaryPlot.py"
+SCRIPT = REPO_ROOT / "scripts" / "plot" / "summaryPlot.py"
 
 ARGV_TAIL = ["plot", "0.346", "0.424", "S", "Edmund"]
 
@@ -72,7 +72,7 @@ def _write_fixture_csv(tmp_path):
          "import pie.globalvar as gv\n"
          # board item 28f: parsing is an explicit call now, not an
          # import-time side effect -- same call pie/main.py (and this
-         # script's own fix, util/plot/summaryPlot.py) make.
+         # script's own fix, scripts/plot/summaryPlot.py) make.
          "gv.parse_argv(sys.argv)\n"
          "print(gv.csvfiles_path)" % ARGV_TAIL],
         cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60,

@@ -19,10 +19,11 @@ from pie import robust_runner as rr  # pie is installed via pyproject.toml (boar
 
 SRC = Path(rr.__file__).resolve().parent
 # monteCarlo.run.py/scheduler.py moved out of pie/ to util/run/ (board item
-# 28b) -- they are operational scripts with no pie-internal imports, unlike
-# robust_runner.py (imported as pie.robust_runner by this test, self-locating
-# its results dir to the package directory); globalvar.py stays read from SRC.
-RUN_SCRIPTS = Path(__file__).resolve().parent.parent.parent / "util" / "run"
+# 28b), then util/ -> scripts/ (board item 39) -- they are operational
+# scripts with no pie-internal imports, unlike robust_runner.py (imported as
+# pie.robust_runner by this test, self-locating its results dir to the
+# package directory); globalvar.py stays read from SRC.
+RUN_SCRIPTS = Path(__file__).resolve().parent.parent.parent / "scripts" / "run"
 
 
 def test_error_code_is_imported_from_globalvar_not_copied():

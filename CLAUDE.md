@@ -28,8 +28,8 @@ canary only.
 ```bash
 mkdir results                       # required before any run; nothing creates it
 python -m pie p CMR2 CMC light_element liquidus_eq [chi_Si_icb]  # single case, e.g. S Edmund 0.346 0.424 (Margot fit)
-python util/run/scheduler.py CMR2 CMC        # loops S/Si/S+Si x liquidus x Si%wt
-python util/run/monteCarlo.run.py            # Monte Carlo ensemble around a mean CMR2/STD
+python scripts/run/scheduler.py CMR2 CMC        # loops S/Si/S+Si x liquidus x Si%wt
+python scripts/run/monteCarlo.run.py            # Monte Carlo ensemble around a mean CMR2/STD
 ```
 
 `pie p ...` (the console entry point, `pyproject.toml`'s `[project.scripts]`)
@@ -37,26 +37,26 @@ is equivalent to `python -m pie p ...`.
 
 Batches and large ensembles (knox or TACC Lonestar6), resumable, one
 manifest -- `pie/robust_runner.py` (item 22; kept inside the `pie` package,
-not moved to `util/run/`, because three `tests/` files import it as
+not moved to `scripts/run/`, because three `tests/` files import it as
 `from pie import robust_runner` and it self-locates its results dir to the
 package dir):
 
 ```bash
 python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 python3 pie/robust_runner.py run mc.csv                    # knox, PIE_WORKERS-capped
-python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then sbatch util/run/TACC.LS6.parallel.run.slurm
+python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then sbatch scripts/run/TACC.LS6.parallel.run.slurm
 ```
 
 ### Legacy recipe
 
-`util/run/TACC.LS6.create.parallel.launcher.py` (run with the working
-directory set to `util/run/`, where `monteCarlo.run.py` lives and where its
+`scripts/run/TACC.LS6.create.parallel.launcher.py` (run with the working
+directory set to `scripts/run/`, where `monteCarlo.run.py` lives and where its
 `./results/` output lands) writes a `commands_launcher` of 1024
 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or a plain `xargs`
 pool on knox:
 
 ```bash
-cd util/run
+cd scripts/run
 python TACC.LS6.create.parallel.launcher.py   # writes commands_launcher
 nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
 ```
@@ -157,9 +157,10 @@ live on the user-facing site (`docs/user/outputs.md`,
   (`pie.drivere`, `pie.driverp`) were dropped outright rather than narrowed
   to a non-empty list -- its own code used no name from either module;
   `shoote.py`/`visualization_evolution.py` excluded, parked under item 11).
-- `util/plot/` — `summaryPlot.py`, `visualization_present.py`,
+- `scripts/plot/` — `summaryPlot.py`, `visualization_present.py`,
   `read_plot_datah5.py`, `plotAll.py`/`plotAll.sh` (relocated from `src/` by
-  board item 28). `util/run/` — `scheduler.py`, `monteCarlo.run.py`,
+  board item 28, then from `util/` to `scripts/` by board item 39).
+  `scripts/run/` — `scheduler.py`, `monteCarlo.run.py`,
   `TACC.LS6.create.parallel.launcher.py` + its slurm script, `postp.slurm`
   (relocated the same way; `robust_runner.py` deliberately stayed in `pie/`,
   see "Running" above).

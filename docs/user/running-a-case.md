@@ -21,7 +21,7 @@ For the Margot et al. constraints, `CMR2 = 0.346`, `CMC = 0.424`.
 ## Sweeping compositions: `scheduler.py`
 
 ```
-python util/run/scheduler.py CMR2 CMC
+python scripts/run/scheduler.py CMR2 CMC
 ```
 
 Loops over light-element choice (S, Si, S+Si), liquidus equation
@@ -34,7 +34,7 @@ invoked by path.
 ## Monte Carlo ensemble around a mean CMR2/CMC
 
 ```
-python util/run/monteCarlo.run.py
+python scripts/run/monteCarlo.run.py
 ```
 
 Generates a suite of present-day models fitting (CMR2, CMC) pairs drawn
@@ -58,7 +58,7 @@ python3 pie/robust_runner.py run mc.csv
 # 2b. Lonestar6: writes a launcher of pending jobs only, then the
 #     project's own slurm script runs it under LAUNCHER
 python3 pie/robust_runner.py run mc.csv --backend tacc
-sbatch util/run/TACC.LS6.parallel.run.slurm
+sbatch scripts/run/TACC.LS6.parallel.run.slurm
 ```
 
 A job counts as done only when its sentinel file exists, written after
@@ -73,13 +73,13 @@ cores/2))`); check `uptime`/`who` first and set it explicitly on a loaded box.
 
 ### Legacy recipe
 
-`util/run/TACC.LS6.create.parallel.launcher.py` (run with the working
-directory set to `util/run/`) writes a `commands_launcher` file of 1024
+`scripts/run/TACC.LS6.create.parallel.launcher.py` (run with the working
+directory set to `scripts/run/`) writes a `commands_launcher` file of 1024
 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or a plain `xargs`
 pool on knox:
 
 ```
-cd util/run
+cd scripts/run
 python TACC.LS6.create.parallel.launcher.py
 nice -n 10 xargs -P "${PIE_WORKERS:-4}" -I{} sh -c '{}' < commands_launcher
 ```

@@ -1,19 +1,20 @@
-"""Contract tier: board item 35 -- `util/plot/read_plot_datah5.py` must
+"""Contract tier: board item 35 -- `scripts/plot/read_plot_datah5.py` must
 parse its own argv into `pie.globalvar` (via `globalvar.parse_argv(sys.argv)`)
 BEFORE its `from pie.planet_input import planet` import, exactly the
-pattern `pie/main.py` and `util/plot/summaryPlot.py` already follow.
+pattern `pie/main.py` and `scripts/plot/summaryPlot.py` already follow.
 
 Regression history: PR #95 (board item 28f) turned `pie/globalvar.py`'s
 argv parsing from an import-time side effect into the explicit
 `parse_argv(argv=None)` function, called only by the real entrypoints.
-`util/plot/read_plot_datah5.py` was NOT updated at the time, so
+`util/plot/read_plot_datah5.py` (then, now `scripts/plot/read_plot_datah5.py`
+after board item 39) was NOT updated at the time, so
 `pie.planet_input` (which reads `globalvar.CMC` etc. at its own import
 time) crashed with `ImportError: cannot import name 'CMC' from
 'pie.globalvar'` the moment this script was run standalone. PR #101
 fixed it by adding the same `from pie import globalvar;
 globalvar.parse_argv(sys.argv)` call used elsewhere, right before the
 `planet_input` import -- see the comment block in
-`util/plot/read_plot_datah5.py` above that call. That fix shipped
+`scripts/plot/read_plot_datah5.py` above that call. That fix shipped
 verified only by one manual interactive run quoted in the PR #101 commit
 message; this test is the automated regression lock the board flagged
 missing (item 35).
@@ -38,7 +39,7 @@ from pielib import run_pie
 pytestmark = pytest.mark.contract
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-SCRIPT = ROOT / "util" / "plot" / "read_plot_datah5.py"
+SCRIPT = ROOT / "scripts" / "plot" / "read_plot_datah5.py"
 
 
 def test_read_plot_datah5_survives_import_and_fails_only_on_missing_data_file():
