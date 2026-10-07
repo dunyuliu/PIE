@@ -83,7 +83,7 @@ def parse_argv(argv=None):
     compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
     # Uses the same directory prefix as compiled_data_file above, rather
     # than a bare filename that would land in whatever cwd summaryPlot.py
-    # is run from (util/plot/summaryPlot.py references contourplot_file).
+    # is run from (scripts/plot/summaryPlot.py references contourplot_file).
     contourplot_file            = contour_plotting_path + '/plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
 
     # Paths for csv file(s) and figure(s) that contain information on the snow zone bounds and inner core radius as a function of cmb temperature -- added 6/27/2022

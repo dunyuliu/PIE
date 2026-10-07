@@ -38,9 +38,10 @@ The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
 `pyproject.toml` (board item 28e: packaging + the pinned deps that must
 agree with `requirements.txt`, rule 3b), plus
 `pie/` (the installable package; renamed from `src/` by board item 28e —
-same role, same rules below that still say `src/` in older prose), `util/`
+same role, same rules below that still say `src/` in older prose), `scripts/`
 (operational scripts split out of `src/` by the Layout PR,
-board item 28 — `util/plot/`, `util/run/`; relocation of existing scripts, not
+board item 28 — `scripts/plot/`, `scripts/run/`; renamed from `util/` by
+board item 39; relocation of existing scripts, not
 new scope, and no physics code), `historical_versions/` (frozen zips/tars of prior versions, read-only —
 see rule 7), `testsys/` and `.github/` (in scope for this project like `pie/`
 — CI config and the test suite, maintained by whoever is doing the current

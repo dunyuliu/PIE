@@ -7,7 +7,7 @@ from pie import globalvar
 # globalvar.py does not parse sys.argv as an import-time side effect --
 # this script is a real standalone entrypoint (run directly,
 # `python summaryPlot.py plot CMR2 CMC light_element liquidus_eq`, see
-# util/plot/plotAll.py/plotAll.sh), so it must parse its own argv first,
+# scripts/plot/plotAll.py/plotAll.sh), so it must parse its own argv first,
 # same as pie/main.py does, before the `from pie.globalvar import ...`
 # below that depends on the result.
 globalvar.parse_argv(sys.argv)

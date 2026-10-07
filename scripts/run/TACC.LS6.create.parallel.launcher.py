@@ -8,7 +8,7 @@ import numpy as np
 #   nice -n 10 xargs -P $PIE_WORKERS -I{} sh -c '{}' < commands_launcher
 # (see README "Large ensemble Monte Carlo simulation").
 #
-# Run with cwd == util/run/ (where monteCarlo.run.py lives, board item
+# Run with cwd == scripts/run/ (where monteCarlo.run.py lives, board item
 # 28b) -- the written lines reference it by bare filename, resolved
 # against whatever cwd the launcher lines are later run from.
 #

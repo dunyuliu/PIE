@@ -46,7 +46,7 @@ concentration, from the centre out to the solved outer boundary.
 
 The scheduler and single-case runs also produce summary figures (profile
 plots, contour plots over the sweep) under the same `results/` tree via
-`util/plot/summaryPlot.py` / `util/plot/visualization_present.py`.
+`scripts/plot/summaryPlot.py` / `scripts/plot/visualization_present.py`.
 
 ## Robust-runner provenance
 

@@ -16,7 +16,7 @@ from pie import globalvar
 # side effect -- this script is a real standalone entrypoint (run directly,
 # `python read_plot_datah5.py p CMR2 CMC light_element liquidus_eq
 # [chi_Si_icb]`, see the `cmd` string built below), so it must parse its own
-# argv first, same as pie/main.py and util/plot/summaryPlot.py do, before the
+# argv first, same as pie/main.py and scripts/plot/summaryPlot.py do, before the
 # `from pie.planet_input import planet` below that depends on the result.
 globalvar.parse_argv(sys.argv)
 from pie.planet_input import planet

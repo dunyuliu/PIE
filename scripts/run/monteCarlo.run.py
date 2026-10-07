@@ -9,7 +9,7 @@ CMC0      = 0.426
 
 if __name__ == "__main__":
     # Optional explicit seed (argv[1]): makes a single draw reproducible and lets
-    # a launcher (util/run/TACC.LS6.create.parallel.launcher.py, or the
+    # a launcher (scripts/run/TACC.LS6.create.parallel.launcher.py, or the
     # knox xargs recipe, see README "Large ensemble Monte Carlo
     # simulation") regenerate the exact same CMR2/CMC for a resumability
     # check, instead of each line being an unrepeatable, unseeded draw.
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # interpreter with the exact pins on hosts where the bare `python3` on
     # PATH is broken (see CLAUDE.md, PATHWAY_FORWARD.md knox note).
     # scheduler.py referenced by absolute path (this file lives in
-    # util/run/, alongside scheduler.py, not inside the installed `pie`
+    # scripts/run/, alongside scheduler.py, not inside the installed `pie`
     # package -- both are operational scripts that call `python -m pie`
     # rather than package internals -- so a bare 'scheduler.py' would
     # only resolve by accident if invoked with a different cwd).
