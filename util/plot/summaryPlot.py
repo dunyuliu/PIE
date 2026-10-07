@@ -23,8 +23,11 @@ from pie.globalvar import (
     csvfiles_path,
     presentday_columns,
 ) # loading global variables actually used below.
-from pie.drivere import * # loading drivere, which does the main computation for evolution model.
-from pie.driverp import * # loading driverp, which does the main computation for presentDay model.
+# item 9: summaryPlot.py's own code (below) does not reference any name
+# from pie.drivere or pie.driverp (grepped -- neither module's functions,
+# classes, or re-exported globalvar constants appear bare anywhere in this
+# file); both star-imports were dead weight, so they are dropped rather
+# than narrowed to a non-empty list.
 import csv # for writing and using csv files -- added 6/27/2022
 import glob,os,sys # for creating new directories -- added 6/28/2022
 import pandas as pd # for reading csv files -- added 6/28/2022
