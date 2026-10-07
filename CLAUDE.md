@@ -63,7 +63,7 @@ check treats a killed draw as finished -- README).
   imports (`from .globalvar import ...`); the former repo-wide
   `from x import *` star-imports were narrowed to explicit name lists module
   by module (`PATHWAY_FORWARD.md` item 9, closed for `main.py`/`shootp.py`/
-  `solver.py`/`libCore.py`/`planet_input.py`/`summaryPlot.py`/
+  `solver.py`/`libCore.py`/`driverp.py`/`planet_input.py`/`summaryPlot.py`/
   `visualization_present.py`; `summaryPlot.py`'s two star-imports
   (`pie.drivere`, `pie.driverp`) were dropped outright rather than narrowed
   to a non-empty list -- its own code used no name from either module;
