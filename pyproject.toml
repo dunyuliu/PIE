@@ -11,11 +11,11 @@ requires-python = "==3.12.*"
 license = { text = "GPL-3.0-only" }
 # Exact pins, matching requirements.txt (PROJECT_RULES.md rule 3b: every
 # dependency manifest pins exact versions and must not drift from the
-# others -- testsys/contract/test_dependency_pins_match.py checks
-# requirements.txt vs testsys/requirements.txt; the same test's sibling
+# others -- tests/contract/test_dependency_pins_match.py checks
+# requirements.txt vs tests/requirements.txt; the same test's sibling
 # check (added with this file, board item 28e) checks this file against
 # requirements.txt too). requirements.txt remains the source of truth;
-# update both together under a green `testsys/run.py all`.
+# update both together under a green `tests/run.py all`.
 dependencies = [
     "numpy==2.5.3",
     "scipy==1.18.1",

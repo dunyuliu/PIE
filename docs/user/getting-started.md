@@ -65,12 +65,12 @@ runner) and [Output Files](outputs.md) for what each file contains.
 ## Check the install
 
 ```
-~/.local/bin/uv pip install --python .venv/bin/python3.12 -r testsys/requirements.txt
-.venv/bin/python3.12 testsys/run.py
+~/.local/bin/uv pip install --python .venv/bin/python3.12 -r tests/requirements.txt
+.venv/bin/python3.12 tests/run.py
 ```
 
 This runs the fast tiers (unit, contract, integration -- the same gate CI
 runs on every push and PR), ~3-5 minutes. See
-[`testsys/README.md`](https://github.com/dunyuliu/PIE/blob/main/testsys/README.md)
+[`tests/README.md`](https://github.com/dunyuliu/PIE/blob/main/tests/README.md)
 for tier definitions and runtimes, including the published-paper parity
 check against Zenodo-archived output.

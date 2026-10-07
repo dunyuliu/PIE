@@ -22,14 +22,14 @@ regression-anchored, never report it as "independently verified".
 Fast tiers (unit, contract, integration -- CI's push/PR gate, ~3-5 min):
 
 ```
-.venv/bin/python3.12 testsys/run.py
+.venv/bin/python3.12 tests/run.py
 ```
 
 Everything, including the full-CLI e2e test and the wide physics-coverage
 sweep (~14 min):
 
 ```
-.venv/bin/python3.12 testsys/run.py all
+.venv/bin/python3.12 tests/run.py all
 ```
 
 The widest check, 240 further Monte-Carlo-drawn cases sampled directly
@@ -37,10 +37,10 @@ from the shared published dataset cache, needs a local
 `~/shared_dataset/zenodo.16459292/` mount and is not run in CI:
 
 ```
-python3 -m pytest testsys/e2e/test_published_wide_sweep.py -m published_wide -v
+python3 -m pytest tests/e2e/test_published_wide_sweep.py -m published_wide -v
 ```
 
-See [`testsys/README.md`](https://github.com/dunyuliu/PIE/blob/main/testsys/README.md)
+See [`tests/README.md`](https://github.com/dunyuliu/PIE/blob/main/tests/README.md)
 for the full tier breakdown and runtimes.
 
 ## What each tier actually checks

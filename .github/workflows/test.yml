@@ -3,7 +3,7 @@ name: PIE test suite
 # Fast tiers (unit + contract + integration, target < 5 min total) on
 # every push/PR -- e2e (the full scheduler.py sweep, ~5-6 min PER
 # composition, ~1.5-2 h for the full 18-composition sweep -- see
-# testsys/README.md "Runtimes") is opt-in only: workflow_dispatch or a
+# tests/README.md "Runtimes") is opt-in only: workflow_dispatch or a
 # weekly schedule, never push/PR. That split mirrors this project's own
 # EQdyna/eqquasi sibling projects' CI (fast gate on every push, slow
 # physics sweep on a timer), scaled down for a serial-Python, no-MPI,
@@ -26,7 +26,7 @@ jobs:
     # Zenodo/self-generated references). Runs on every push and PR.
     # v1.5.0: pinned job moved from Python 3.10 (numpy 1.21.5/scipy 1.8.0/
     # pandas 1.3.5) to Python 3.12 (numpy 2.5.3/scipy 1.18.1/pandas 3.0.6,
-    # see requirements.txt / testsys/requirements.txt / CHANGELOG.md) -- this
+    # see requirements.txt / tests/requirements.txt / CHANGELOG.md) -- this
     # IS the one supported environment (PROJECT_RULES.md rule 3c), not an
     # alternative to it.
     runs-on: ubuntu-latest
@@ -40,14 +40,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install -r testsys/requirements.txt
+          pip install -r tests/requirements.txt
 
       - name: Run fast tiers (unit, contract, integration)
         env:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
           PIE_WORKERS: '4'  # matches this runner's 4 cores (PROJECT_RULES.md)
-        run: python3 testsys/run.py unit contract integration
+        run: python3 tests/run.py unit contract integration
 
   fast-latest:
     # Non-blocking early-warning canary ONLY (PROJECT_RULES.md rule 3c) --
@@ -69,7 +69,7 @@ jobs:
       - name: Install latest dependencies (pins stripped)
         run: |
           pip install -e . --no-deps
-          sed -E 's/==[^ ]+//' testsys/requirements.txt | grep -v '^#' > /tmp/req-latest.txt
+          sed -E 's/==[^ ]+//' tests/requirements.txt | grep -v '^#' > /tmp/req-latest.txt
           pip install -r /tmp/req-latest.txt
           pip freeze | grep -iE '^(numpy|scipy|pandas|tables|h5py|matplotlib|pytest)=='
 
@@ -78,7 +78,7 @@ jobs:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
           PIE_WORKERS: '4'  # matches this runner's 4 cores (PROJECT_RULES.md)
-        run: python3 testsys/run.py unit contract integration
+        run: python3 tests/run.py unit contract integration
 
   e2e-cli-smoke:
     # The ONE true full-CLI-subprocess pipeline test (`python -m pie p
@@ -96,21 +96,21 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install -r testsys/requirements.txt
+          pip install -r tests/requirements.txt
       - name: Run the full-CLI-subprocess e2e test
         env:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
         run: |
-          python3 -m pytest testsys/e2e/test_full_composition_sweep.py -v -m e2e
+          python3 -m pytest tests/e2e/test_full_composition_sweep.py -v -m e2e
 
-  # NOTE: testsys/e2e/test_published_wide_sweep.py (marker
+  # NOTE: tests/e2e/test_published_wide_sweep.py (marker
   # `published_wide`) has deliberately NO job here. It reads directly
   # from ~/shared_dataset/zenodo.16459292/ (the user's cross-project,
   # read-only dataset cache) and self-skips with a clear reason when
   # that path is absent -- which it always is on a GitHub-hosted
   # runner. Run it manually/locally on a machine with that cache
-  # mounted: `python3 -m pytest testsys/e2e/test_published_wide_sweep.py
+  # mounted: `python3 -m pytest tests/e2e/test_published_wide_sweep.py
   # -m published_wide -v`.
 
   e2e-wide-sweep:
@@ -138,11 +138,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install -r testsys/requirements.txt
+          pip install -r tests/requirements.txt
       - name: Run this composition's shard of the wide sweep
         env:
           PYTHONNOUSERSITE: '1'
           MPLBACKEND: 'Agg'
           PIE_E2E_SHARD: '${{ matrix.composition.light }},${{ matrix.composition.liquidus }}'
         run: |
-          python3 -m pytest testsys/e2e/test_wide_full_sweep.py -v -m e2e
+          python3 -m pytest tests/e2e/test_wide_full_sweep.py -v -m e2e
