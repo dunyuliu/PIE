@@ -4,15 +4,28 @@ Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff`
 
 * v1.6.3; 20261007; patch, same-day user-facing bugfix plus completion of
   item 9's star-import narrowing (`pie/driverp.py`, `pie/planet_input.py`,
-  `util/plot/summaryPlot.py`) and one regression test, all nine PRs
-  (#95-#105, squash-merged `f7eb052`..`7d95c08`) landed on `main` since
-  v1.6.2. No public CLI contract change, no numerical/physics output
-  change, no dependency-pin change -- patch is the right call, not minor:
-  the one behavior change (board item 28f, `pie/globalvar.py` no longer
-  parsing `sys.argv` at import time) was itself released in v1.6.2's
-  predecessor chain before this tag and is not new here; what is new this
-  release is entirely refactor + a same-day fix of a regression that
-  refactor introduced, plus its regression test.
+  `util/plot/summaryPlot.py`) and two regression tests, fifteen PRs
+  (#91-#105, squash-merged `26d16a3`..`7d95c08`) landed on `main` since
+  v1.6.2. **Correction (conductor, 2026-10-07, same day as the original
+  release): the original text of this entry misstated both the scope and
+  the behavior-change claim below -- fixed forward in CHANGELOG.md only,
+  the tag itself was not moved (`v1.6.3` still points at `582dd6d`, per
+  board item 33's "tags can be created but not moved or deleted"
+  governance).** The original entry said "nine PRs (#95-#105)" and omitted
+  PR #93 (`f941670`, `testsys/contract/test_item18b_isnow_filter.py`'s own
+  mutation-verified lock, item 32) entirely, along with #91/#92/#94 (board-
+  only bookkeeping). `git log --oneline v1.6.2..v1.6.3` in fact lists 15
+  commits, #91 through #105. The original entry also claimed "the one
+  behavior change (board item 28f, `pie/globalvar.py` no longer parsing
+  `sys.argv` at import time) was itself released in v1.6.2's predecessor
+  chain before this tag and is not new here" -- this is false:
+  `git merge-base --is-ancestor f7eb052 v1.6.2` fails, confirming PR #95
+  (`f7eb052`) is NOT an ancestor of v1.6.2 and its behavior change IS new in
+  this release. No public CLI contract change, no numerical/physics output
+  change, no dependency-pin change -- patch is still the right call, not
+  minor: `globalvar.parse_argv()` is an internal refactor of how the
+  existing argv contract is wired (every entrypoint's observable CLI
+  behavior is unchanged), not a new or altered public interface.
   * **Fixed** (board item 35, PR #101 squash `f503af5`, 2026-10-07):
     `util/plot/read_plot_datah5.py` -- a real standalone entrypoint listed
     in CLAUDE.md's "Running" -- never called the (PR #95-introduced)
@@ -39,12 +52,21 @@ Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff`
     `ImportError`/`NameError` during the import chain, and asserts it gets
     far enough to fail downstream at the (deliberately absent) `.h5`
     fixture's `pd.read_hdf()` instead.
+  * **Added** (board item 32, PR #93 squash `f941670`, mutation-verified):
+    `testsys/contract/test_item18b_isnow_filter.py` locks the `isnow in
+    {1,3}` filter predicate, published-category totals, stratified
+    Horvitz-Thompson "+recovered" estimates, and the Fig 2 headline delta
+    against the committed `item18b_results.json` -- closes item 32's own
+    missing-regression-test gap, unrelated to item 9/35, omitted from this
+    entry's original text.
   * **Docs**: `CLAUDE.md`'s item-9 closed-module list corrected to include
     `driverp.py` (PR #103 squash `b60710c`), which PR #97 had landed without
     updating; `PATHWAY_FORWARD.md` items 9 and 35 updated to record the
     zofia-kaminska audits that corrected item 9's two premature closures
     and tracked the item-35 regression to its test-coverage close (PRs #96,
-    #98, #100, #102, #105, all board-only, no code change).
+    #98, #100, #102, #105); items 2, 3, 18a and 34 fresh-re-verified/closed
+    and item 32's missing-test gap recorded closed (PRs #91, #92, #94, all
+    board-only, no code change).
   * Gate: fresh `uv venv --python 3.12` + `uv pip install -e .` +
     `uv pip install -r testsys/requirements.txt` in this release worktree,
     `.venv/bin/python3.12 testsys/run.py -n 4 unit contract integration` --
