@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Robust batch runner for PIE present-day ('p') jobs (PATHWAY_FORWARD.md item 22).
+"""Robust batch runner for PIE present-day ('p') jobs.
 
 One runner for knox (local) and TACC Lonestar6, replacing the ad-hoc knox
 `xargs` recipe and the TACC LAUNCHER recipe (README "Large ensemble Monte
 Carlo simulation"). A job is one `python -m pie p CMR2 CMC light_element
-liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep
-(board item 28e: the package entry point, formerly `main.py p ...`).
+liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
 
 1. Manifest: an explicit CSV, read from a file, never hard-coded:
 
@@ -27,7 +26,7 @@ liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep
    header before the sweep starts, so a killed job leaves a csv behind.
 
 3. Status: a finished job's status is an `ErrorCode` name from
-   pie/globalvar.py (item 16, imported, not copied) -- CONVERGED if every
+   pie/globalvar.py (imported, not copied) -- CONVERGED if every
    radius converged, else the most frequent failure code -- with the full
    per-code row counts alongside. A job that never finished gets a
    `RunnerStatus` (PROCESS_CRASHED / INCOMPLETE_OUTPUT) instead.
@@ -44,8 +43,8 @@ liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep
 
 6. Backends: `--backend local` runs a capped thread pool, each thread
    driving one `python -m pie` subprocess. `--backend tacc` writes
-   pie/commands_launcher (the file util/run/TACC.LS6.parallel.run.slurm,
-   item 28b, already reads) with one `robust_runner.py run-one <manifest>
+   pie/commands_launcher (the file util/run/TACC.LS6.parallel.run.slurm
+   already reads) with one `robust_runner.py run-one <manifest>
    --index i` line per not-yet-done job, so TACC jobs get the same status
    records/sentinels.
 
@@ -83,12 +82,12 @@ def _load_error_code():
     """Import `pie/globalvar.py`'s `ErrorCode` enum without re-deriving its
     vocabulary (requirement 3: reuse, don't invent a parallel one).
 
-    Board item 28f: `globalvar.py` no longer parses `sys.argv` as an
-    import-time side effect (it used to, which crashed this runner's own
-    CLI argv -- `run m.csv --workers 2 ...` -- on `float(sys.argv[2])`;
-    `testsys/pielib.py` worked around the same landmine with a placeholder
-    argv). ErrorCode doesn't depend on argv-parsed state at all, so a
-    plain import is now enough; no `sys.argv` substitution needed.
+    `globalvar.py` does not parse `sys.argv` as an import-time side
+    effect (eager parsing would crash this runner's own CLI argv -- `run
+    m.csv --workers 2 ...` -- on `float(sys.argv[2])`; `testsys/pielib.py`
+    worked around the same landmine with a placeholder argv). ErrorCode
+    doesn't depend on argv-parsed state at all, so a plain import is
+    enough; no `sys.argv` substitution needed.
 
     `importlib.import_module("pie.globalvar")`, not a package-relative
     `from . import globalvar`: this module is deliberately runnable as a
@@ -97,8 +96,8 @@ def _load_error_code():
     .../robust_runner.py ...`, not `python -m pie.robust_runner`), and a
     relative import fails with no `__package__` when a module is executed
     that way. Resolving by absolute dotted name instead works in both
-    modes, as long as `pie` itself is importable (installed, board item
-    28e) -- which it already must be for `run_one_job` below to invoke
+    modes, as long as `pie` itself is importable (installed as a package)
+    -- which it already must be for `run_one_job` below to invoke
     `python -m pie`.
     """
     import importlib
@@ -135,7 +134,7 @@ def pie_workers():
         free_cores = max(0, cpu - 1 - load1)
         return min(24, max(4, int(free_cores // 2)))
     except (OSError, AttributeError) as e:
-        # Board item 26c: not a silent fallback (PROJECT_RULES.md rule 2) --
+        # Not a silent fallback (PROJECT_RULES.md rule 2) --
         # record why the cap-from-load-average formula couldn't run, same
         # spirit as provenance()'s git_sha_error. Printed to stderr (this
         # function has no record/log sink of its own to attach a field to,
@@ -148,7 +147,7 @@ def pie_workers():
 def _fmt_float(x):
     # Python's str(float) is the shortest round-trip repr (float(str(x))
     # == x always since 3.1) -- safe to hand straight to argv/sys.argv
-    # parsing in src/globalvar.py (`float(sys.argv[2])`).
+    # parsing in pie/globalvar.py (`float(sys.argv[2])`).
     return repr(float(x))
 
 
@@ -256,7 +255,7 @@ def write_manifest(path, jobs):
 def mc_jobs(n, seed_base, mean_cmr2=0.346, std_cmr2=0.014, cmc0=0.426,
             liquidus_eq="Edmund", chi_si_values=None):
     """The Monte Carlo ensemble that util/run/TACC.LS6.create.parallel.launcher.py
-    (item 28b) + monteCarlo.run.py + scheduler.py produce today, as an explicit job
+    + monteCarlo.run.py + scheduler.py produce today, as an explicit job
     list: draw i uses seed `seed_base + i` and the same draw as
     monteCarlo.run.py (default_rng(seed).normal(mean, std, 1); CMC =
     cmc0*mean/CMR2), then scheduler.py's compositions -- S+Si at each
@@ -305,9 +304,9 @@ def provenance(repo_root=REPO_ROOT):
         prov["git_sha_error"] = err
     porcelain, err = _git(["status", "--porcelain", "--", "pie"], repo_root)
     # A dirty pie/ means the SHA alone does not identify the code that ran.
-    # Key name (`git_src_dirty`) kept as-is (board item 28e: renaming the
-    # directory is not a reason to also break every provenance record's
-    # field name / every test and sentinel reader of it).
+    # Key name (`git_src_dirty`) kept as-is -- renaming the directory is
+    # not a reason to also break every provenance record's field name /
+    # every test and sentinel reader of it.
     prov["git_src_dirty"] = bool(porcelain.strip()) if porcelain is not None else None
 
     pins = {}
@@ -372,7 +371,7 @@ def lock_path(job, src_dir=SRC_DIR):
 
 
 def _acquire_lock(path, payload):
-    """Atomic claim (board item 26a: done-check/job-run race): two
+    """Atomic claim (done-check/job-run race): two
     overlapping runs of the same manifest can both pass `already_done`
     (sentinel not written yet) and then both launch `python -m pie` for
     the same job, each truncating the same pMetaData csv with 'w' --
@@ -385,7 +384,7 @@ def _acquire_lock(path, payload):
     Returns the claimant's unique `token` (truthy str, also recorded in
     the lock file under key "token") on success, None otherwise. Pass
     that token back to `_release_lock` so only the lock this caller
-    wrote is ever removed (item 29a).
+    wrote is ever removed.
 
     One reclaim attempt if the existing lock is stale (`_lock_is_stale`,
     same-host dead-pid check only) -- required for resumability: a runner
@@ -396,7 +395,7 @@ def _acquire_lock(path, payload):
     also removes a (possibly non-stale) lock before re-running, same as
     it already bypasses the done-check.
 
-    The reclaim is atomic (board item 29a): it is done in
+    The reclaim is atomic: it is done in
     `_reclaim_stale_lock` under an flock'd per-lock mutex with a
     re-check of staleness inside, and replaces the stale file via
     `os.replace` so the lock path is never momentarily absent -- the old
@@ -489,7 +488,7 @@ def _lock_is_stale(path):
     """True iff `path` names a pid on THIS host that is no longer alive --
     the runner that held it was killed (SIGKILL, node failure, OOM) before
     its `finally` could release it. A lock from a DIFFERENT host is never
-    auto-reclaimed here (item 26a: 'keep it simple', no cross-host
+    auto-reclaimed here ('keep it simple', no cross-host
     liveness channel) -- a TACC job stuck behind a crashed node's lock
     needs an operator to remove it or pass `--force`; that limitation is
     documented, not hidden."""
@@ -512,7 +511,7 @@ def _lock_is_stale(path):
 
 
 def _release_lock(path, token=None):
-    """Remove `path`. With `token` given (item 29a: compare-then-delete),
+    """Remove `path`. With `token` given (compare-then-delete),
     remove it ONLY if the file still records that token -- i.e. it is
     still the lock this caller wrote, not one a reclaimer has since
     replaced it with. `token=None` is the unconditional form, reserved
@@ -533,7 +532,7 @@ def _release_lock(path, token=None):
 
 
 def summarize_error_codes(csv_path):
-    """Per-job status in item 16's vocabulary: count the pMetaData csv's
+    """Per-job status in ErrorCode's vocabulary: count the pMetaData csv's
     per-radius `error_code` column by `ErrorCode` name. A code that is not
     in the enum is reported as UNRECOGNIZED_<n> (loud, not dropped)."""
     counts = {}
@@ -640,13 +639,13 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
       * RunnerStatus.INCOMPLETE_OUTPUT when it exited 0 but its csv is
         missing or has no data rows -> no sentinel, re-run on resume;
       * RunnerStatus.SKIPPED_LOCKED when another process already claimed
-        this job (board item 26a) -> no subprocess launched, nothing
+        this job -> no subprocess launched, nothing
         touched, re-checked (not re-run) on resume.
     """
     python_exe = python_exe or sys.executable
     src_dir = Path(src_dir)
 
-    # Claim the job before touching anything else (item 26a): two
+    # Claim the job before touching anything else: two
     # overlapping runs of the same manifest can both pass the caller's
     # `already_done` filter (sentinel not written yet) and both reach
     # here; the atomic O_EXCL lock below ensures only one of them
@@ -669,7 +668,7 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
     try:
         # job.argv()[0] is the literal 'main.py' placeholder (the sys.argv
         # shape pie/globalvar.py expects); dropped here since `-m pie` supplies
-        # its own argv[0]. Invoked via `-m pie` (board item 28e), not a path to
+        # its own argv[0]. Invoked via `-m pie`, not a path to
         # main.py: pie.main now uses package-relative imports and cannot be run
         # as a bare script. `python -m pie` resolves "pie" the installed
         # package regardless of `cwd` -- EXCEPT when `cwd` itself contains a
@@ -736,7 +735,7 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
                 "duration_s": end - start, "done": done, "n_rows": n_rows,
                 "error_code_counts": counts, "stderr_tail": stderr_tail}
     finally:
-        _release_lock(lock, token)  # compare-then-delete: only the lock we wrote (item 29a)
+        _release_lock(lock, token)  # compare-then-delete: only the lock we wrote
 
 
 def run_local(jobs, src_dir=SRC_DIR, status_log_path=None, workers=None,
@@ -774,8 +773,8 @@ def write_tacc_launcher(jobs, manifest_path, src_dir=SRC_DIR,
                         launcher_out="commands_launcher", status_log_path=None,
                         python_exe=None, force=False):
     """TACC backend: writes the `commands_launcher` file that the existing
-    `util/run/TACC.LS6.parallel.run.slurm` (item 28b;
-    LAUNCHER_JOB_FILE=commands_launcher, run from src/) consumes unchanged.
+    `util/run/TACC.LS6.parallel.run.slurm`
+    (LAUNCHER_JOB_FILE=commands_launcher, run from src/) consumes unchanged.
     Each line is one job routed back
     through this runner (`robust_runner.py run-one <manifest> --index i`),
     so a TACC job gets the same per-job status record + provenance as a
@@ -865,7 +864,7 @@ def main(argv=None):
         print(json.dumps({k: v for k, v in result.items() if k != "stderr_tail"}))
         # SKIPPED_ALREADY_DONE/SKIPPED_LOCKED: not this invocation's failure
         # -- the former means another run already finished the job, the
-        # latter (item 26a) that another run is finishing it right now;
+        # latter that another run is finishing it right now;
         # resuming later re-checks both.
         ok_statuses = ("SKIPPED_ALREADY_DONE", RunnerStatus.SKIPPED_LOCKED.value)
         return 0 if result.get("done") or result["status"] in ok_statuses else 1

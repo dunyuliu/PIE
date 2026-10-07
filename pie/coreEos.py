@@ -116,29 +116,21 @@ _GK21_WGK = (
 )
 
 # PIE_FAST_QUAD (module-level env flag, same convention as
-# PIE_WORKERS/PIE_LAUNCHER_SEED_BASE elsewhere in this codebase): DEFAULT
-# ON as of the owner's 2026-10-02 ruling (see CHANGELOG.md). On the pinned
-# environment (numpy==1.21.5, scipy==1.8.0) it is bit-identical to real
-# scipy.integrate.quad (testsys/unit/test_perf_v1_3_3_gk21_quad.py's
-# differential test shows max diff 0.0 on 237057 real captured (p, T)
-# calls spanning S/Si/S+Si x Edmund/Steinbruegge x small-ricb/canonical-ricb
-# radii). Off the pinned environment (CI's fast-latest job, current
-# numpy/scipy), eosAndersonGrueneisen.volume's CubicSpline does not return
-# bit-identical values for a vectorised array call vs one-scalar-call-per-
-# point (floating-point non-associativity in CubicSpline's own vectorized-
-# vs-scalar code path, not a bug in this port's GK21 logic -- see
-# docs/notes/perf_v1.3.3.md for the ~8.3e-17 absolute divergence measured
-# on CI run 36881055265 during the FIRST default-on attempt, PR #15,
-# reverted as PR #16). That divergence is bounded, not eliminated, by
-# GK21_PORTABLE_RTOL=1e-14 below -- it does not disqualify default-on, it
-# is simply the known, bounded cost of it off the pinned environment.
-# PIE_FAST_QUAD unset now means ON (the vectorised GK21 fast path,
-# falling back to real scipy.integrate.quad per call whenever
-# _gk21_or_quad's replicated dqagse.f accept test fails -- see that
-# function's docstring); only an EXPLICIT PIE_FAST_QUAD=0 is the escape
-# hatch back to the unconditional real scipy.integrate.quad call (pre-
-# v1.3.3 behaviour). Read once at import time -- a test that needs the
-# opposite path within one process calls _gk21_or_quad directly, or sets
+# PIE_WORKERS/PIE_LAUNCHER_SEED_BASE elsewhere in this codebase): defaults
+# ON (the vectorised GK21 fast path, falling back to real
+# scipy.integrate.quad per call whenever _gk21_or_quad's replicated
+# dqagse.f accept test fails -- see that function's docstring). On the
+# pinned environment (numpy==1.21.5, scipy==1.8.0) it is bit-identical to
+# real scipy.integrate.quad. Off the pinned environment,
+# eosAndersonGrueneisen.volume's CubicSpline does not return bit-identical
+# values for a vectorised array call vs one-scalar-call-per-point
+# (floating-point non-associativity in CubicSpline's own vectorized-vs-
+# scalar code path, not a bug in this port's GK21 logic -- see
+# docs/notes/perf_v1.3.3.md). That divergence is bounded, not eliminated,
+# by GK21_PORTABLE_RTOL=1e-14 below. Only an EXPLICIT PIE_FAST_QUAD=0 is
+# the escape hatch back to the unconditional real scipy.integrate.quad
+# call. Read once at import time -- a test that needs the opposite path
+# within one process calls _gk21_or_quad directly, or sets
 # PIE_FAST_QUAD=0 before import, rather than monkeypatching this
 # module-level constant after other code has already captured it.
 PIE_FAST_QUAD = os.environ.get("PIE_FAST_QUAD", "1") != "0"
@@ -605,20 +597,13 @@ class meltingDataFromFile:
         # to 1-D when len(x) == 1; [0] then picked the first element (a scalar
         # for scalar queries). Reproduce that exactly.
         #
-        # Board item 27 perf: np.sort() on an array of length <=1 is always
-        # a no-op (there is nothing to reorder) -- skip the sort() dispatch
-        # machinery in that case rather than calling it and discarding an
-        # identical result. This is NOT a vectorization/approximation change
-        # like PIE_FAST_QUAD's GK21 port: no new code path, no reassociated
-        # floating-point ops, the exact same self.TF(...) call with the
-        # exact same array contents either way -- bit-identical on every
-        # environment by construction, so it needs no opt-in flag. Profiled
-        # (cProfile, canonical Margot-fit single-radius solve): this
-        # function's TmFeS lookups are called with scalar x/p (length-1
-        # after atleast_1d) in every real present-day-solve call site
-        # (`libCore.TmFeSSi`), so the skip fires on the overwhelming
-        # majority of the 65k+ calls/solve profiled in
-        # docs/notes/perf_v1.3.4.md. See
+        # np.sort() on an array of length <=1 is always a no-op (there is
+        # nothing to reorder) -- skip the sort() dispatch machinery in that
+        # case rather than calling it and discarding an identical result.
+        # No new code path, no reassociated floating-point ops: the exact
+        # same self.TF(...) call with the exact same array contents either
+        # way -- bit-identical on every environment by construction, so it
+        # needs no opt-in flag. See
         # testsys/unit/test_perf_v1_3_4_melting_sort_skip.py for the
         # differential test (including length>1 calls, where real np.sort
         # still runs, proving the branch doesn't change THAT behaviour).

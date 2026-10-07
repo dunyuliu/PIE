@@ -4,8 +4,8 @@
 import os, sys
 
 from pie import globalvar
-# board item 28f: globalvar.py no longer parses sys.argv as an import-time
-# side effect -- this script is a real standalone entrypoint (run directly,
+# globalvar.py does not parse sys.argv as an import-time side effect --
+# this script is a real standalone entrypoint (run directly,
 # `python summaryPlot.py plot CMR2 CMC light_element liquidus_eq`, see
 # util/plot/plotAll.py/plotAll.sh), so it must parse its own argv first,
 # same as pie/main.py does, before the `from pie.globalvar import ...`
@@ -13,8 +13,8 @@ from pie import globalvar
 globalvar.parse_argv(sys.argv)
 
 import numpy as np # loading numpy.
-# board item 28e: pie is an installed package (`uv pip install -e .`), not
-# a sys.path-inserted directory -- import it like any other package.
+# pie is an installed package (`uv pip install -e .`), not a
+# sys.path-inserted directory -- import it like any other package.
 from pie.globalvar import (
     CMR2,
     compiled_data_file,
@@ -23,11 +23,9 @@ from pie.globalvar import (
     csvfiles_path,
     presentday_columns,
 ) # loading global variables actually used below.
-# item 9: summaryPlot.py's own code (below) does not reference any name
-# from pie.drivere or pie.driverp (grepped -- neither module's functions,
-# classes, or re-exported globalvar constants appear bare anywhere in this
-# file); both star-imports were dead weight, so they are dropped rather
-# than narrowed to a non-empty list.
+# summaryPlot.py's own code (below) does not reference any name from
+# pie.drivere or pie.driverp, so those two star-imports are dropped
+# rather than narrowed to a non-empty list.
 import csv # for writing and using csv files -- added 6/27/2022
 import glob,os,sys # for creating new directories -- added 6/28/2022
 import pandas as pd # for reading csv files -- added 6/28/2022

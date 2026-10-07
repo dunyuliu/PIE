@@ -11,8 +11,8 @@ import os, sys
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-# board item 28e: pie is an installed package (`uv pip install -e .`), not
-# a sys.path-inserted directory -- import it like any other package.
+# pie is an installed package (`uv pip install -e .`), not a
+# sys.path-inserted directory -- import it like any other package.
 from pie import shootp as lc
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation

@@ -7,12 +7,12 @@ import os, sys
 
 import pandas as pd
 import matplotlib.pyplot as plt
-# board item 28e: pie is an installed package (`uv pip install -e .`), not
-# a sys.path-inserted directory -- import it like any other package.
+# pie is an installed package (`uv pip install -e .`), not a
+# sys.path-inserted directory -- import it like any other package.
 from pie import coreEos as eos
 import numpy as np
 from pie import globalvar
-# board item 28f: globalvar.py no longer parses sys.argv as an import-time
+# globalvar.py does not parse sys.argv as an import-time
 # side effect -- this script is a real standalone entrypoint (run directly,
 # `python read_plot_datah5.py p CMR2 CMC light_element liquidus_eq
 # [chi_Si_icb]`, see the `cmd` string built below), so it must parse its own

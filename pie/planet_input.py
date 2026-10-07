@@ -1,11 +1,10 @@
 from . import coreEos as eos
-# item 9 (explicit names this file's own code uses -- same main.py/PR #46,
-# shootp.py/PR #49, driverp.py/PR #97 precedent):
+# Explicit names this file's own code uses (no star-import):
 # - globalvar: MFe/MFeS/MFeSi (model_generic masses), max_Si_Edmund2022/
 #   max_Si_Steinbruegge2020 (liquidus-equation branch), CMC -- set
 #   dynamically into globalvar's namespace by parse_argv()'s
-#   globals().update() (item 28f), so this explicit import reads the same
-#   post-parse_argv() value the former star-import did.
+#   globals().update(), so this explicit import reads the same
+#   post-parse_argv() value a star-import would.
 # - libCore: TmFeSSi/TmFeSSi_Steinbruegge2020 (liquidus functions).
 from .globalvar import (
     CMC, MFe, MFeS, MFeSi, max_Si_Edmund2022, max_Si_Steinbruegge2020,
