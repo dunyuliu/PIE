@@ -11,6 +11,14 @@ import matplotlib.pyplot as plt
 # a sys.path-inserted directory -- import it like any other package.
 from pie import coreEos as eos
 import numpy as np
+from pie import globalvar
+# board item 28f: globalvar.py no longer parses sys.argv as an import-time
+# side effect -- this script is a real standalone entrypoint (run directly,
+# `python read_plot_datah5.py p CMR2 CMC light_element liquidus_eq
+# [chi_Si_icb]`, see the `cmd` string built below), so it must parse its own
+# argv first, same as pie/main.py and util/plot/summaryPlot.py do, before the
+# `from pie.planet_input import planet` below that depends on the result.
+globalvar.parse_argv(sys.argv)
 from pie.planet_input import planet
 
 filename = "./CMR2_0.346_CMC_0.428_S+Si_Steinbruegge/present_Si%wt_0.0_data/550.0_data.h5"
