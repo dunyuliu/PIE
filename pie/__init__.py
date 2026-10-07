@@ -1,8 +1,7 @@
 """PIE (Planetary Interior Evolution): Mercury interior model package.
 
-Board item 28(e) (full): the former `src/` directory is now the real
-`pie` package -- installed via `uv pip install -e .` (root `pyproject.toml`)
-and imported as `pie`, not inserted onto `sys.path` as a bare directory.
+`pie` is installed via `uv pip install -e .` (root `pyproject.toml`) and
+imported as `pie`, not inserted onto `sys.path` as a bare directory.
 Sibling modules import each other with package-relative imports
 (`from .globalvar import ...`), not bare top-level names.
 

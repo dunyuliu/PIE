@@ -1,10 +1,7 @@
 import numpy as np
 from . import shootp as lc
 import glob,os,sys
-from .globalvar import ( # loading global variables (item 9: explicit names
-    # driverp.py's own code uses -- grepped via ast.walk against
-    # globalvar.py's top-level names; matches the main.py/PR #46 and
-    # shootp.py/PR #49 precedent).
+from .globalvar import ( # explicit names this file's own code uses (no star-import)
     ErrorCode, chi_Si_icb, csvfiles_path, ftol, liquidus_eq, maxit,
     max_Si_Edmund2022, max_Si_Steinbruegge2020, model_path,
     pMetaDataFileName, presentDataName, presentday_columns,
@@ -14,7 +11,7 @@ import pandas as pd
 import csv # added 6/30/2022
 
 def _get_vis():
-    """Lazily import visualization_present (board item 28c) and cache it
+    """Lazily import visualization_present and cache it
     directly in this module's own namespace dict (`globals()`), not via a
     `sys.modules[__name__]` lookup -- testsys's `import_src` helper evicts
     `sys.modules['driverp']` as a side effect of re-importing OTHER src/
@@ -32,11 +29,8 @@ def _get_vis():
 
 
 def __getattr__(name):
-    """PEP 562 lazy module attribute (board item 28c): `vis`
-    (visualization_present, moved to util/plot/ by item 28a) used to be a
-    plain module-level `import visualization_present as vis`, giving
-    driverp.py a hard import-time dependency on plotting code. It is now
-    imported only on first access to `driverp.vis` -- by driverp() itself
+    """PEP 562 lazy module attribute: `vis` (visualization_present, under
+    util/plot/) is imported only on first access to `driverp.vis` -- by driverp() itself
     (see below) or by a caller/test reaching in to monkeypatch it -- and
     cached in the module namespace exactly like a normal import, so
     behaviour when plotting actually runs is unchanged.
@@ -113,7 +107,7 @@ def driverp(param, rs):
     # vis`) returns the same cached module object `driverp.vis` resolves
     # to from outside, so a test/caller that already monkeypatched
     # `driverp.vis` before calling driverp() sees that patch, not a fresh
-    # import (board item 28c).
+    # import.
     vis = _get_vis()
 
     scale       = param['scale']
@@ -130,11 +124,11 @@ def driverp(param, rs):
     mantle_density   = np.zeros(len(ricb))
     error_code       = np.zeros(len(ricb))
 
-    # Structured per-run solver log (PATHWAY_FORWARD.md item 15): create
-    # model_path up front (main.py already does this before calling
-    # driverp(), so this is normally a no-op) so every radius, including
-    # the first, gets its Newton iterate history logged next to the
-    # run's own pMetaData csv/h5 outputs.
+    # Structured per-run solver log: create model_path up front (main.py
+    # already does this before calling driverp(), so this is normally a
+    # no-op) so every radius, including the first, gets its Newton
+    # iterate history logged next to the run's own pMetaData csv/h5
+    # outputs.
     if not os.path.isdir(model_path):
         os.makedirs(model_path, exist_ok=True)
     log_path = model_path + pSolverLogFileName
@@ -167,15 +161,13 @@ def driverp(param, rs):
         # solve for v. The Newton method calls J_mercmodel, which calculates the Jacobian and f of the system given the initial v0 guesses.
         # J_mercmodel calls shoot_mercmodel to build J and f.
         #
-        # Sweep policy (v1.3.0, owner decision 2026-09-30, PATHWAY_FORWARD.md
-        # item 17): a failure at one radius is recorded (error_code + a
-        # radius_failure record in the solver log) and the sweep CONTINUES
-        # to the next radius, warm-starting from the last converged solution
-        # (v1.2.0 stopped the whole composition at the first failure).
-        # solve_radius tries the warm start first and, if that fails, one
-        # cold start from the generic v0. Only SI_ABOVE_LIQUIDUS_MAX (by
-        # design, radius-independent) still ends the composition. Rows
-        # before the first failure follow exactly the v1.2.0 path.
+        # Sweep policy: a failure at one radius is recorded (error_code + a
+        # radius_failure record in the solver log) and the sweep continues
+        # to the next radius, warm-starting from the last converged
+        # solution. solve_radius tries the warm start first and, if that
+        # fails, one cold start from the generic v0. Only
+        # SI_ABOVE_LIQUIDUS_MAX (by design, radius-independent) ends the
+        # composition.
         try:
             v, start = solve_radius(k, rs[k], ricb[k], v_last, v_cold, rhocr, rh, param, scale, log_path)
         except lc.SolverError as e:
@@ -252,11 +244,10 @@ def driverp(param, rs):
         chi_li_cmb = chi_li[-1]
         rcmb       = r[-1]
 
-        # Physical-limit check (PATHWAY_FORWARD.md item 16): the solved
-        # cmb radius must lie strictly outside the requested inner-core
-        # radius. Recorded only -- not fatal, not fed back into the
-        # solve (that backtracking behaviour is item 17's scope) -- so
-        # a converged case's numeric outputs are unaffected either way.
+        # Physical-limit check: the solved cmb radius must lie strictly
+        # outside the requested inner-core radius. Recorded only -- not
+        # fatal, not fed back into the solve -- so a converged case's
+        # numeric outputs are unaffected either way.
         if rs[k] >= rcmb:
             error_code[k] = ErrorCode.RICB_GE_RCMB
             print('ricb (%r m) >= solved rcmb (%r m): outside physical domain. '

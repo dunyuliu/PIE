@@ -4,11 +4,11 @@ import sys
 import enum
 
 # Global parameters for both the present_day and evolution model.
-# board item 28f: argv parsing used to run unconditionally at IMPORT time
-# (crashing any process that imports this module with a foreign argv, e.g.
-# pytest or robust_runner.py's own CLI argv -- see parse_argv's docstring).
-# It is now an explicit function, called once by the real entrypoint
-# (pie/main.py) before anything else imports the names it derives below.
+# argv parsing is an explicit function (not run at import time, which would
+# crash any process that imports this module with a foreign argv, e.g.
+# pytest or robust_runner.py's own CLI argv -- see parse_argv's docstring),
+# called once by the real entrypoint (pie/main.py) before anything else
+# imports the names it derives below.
 dr = 50e3 # radius increment in meters for the present_day model.
 
 max_Si_Steinbruegge2020 = 0.15 # Maximum Si%wt for calculating liquidus temperature based on Steinbruegge et al. (2020). Shouldn't be exceeded.
@@ -80,11 +80,9 @@ def parse_argv(argv=None):
     csvfiles_path               = model_path
     pMetaDataFileName           = 'pMetaData_'+"{:.2f}".format(chi_Si_icb)+'.csv'
     compiled_data_file          = contour_plotting_path + '/compiled_presentday_data' + '.csv'
-    # board item 24: was commented out, leaving util/plot/summaryPlot.py's
-    # references to contourplot_file undefined (NameError on every run); given
-    # the directory prefix compiled_data_file above already uses, rather than
-    # a bare filename that would land in whatever cwd summaryPlot.py is run
-    # from.
+    # Uses the same directory prefix as compiled_data_file above, rather
+    # than a bare filename that would land in whatever cwd summaryPlot.py
+    # is run from (util/plot/summaryPlot.py references contourplot_file).
     contourplot_file            = contour_plotting_path + '/plot_' + str(round(CMR2,4)) + '_CMC_' + str(round(CMC,4)) + '_' + light_element + '_' + liquidus_eq
 
     # Paths for csv file(s) and figure(s) that contain information on the snow zone bounds and inner core radius as a function of cmb temperature -- added 6/27/2022
@@ -143,7 +141,7 @@ class ErrorCode(enum.IntEnum):
                                      # centre/ICB, so the ODE initial state y0 is non-finite
                                      # (a Newton trial iterate left the EoS domain); caught
                                      # before solve_ivp so it is a per-radius failure row,
-                                     # not a process-killing ValueError (item 30)
+                                     # not a process-killing ValueError
 
 ERROR_CODE_DESCRIPTIONS = {
     ErrorCode.CONVERGED:                 "converged",
@@ -156,13 +154,13 @@ ERROR_CODE_DESCRIPTIONS = {
     ErrorCode.NONFINITE_ICB_DENSITY:     "shoot: non-finite ICB density from eosInnerCore (y0 non-finite)",
 }
 
-# Structured per-run solver log (PATHWAY_FORWARD.md item 15): one JSONL
-# file per (CMR2, CMC, light_element, liquidus_eq, chi_Si_icb) run, next
-# to the run's own pMetaData csv/h5 outputs (same model_path, same
-# chi_Si_icb-suffixed naming convention as pMetaDataFileName/
-# presentDataName above). One JSON object per line: either a per-radius
-# Newton solve record (iterate history: v, |f|, |dx|, det(J)) or a
-# failure-context record (non-finite counts in A/rho/g, chi_li vs
-# eutectic/admissible box) -- see src/libCore.py's write_solver_log.
+# Structured per-run solver log: one JSONL file per (CMR2, CMC,
+# light_element, liquidus_eq, chi_Si_icb) run, next to the run's own
+# pMetaData csv/h5 outputs (same model_path, same chi_Si_icb-suffixed
+# naming convention as pMetaDataFileName/presentDataName above). One JSON
+# object per line: either a per-radius Newton solve record (iterate
+# history: v, |f|, |dx|, det(J)) or a failure-context record (non-finite
+# counts in A/rho/g, chi_li vs eutectic/admissible box) -- see
+# libCore.py's write_solver_log.
 # (pSolverLogFileName itself is argv-derived -- computed and set by
 # parse_argv() above, not here.)

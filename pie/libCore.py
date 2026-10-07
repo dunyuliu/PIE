@@ -32,7 +32,7 @@ from .globalvar import (
 )
 
 # Added by Tilio. 20220614.
-# Module-relative, not cwd-relative (board item 28g).
+# Module-relative, not cwd-relative.
 TmFeS     = eos.meltingDataFromFile(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "TmFeSmelt.dat")
 )

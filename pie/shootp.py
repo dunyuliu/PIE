@@ -249,12 +249,10 @@ def shoot_mercmodel(v,ricb,rhocr,rh,param,scale):
 
     # getk2 can raise IndexError (ricb=10 m => nrs=0 makes its fluid
     # loop wrap k+nrs-1 to -1 at k=0, reading the CMB end / g[399],
-    # docs/audits/AUDIT_2026-09-29_buglist.md B5 -- the index math
-    # itself is item 17's scope, NOT fixed here) or propagate a
+    # docs/audits/AUDIT_2026-09-29_buglist.md B5) or propagate a
     # SolverError from getpotvsr's SuperLU singular-matrix guard
-    # (libCore.py). Both used to crash the whole process uncaught
-    # (item 16); caught here and turned into a recorded, per-radius
-    # SolverError instead.
+    # (libCore.py). Both are caught here and turned into a recorded,
+    # per-radius SolverError instead.
     try:
         k2,xi   = getk2(ricb,rcmb,rhoml,sols,solf,param,scale)
     except SolverError:
@@ -396,7 +394,7 @@ def mynewtonSys(Jfun,x0,varargin,
                   tolerances are met. On failure a SolverError is raised
                   (never sys.exit; PATHWAY_FORWARD.md items 16/17).
 
-    Newton step (v1.3.0, item 17): the direction is unchanged,
+    Newton step (v1.3.0): the direction is unchanged,
     dx = J^-1 f. The step length alpha starts at 1 and is halved until the
     trial x - alpha*dx is accepted:
 
@@ -439,8 +437,7 @@ def mynewtonSys(Jfun,x0,varargin,
 
     log_path/log_context: when log_path is given, one JSON record
     (iterate history incl. alpha and cond(J), final status) is appended
-    via libCore.write_solver_log -- see src/globalvar.py's
-    pSolverLogFileName and item 15.
+    via libCore.write_solver_log -- see globalvar.py's pSolverLogFileName.
     """
 
     xeps = xtol
@@ -731,8 +728,8 @@ def getk2(rs,rf,rhoml,rhos,rhof,param,scale):
             # 10-m first radius: round(400*ricb/rcmb) = 0), so the first
             # shell is [0, r[0]] and has no inner neighbour. The old code
             # indexed k+nrs-1 = -1 here, wrapping to the CMB end (r[399],
-            # and the not-yet-set g[399]) -- bug B5 / PATHWAY_FORWARD.md
-            # item 17. Use the centre as the inner boundary: r=0, g=0,
+            # and the not-yet-set g[399]) -- bug B5. Use the centre as the
+            # inner boundary: r=0, g=0,
             # i.e. a fully fluid core from the centre with g(0) = 0 and no
             # inner-core term (owner decision 2026-09-30); BsAs below sums
             # over range(nrs) = nothing, so xi = 0 exactly.

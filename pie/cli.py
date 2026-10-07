@@ -1,4 +1,4 @@
-"""Console entry point for the `pie` command (board item 28e).
+"""Console entry point for the `pie` command.
 
 `pie.main` is a script, not a function (it runs its whole simulation at
 module import time, same as the pre-28e `main.py` always has) -- so the
@@ -9,8 +9,8 @@ would also leave `__name__` as `"pie.main"` instead of `"__main__"`.
 `pie/main.py`'s own `from .globalvar import ...` style relative imports
 still resolve. `sys.argv` is left untouched here -- it is the real
 process argv; `pie/main.py` passes it to `globalvar.parse_argv()`
-explicitly as its first action (board item 28f: parsing is no longer a
-`pie/globalvar.py` import-time side effect), same CLI contract as
+explicitly as its first action (parsing is not a `pie/globalvar.py`
+import-time side effect), same CLI contract as
 `python main.py p CMR2 CMC light_element liquidus_eq [chi_Si_icb]` before
 this change (CLAUDE.md "Running").
 """
