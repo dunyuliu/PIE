@@ -2,6 +2,54 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
 
+* v1.6.3; 20261007; patch, same-day user-facing bugfix plus completion of
+  item 9's star-import narrowing (`pie/driverp.py`, `pie/planet_input.py`,
+  `util/plot/summaryPlot.py`) and one regression test, all nine PRs
+  (#95-#105, squash-merged `f7eb052`..`7d95c08`) landed on `main` since
+  v1.6.2. No public CLI contract change, no numerical/physics output
+  change, no dependency-pin change -- patch is the right call, not minor:
+  the one behavior change (board item 28f, `pie/globalvar.py` no longer
+  parsing `sys.argv` at import time) was itself released in v1.6.2's
+  predecessor chain before this tag and is not new here; what is new this
+  release is entirely refactor + a same-day fix of a regression that
+  refactor introduced, plus its regression test.
+  * **Fixed** (board item 35, PR #101 squash `f503af5`, 2026-10-07):
+    `util/plot/read_plot_datah5.py` -- a real standalone entrypoint listed
+    in CLAUDE.md's "Running" -- never called the (PR #95-introduced)
+    `globalvar.parse_argv(sys.argv)` before its
+    `from pie.planet_input import planet`, so every invocation since
+    `f7eb052` (merged 2026-10-06) raised `ImportError: cannot import name
+    'CMC' from 'pie.globalvar'`. Live on `main` for about a day before
+    being caught; fixed same day by adding the `parse_argv()` call,
+    matching the pattern `util/plot/summaryPlot.py`/`pie/main.py` already
+    use.
+  * **Changed** (board item 9, now fully closed): star-imports narrowed to
+    explicit name lists in the three remaining science-path modules --
+    `pie/driverp.py` (PR #97 squash `303672b`, 11-name list),
+    `pie/planet_input.py` (PR #99 squash `3b7c45e`, `globalvar`/`libCore`
+    split into two explicit lists), and `util/plot/summaryPlot.py` (PR #101,
+    same commit as the fix above) -- whose two star-imports
+    (`pie.drivere`, `pie.driverp`) were dropped outright rather than
+    narrowed, since the file's own code uses no name from either module.
+    No behavior change in any of the three; each landed with a full fast-
+    tier gate and CI green on PR head and merge SHA.
+  * **Added** (board item 35, PR #104 squash `5900087`, 75 lines,
+    mutation-verified): `testsys/contract/test_read_plot_datah5_argv_parse.py`
+    locks the fix above -- runs the script as a real subprocess, asserts no
+    `ImportError`/`NameError` during the import chain, and asserts it gets
+    far enough to fail downstream at the (deliberately absent) `.h5`
+    fixture's `pd.read_hdf()` instead.
+  * **Docs**: `CLAUDE.md`'s item-9 closed-module list corrected to include
+    `driverp.py` (PR #103 squash `b60710c`), which PR #97 had landed without
+    updating; `PATHWAY_FORWARD.md` items 9 and 35 updated to record the
+    zofia-kaminska audits that corrected item 9's two premature closures
+    and tracked the item-35 regression to its test-coverage close (PRs #96,
+    #98, #100, #102, #105, all board-only, no code change).
+  * Gate: fresh `uv venv --python 3.12` + `uv pip install -e .` +
+    `uv pip install -r testsys/requirements.txt` in this release worktree,
+    `.venv/bin/python3.12 testsys/run.py -n 4 unit contract integration` --
+    304 passed, 15 skipped, 3 xfailed, 0 failed, 146.46s (independently
+    reproduced, not taken on faith from any PR's own reported count).
 * v1.6.2; 20261005; patch, docs-only: publishes the new MkDocs user-guide
   site (board item 34, docs/user/, PR #88) to GitHub Pages at
   https://dunyuliu.github.io/PIE/, via `.github/workflows/docs.yml`
