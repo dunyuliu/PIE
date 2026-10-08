@@ -28,8 +28,11 @@ from columns every `pMetaData_*.csv` row already carries:
   `chi_li_eut_icb=0.11+0.187*np.exp(-0.065*Picb*1e-9)`, the same formula
   `mercmodel_box` uses, `pie/shootp.py:351`) -- already computed per row.
 
-Filtered to converged rows (`error_code == 0`) in each dataset. Script:
-`item36_measurement_2026-10-07_scripts/measure36.py`.
+Filtered to converged rows (`error_code == 0`) in each dataset. The
+measurement script itself is not tracked in this repo (PROJECT_RULES.md
+rule 1b forbids new `*_scripts` artifact trees under `docs/`, one
+documented exception predating this rule); it read only the columns listed
+above from each `pMetaData_*.csv` and wrote no new output files.
 
 ## Populations checked
 
