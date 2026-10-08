@@ -110,11 +110,12 @@ The admissible-box test (`box_fun`) runs on every line-search trial, but the
 and `x0` itself is never box-checked either (PATHWAY_FORWARD.md item 36).
 `PIE_BOX_CHECK_FINAL=1` (env var, default off/unset) adds both checks,
 raising the box's own error code if the converged iterate or `x0` is
-outside it. Default off is bit-identical to pre-item-36 behaviour (measured:
-1,502/474,075 converged rows, 0.317%, fail the box in the full published
-v1.0.5 Zenodo dataset, all `chi_li_icb` above the Edmund Si cap -- see
-`docs/dev/notes/item36_measurement_2026-10-07.md` -- so the check does not
-default on per the owner's opt-in-or-bit-identical rule).
+outside it. Default off is bit-identical to pre-item-36 behaviour; turning
+it on is NOT bit-identical (measured: 1,502/474,075 converged rows, 0.317%,
+fail the box in the full published v1.0.5 Zenodo dataset, all `chi_li_icb`
+above the Edmund Si cap by up to 0.102 -- UNAUDITED, see PATHWAY_FORWARD.md
+item 36 -- so the check does not default on per the owner's
+opt-in-or-bit-identical rule).
 
 ## Performance options
 

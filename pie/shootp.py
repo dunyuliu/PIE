@@ -303,19 +303,10 @@ ALPHA_MIN   = 1.e-3    # line search: smallest step fraction tried before giving
 GROWTH_MAX  = 100.0    # line search: reject a trial whose |f| grows by more than this factor
 COND_MAX    = 1.e12    # robust singular-Jacobian test replacing the exact det(J)==0 float compare
 
-# Opt-in box-check on x0 and on the final returned iterate (board item 36).
-# box_fun today runs on every line-search TRIAL but never on x0 or on the
-# iterate mynewtonSys actually returns: when the convergence test passes at
-# the current iterate (converged_now), the trial block is skipped entirely
-# and x = x - alpha*dx is returned unchecked. Measured 2026-10-07 against
-# the full published v1.0.5 Zenodo dataset (474,075 converged rows,
-# docs/dev/notes/item36_measurement_2026-10-07.md): enabling this check
-# would newly reject 1,502 rows (0.317%, all Si-only -- chi_li_icb up to
-# 0.102 over the 0.12 Edmund Si cap across 168 distinct compositions; zero
-# rcmb<=ricb or non-finite failures). NOT zero, so this is NOT
-# bit-identical and must stay opt-in / default-off (owner's standing rule).
-# Same convention as PIE_FAST_QUAD (coreEos.py), but inverted: default OFF,
-# only an explicit truthy PIE_BOX_CHECK_FINAL enables it.
+# Opt-in box-check on x0 and on the final returned iterate: box_fun runs on
+# every line-search trial but not on x0 or on the converged_now fast-path
+# return. Default off (unset/"0") is the exact pre-fix code path; measured
+# NOT bit-identical when enabled, so it stays opt-in -- see board item 36.
 PIE_BOX_CHECK_FINAL = os.environ.get("PIE_BOX_CHECK_FINAL", "0") not in ("0", "", "false", "False")
 
 

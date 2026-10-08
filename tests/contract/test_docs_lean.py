@@ -39,7 +39,6 @@ ALLOWED_DOCS_FILES = frozenset({
     "docs/dev/notes/failure_analysis_fig3_zero_rows_vs_chiSi.png",
     "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04.md",
     "docs/dev/notes/item18_quantify_2026-10-01.md",
-    "docs/dev/notes/item36_measurement_2026-10-07.md",
     "docs/dev/notes/perf_v1.3.2.md",
     "docs/dev/notes/perf_v1.3.3.md",
     "docs/dev/notes/perf_v1.3.4.md",
