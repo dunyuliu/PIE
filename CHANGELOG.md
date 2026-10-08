@@ -2,6 +2,38 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes are folded into this file's own v1.0.4-and-earlier entries below (the former `update_log` file was removed from the tree, board item 39; still retrievable via the `v1.0.0` git tag).
 
+* v1.7.1; 20261008; patch, held-back fixes from the v1.7.0 release split
+  (`PATHWAY_FORWARD.md` item 41, owner "Go" 2026-10-07): item 36 (PR #128,
+  squash `b5c7131`) -- opt-in `PIE_BOX_CHECK_FINAL` env var (default
+  off/unset, bit-identical to pre-fix behaviour) adds an admissible-box
+  check on the solver's `x0` and its final converged iterate (today only
+  checked on line-search trials); measured NOT bit-identical when enabled
+  (1,502/474,075 published-converged rows, 0.317%, fail the box, all
+  Si-only, `chi_li_icb` above the Edmund cap by up to 0.102), so it stays
+  opt-in per the standing integrator rule (precedent v1.3.3's
+  `PIE_FAST_QUAD`); lars-eriksson's code audit found and fixed one Critical
+  bug pre-merge (the check mis-wrapped the by-design `SI_ABOVE_LIQUIDUS_MAX`
+  stop as a box rejection instead of re-raising it). item 39a (PR #129,
+  squash `d1e5e91`) -- `PROJECT_RULES.md` rule 1 prose backfilled to list
+  `requirements.txt`/`.gitignore` in the root whitelist, doc-only. item 40
+  (PR #135, squash `8a330ef`, board-closure PR #136, squash `74dad2a`) --
+  forward-ports the v1.7.0 release commit onto `main` (this file's v1.7.0
+  entry, `CITATION.cff`, `pyproject.toml`, since v1.7.0 was deliberately cut
+  off-main from `be4a3a7`) and closes the Phase 3a Step 1 release-audit
+  drift: `PROJECT_RULES.md` rules 3/3a/3b/10/13/15 repointed
+  `testsys/`->`tests/`; stale `testsys/...` comments in `pie/libCore.py`/
+  `coreEos.py`/`shootp.py`/`driverp.py`/`robust_runner.py` repointed;
+  `PIE_BOX_CHECK_FINAL` env parsing switched from a blacklist to an
+  explicit truthy whitelist (default/unset behaviour unchanged);
+  `tests/unit/test_melting_interp_port.py`'s docstring and
+  `tests/README.md`'s fast-tier count refreshed. `PIE_BOX_CHECK_FINAL`'s
+  absence from `pie/robust_runner.py`'s provenance record remains an open
+  owner question, not addressed by any of the above. No API/behaviour-
+  breaking change; no numerical-output change on any default (unset-flag)
+  code path. Gate: fresh `tests/run.py` (fast tiers) on a from-scratch
+  `uv venv --python 3.12` + `uv pip install -e .` + `uv pip install -r
+  tests/requirements.txt` on this exact committed tree -- 312 passed, 15
+  skipped, 3 xfailed, 0 failed, 153.06s.
 * v1.7.0; 20261007; minor, root-layout rename (board item 39, PRs
   #120-#127, closing on `be4a3a7`). Owner-authorized release split
   (`PATHWAY_FORWARD.md` item 41, verbatim "Go", 2026-10-07): this release
