@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Pre-commit hook: block machine-local path leaks before they reach CI.
 #
-# Mirrors testsys/contract/test_repo_hygiene.py::test_no_machine_local_paths_in_tracked_files
-# exactly (same regex, same `update_log` exemption) but runs only against
-# staged files, so it stays fast (~seconds, not a full pytest run).
+# Mirrors tests/contract/test_repo_hygiene.py::test_no_machine_local_paths_in_tracked_files
+# exactly (same regex) but runs only against staged files, so it stays fast
+# (~seconds, not a full pytest run).
 #
 # Enable with:  git config core.hooksPath .githooks
 #
-# This hook does not replace testsys/contract/test_repo_hygiene.py -- that
+# This hook does not replace tests/contract/test_repo_hygiene.py -- that
 # test remains the real CI gate. This only catches the leak earlier.
 
 set -euo pipefail
@@ -18,7 +18,7 @@ import subprocess
 import sys
 
 # Must stay byte-identical to the pattern in
-# testsys/contract/test_repo_hygiene.py::test_no_machine_local_paths_in_tracked_files
+# tests/contract/test_repo_hygiene.py::test_no_machine_local_paths_in_tracked_files
 PAT = re.compile(r"/home/(utig5|staff)/|/tmp/claude-\d")
 
 result = subprocess.run(
@@ -29,8 +29,6 @@ staged = [f for f in result.stdout.split("\n") if f]
 
 offenders = []  # list of (path, line_no, line_text)
 for path in staged:
-    if path == "update_log":
-        continue
     show = subprocess.run(
         ["git", "show", f":{path}"],
         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
@@ -49,7 +47,7 @@ if offenders:
         print(f"  {path}:{lineno}: {line}", file=sys.stderr)
     print(
         "Remove the machine-local path(s) above before committing "
-        "(see testsys/contract/test_repo_hygiene.py).",
+        "(see tests/contract/test_repo_hygiene.py).",
         file=sys.stderr,
     )
     sys.exit(1)
