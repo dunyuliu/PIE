@@ -8,8 +8,8 @@ Index — read this list first; jump to a rule only when it's load-bearing.
 1c. The tracked root is mechanically gated: layout, file size, a report-only tidy.
 2. No silent fallbacks, swallowed errors, or placeholder data.
 3. Gate every stage; pass before moving on.
-3a. A refactor of `src/` runs testsys green before and after, one module at a time.
-3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`.
+3a. A refactor of `src/` runs tests green before and after, one module at a time.
+3b. Every dependency manifest pins exact versions; a pin change ships with a green `tests/run.py all`.
 3c. The pinned dependency manifest is the one supported environment; unpinned is a canary, never a gate.
 4. Only fresh runs are evidence.
 5. One calibrated definition of "pass" — never invent a metric.
@@ -218,9 +218,9 @@ it does not print and continue.
 
 ## 3. Gate every stage; pass before moving on
 
-Named command: `/usr/bin/python3 testsys/run.py` (fast tiers: unit /
+Named command: `/usr/bin/python3 tests/run.py` (fast tiers: unit /
 contract / integration, the CI gate on every push and PR) and
-`testsys/run.py all` (adds e2e, including the `published_wide` sweep that
+`tests/run.py all` (adds e2e, including the `published_wide` sweep that
 needs `~/shared_dataset`). Landed in v1.1.0. A stage is "gated" only when the
 named command was run and its pass/fail counts are quoted.
 
@@ -229,21 +229,21 @@ missing `h5py`). No conda for this project.
 
 **Rationale**: PIE has never had an automated test — every prior "it works"
 claim rests on eyeballing plots or comparing a Monte Carlo run's shape to
-expectation. That is the gap `testsys/` exists to close.
+expectation. That is the gap `tests/` exists to close.
 
-**How to apply**: once `testsys/run.py all` exists, a change does not merge
+**How to apply**: once `tests/run.py all` exists, a change does not merge
 until it exits with every tier's cases passing (unit/contract green always;
 integration/e2e per the matrix that effort defines). Until then, state
 explicitly in a PR or commit what was actually run by hand.
 
 ---
 
-## 3a. A refactor of `src/` runs testsys green before and after, one module at a time
+## 3a. A refactor of `src/` runs tests green before and after, one module at a time
 
 A refactor — deduplicating star imports, splitting `libCore.py`, deleting a
-dead file — is gated on `testsys/run.py` (all tiers) passing on the
+dead file — is gated on `tests/run.py` (all tiers) passing on the
 pre-refactor tree, then again on the post-refactor tree, for each module
-touched, before moving to the next. A refactor landed while testsys is not
+touched, before moving to the next. A refactor landed while tests is not
 yet green, or landed across multiple modules in one change with the gate run
 only at the end, is not verified — it is asserted.
 
@@ -262,38 +262,38 @@ of this list.) Fixing any of this without a gate that can actually observe a
 broken numerical result is exactly how a star-import removal silently drops
 a name one file depended on.
 
-**How to apply**: `testsys/run.py all` (or the closest tier that exists at
+**How to apply**: `tests/run.py all` (or the closest tier that exists at
 the time) is run and recorded green immediately before the refactor starts
 and immediately after each module's change lands, output pasted into the PR
-or commit message. This rule is blocked on testsys existing at all — see
+or commit message. This rule is blocked on tests existing at all — see
 `PATHWAY_FORWARD.md` item 1 and item 9.
 
-**Tier**: unenforceable as a mechanical gate until `testsys/run.py` exists;
+**Tier**: unenforceable as a mechanical gate until `tests/run.py` exists;
 a norm until then.
 
 ---
 
-## 3b. Every dependency manifest pins exact versions; a pin change ships with a green `testsys/run.py all`
+## 3b. Every dependency manifest pins exact versions; a pin change ships with a green `tests/run.py all`
 
 Every Python dependency manifest in this repo — `requirements.txt`,
-`testsys/requirements.txt`, and any future one — pins exact versions
+`tests/requirements.txt`, and any future one — pins exact versions
 (`pkg==x.y.z`); no ranges, no unpinned lines. Changing a pin ships together
-with a green `/usr/bin/python3 testsys/run.py all` run under the new version,
+with a green `/usr/bin/python3 tests/run.py all` run under the new version,
 in the same commit/PR, not a follow-up — and, for anything bitwise/tolerance-
 sensitive (rule 5's regression anchors, Monte Carlo output), a documented
 numeric diff between the old-pin and new-pin runs, not just a pass/fail count.
 Only once both land does the new pin set become the one supported
 environment rule 3c requires.
 
-**Rationale**: `testsys/requirements.txt` already did this by convention
+**Rationale**: `tests/requirements.txt` already did this by convention
 (all exact pins) with no rule saying so.
 
 **Incident**: PR #3 (unmerged) initially added a root `requirements.txt` with
 unpinned lines; caught in review before merge, not by any gate.
 
-**How to apply**: `testsys/contract/test_dependency_pins_match.py` (added in
+**How to apply**: `tests/contract/test_dependency_pins_match.py` (added in
 PR #3) is the mechanical enforcement — fails on an unpinned line in any
-manifest, or on root and `testsys/` disagreeing about a shared package's
+manifest, or on root and `tests/` disagreeing about a shared package's
 version.
 
 ---
@@ -415,7 +415,7 @@ analytical-limit checks (rule 6 truth anchors) locally first.
 fix (`2a9d576`) both shipped with no accompanying test — nothing in the repo
 would catch either regressing.
 
-**How to apply**: once `testsys/` exists, a fix to `src/*.py` that isn't
+**How to apply**: once `tests/` exists, a fix to `src/*.py` that isn't
 covered by an existing case adds one in the same change, not a follow-up.
 Until then, state explicitly in the commit what manual check was run.
 
@@ -451,7 +451,7 @@ which are not tracked as extracted files).
 
 ## 13. Land through one gated PR at a time; release in one sequence; state the grant
 
-Release sequence: one PR per release; `testsys/run.py all` green locally,
+Release sequence: one PR per release; `tests/run.py all` green locally,
 counts pasted in the PR; green CI on the PR head; merge; green CI on the
 merge SHA; add a `CHANGELOG.md` entry and bump `CITATION.cff` `version:` (in the PR); a stranger-clone
 verification (rule 13a) must have written and the release agent must have
@@ -463,7 +463,7 @@ Dunnigan et al. 2026 (rule 14); `v1.1.0` is the first tested baseline.
 `v1.0.2`/`v1.0.3` were never tagged in git — do not retroactively tag them;
 treat their zipped/tarred copies as historical record only (rule 7).
 
-**How to apply**: do not tag ahead of a green testsys run; do not skip the
+**How to apply**: do not tag ahead of a green tests run; do not skip the
 GitHub release step after tagging.
 
 **Incident (2026-10-02, v1.4.0)**: the release agent launched the
@@ -524,7 +524,7 @@ Shared machines: cap PIE's parallelism to leave headroom for others
 worker); never signal, renice or kill a process PIE didn't start; long runs
 are resumable and stop cleanly; check `uptime`/`who` before a large run.
 
-**Rationale**: moving testsys from serial to pytest-xdist + ProcessPoolExecutor
+**Rationale**: moving tests from serial to pytest-xdist + ProcessPoolExecutor
 pools on knox (a shared 64-core box also running other users' ML training
 jobs) first ran xdist at `-n` equal to the full `PIE_WORKERS` budget, which
 collapsed every in-test pool down to 1 worker — safe with respect to not
@@ -532,7 +532,7 @@ overloading the shared box, but it silently erased the whole speedup. This is
 a correctness/safety rule about shared-machine courtesy, not a performance
 rule.
 
-**How to apply**: `testsys/conftest.py`'s `pie_workers()`/`pool_workers()`
+**How to apply**: `tests/pielib.py`'s `pie_workers()`/`pool_workers()`
 is the enforcement mechanism — it derives the single `PIE_WORKERS` cap that
 both xdist and every in-test process pool read, so the two never double up.
 The knox `xargs` launcher recipe in README's "Large ensemble Monte Carlo

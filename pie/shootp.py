@@ -307,7 +307,10 @@ COND_MAX    = 1.e12    # robust singular-Jacobian test replacing the exact det(J
 # every line-search trial but not on x0 or on the converged_now fast-path
 # return. Default off (unset/"0") is the exact pre-fix code path; measured
 # NOT bit-identical when enabled, so it stays opt-in -- see board item 36.
-PIE_BOX_CHECK_FINAL = os.environ.get("PIE_BOX_CHECK_FINAL", "0") not in ("0", "", "false", "False")
+# Whitelist, not blacklist (item 40c): only a recognised truthy spelling
+# turns the check on, so an unrecognised value (a typo, e.g. "Ture") is
+# treated the same as unset -- off -- rather than silently enabling it.
+PIE_BOX_CHECK_FINAL = os.environ.get("PIE_BOX_CHECK_FINAL", "0").strip().lower() in ("1", "true", "yes", "on")
 
 
 def _box_check_or_fail(label, xv, trial_fun, box_fun, fail_fn, log_fn):
@@ -437,7 +440,7 @@ def mynewtonSys(Jfun,x0,varargin,
         Si max, see mercmodel_box), if trial_fun
         raised a SolverError, or if |f_trial| > growth_max * |f|.
 
-    Invariant (enforced by testsys/integration/test_v1_2_0_invariant.py):
+    Invariant (enforced by tests/integration/test_v1_2_0_invariant.py):
     on every path where v1.2.0 converged, alpha=1 passes on every
     iteration, so the iterates are bit-identical to v1.2.0. An Armijo
     sufficient-decrease test was measured and NOT adopted: on 1841
@@ -450,7 +453,7 @@ def mynewtonSys(Jfun,x0,varargin,
     line_search=False restores the v1.2.0 step exactly (x = x - dx, no
     trial evaluation). When Jfun == 'J_mercmodel' and trial_fun/box_fun
     are not given, mercmodel_trial/mercmodel_box are used; for any other
-    Jfun without a trial_fun (the toy Jacobians in testsys/unit) no line
+    Jfun without a trial_fun (the toy Jacobians in tests/unit) no line
     search is possible and the step is the v1.2.0 one.
 
     Singular Jacobian: the exact float test det(J)==0 is replaced by

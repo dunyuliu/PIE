@@ -66,7 +66,7 @@ from scipy import optimize
 # solve (verified across S/Si/S+Si x Edmund/Steinbruegge x small-ricb and
 # canonical-ricb radii: 237057 real captured quad calls, ALL with
 # infodict['last']==1 -- see
-# testsys/unit/test_perf_v1_3_3_gk21_quad.py). This is NOT a universal
+# tests/unit/test_perf_v1_3_3_gk21_quad.py). This is NOT a universal
 # property of the integrand: a direct sweep of eos.Gibbs over the full
 # admissible pressure domain (up to pMax=200 GPa, vs ~39 GPa reached by any
 # real Mercury-core solve) shows QAGSE DOES subdivide (last=2 or 3) once the
@@ -147,7 +147,7 @@ def _gk21_panel(func, a, b):
     points (vectorised), not 21 separate scalar Python calls -- this is
     the actual performance win; `func` must vectorise over an array
     exactly as it would per-point (verified for `volume` by
-    testsys/unit/test_perf_v1_3_3_gk21_quad.py's
+    tests/unit/test_perf_v1_3_3_gk21_quad.py's
     TestVolumeVectorisesExactly).
 
     Returns (result, abserr, resabs, resasc) -- all four of dqk21's
@@ -262,7 +262,7 @@ def _gk21_or_quad(func, a, b, epsabs=1.49e-8, epsrel=1.49e-8):
 
     `accept` True: returns `result` bit-identically to what
     scipy.integrate.quad would return for this exact call (confirmed by
-    testsys/unit/test_perf_v1_3_3_gk21_quad.py's differential test on real
+    tests/unit/test_perf_v1_3_3_gk21_quad.py's differential test on real
     solver states -- max diff 0.0). `accept` False: falls back to the real
     `integrate.quad`, so output is identical to today's behaviour whenever
     the single-panel assumption doesn't hold for this particular call --
@@ -363,7 +363,7 @@ class eosAndersonGrueneisen:
             if PIE_FAST_QUAD:
                 # v1.3.3 perf path, DEFAULT ON since the 2026-10-02 ruling
                 # (see _gk21_or_quad's docstring and
-                # testsys/unit/test_perf_v1_3_3_gk21_quad.py for why this
+                # tests/unit/test_perf_v1_3_3_gk21_quad.py for why this
                 # is NOT bit-identical to the quad path below off the
                 # pinned environment, and PIE_FAST_QUAD=0 for the escape
                 # hatch back to the quad path).
@@ -589,7 +589,7 @@ class meltingDataFromFile:
         # Bicubic interpolating spline on the regular (p, x) grid. Same FITPACK
         # fit (regrid_smth, kx=ky=3, s=0) and evaluation (bispev) as the
         # scipy interp2d(p, x, T, kind='cubic') it replaces (removed in
-        # scipy 1.14); bit-for-bit equal, see testsys/unit/test_melting_interp_port.py.
+        # scipy 1.14); bit-for-bit equal, see tests/unit/test_melting_interp_port.py.
         self.TF=RectBivariateSpline(p,x,T.T,kx=3,ky=3,s=0)
     
     def __call__(self,x,p):
@@ -604,7 +604,7 @@ class meltingDataFromFile:
         # same self.TF(...) call with the exact same array contents either
         # way -- bit-identical on every environment by construction, so it
         # needs no opt-in flag. See
-        # testsys/unit/test_perf_v1_3_4_melting_sort_skip.py for the
+        # tests/unit/test_perf_v1_3_4_melting_sort_skip.py for the
         # differential test (including length>1 calls, where real np.sort
         # still runs, proving the branch doesn't change THAT behaviour).
         p1 = np.atleast_1d(p)

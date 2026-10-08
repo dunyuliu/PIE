@@ -13,9 +13,9 @@ import csv # added 6/30/2022
 def _get_vis():
     """Lazily import visualization_present and cache it
     directly in this module's own namespace dict (`globals()`), not via a
-    `sys.modules[__name__]` lookup -- testsys's `import_src` helper evicts
+    `sys.modules[__name__]` lookup -- pielib's `import_src` helper evicts
     `sys.modules['driverp']` as a side effect of re-importing OTHER src/
-    modules for a different CMR2/light_element (see testsys/conftest.py),
+    modules for a different CMR2/light_element (see tests/pielib.py),
     so a already-held reference to this module's own `globals()` is the
     only reliable self-reference here, independent of that cache state.
     """

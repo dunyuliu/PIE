@@ -2,6 +2,54 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes are folded into this file's own v1.0.4-and-earlier entries below (the former `update_log` file was removed from the tree, board item 39; still retrievable via the `v1.0.0` git tag).
 
+* v1.7.0; 20261007; minor, root-layout rename (board item 39, PRs
+  #120-#127, closing on `be4a3a7`). Owner-authorized release split
+  (`PATHWAY_FORWARD.md` item 41, verbatim "Go", 2026-10-07): this release
+  is cut on `be4a3a7` (PR #127's own merge, the root-layout sequence's
+  close-out), deliberately NOT on `origin/main`'s tip at cut time -- item
+  36 (PR #128, opt-in `PIE_BOX_CHECK_FINAL`) and item 39a (PR #129, rule 1
+  prose backfill) landed on `main` after `be4a3a7` and are held for
+  v1.7.1 (patch) instead.
+  * **Breaking** (path/run-recipe axis only -- the `pie` package's own
+    import path is untouched this release, unlike v1.6.0's `src/`->`pie/`
+    rename): `testsys/` -> `tests/` (PR #121, squash `3d43f00`); `util/`
+    -> `scripts/` (PR #122, squash `3db48d5`, including a real
+    `pie/driverp.py` `sys.path`-construction fix the move itself needed,
+    not just path-reference comments); `docs/notes/` + `docs/audits/` ->
+    `docs/dev/notes/` + `docs/dev/audits/` (PR #123, squash `d861650`, ~27
+    citations repointed across `CHANGELOG.md`/`PATHWAY_FORWARD.md`);
+    `.gitignore` extended for `runs/` and `scratch/`, and
+    `historical_versions/` + `update_log` removed from the tracked tree
+    as redundant with the `v1.0.0` git tag (`historical_versions/` is one
+    zip, byte-identical to that tag) and this file's own pre-v1.0.5
+    section (`update_log`'s 9 lines were already copied here verbatim) --
+    both remain retrievable via git history / the `v1.0.0` tag, never
+    deleted from it (PR #124, squash `9b7020d`). `PROJECT_RULES.md` rules
+    1/1a/1c/7 repointed to the post-move state, including two
+    pre-existing gaps in rule 1's own root-whitelist prose
+    (`requirements.txt`, `.gitignore`) backfilled (PR #125, squash
+    `919e15c`). New mechanical gate:
+    `tests/contract/test_root_layout_whitelist.py` enforces rule 1c's
+    root whitelist (tracked top-level entries match a named list) and a
+    5 MB per-tracked-file ceiling as hard assertions for the first time,
+    dropping the now-dead `update_log` exemption from
+    `tests/contract/test_repo_hygiene.py` and its `.githooks/pre-commit`
+    mirror (PR #126, squash `6516ba7`). Any job or script outside this
+    repo that still references `testsys/`, `util/run/`, `util/plot/`,
+    `docs/notes/`, `docs/audits/`, `historical_versions/`, or
+    `update_log` (e.g. a Lonestar6 launch script) will break and needs
+    updating to the new paths -- the owner chose these moves knowing
+    that (board item 39, owner decision 2026-10-07).
+  * Precedent for shipping a path-breaking rename as a MINOR, not a
+    MAJOR, bump: v1.6.0 (the `src/` -> `pie/` rename) was also breaking
+    on setup/import-path/run-recipe axes and shipped minor under the
+    owner's standing v1.x grant for layout-breaking changes that alter no
+    documented physics or CLI contract; same grant, same reasoning,
+    applied here.
+  Gate: fresh `tests/run.py` (fast tiers: unit + contract + integration)
+  on a from-scratch `uv venv --python 3.12` + `uv pip install -e .` built
+  on this exact committed tree (`be4a3a7` plus this entry) -- 309 passed,
+  15 skipped, 3 xfailed, 0 failed, 147.87s.
 * v1.6.3; 20261007; patch, same-day user-facing bugfix plus completion of
   item 9's star-import narrowing (`pie/driverp.py`, `pie/planet_input.py`,
   `util/plot/summaryPlot.py`) and two regression tests, fifteen PRs

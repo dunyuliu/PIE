@@ -7,8 +7,12 @@ RectBivariateSpline uses the same two routines, so the port must be
 bit-for-bit. This test rebuilds the legacy interp2d interpolator from the
 same TmFeSmelt.dat table and compares it with the ported class on a dense
 grid inside the table and on points outside it (FITPACK clamps both the
-same way). It runs wherever interp2d is still callable (the pinned CI
-environment, scipy 1.8.0) and skips on scipy >= 1.14.
+same way). It only runs wherever interp2d is still callable (scipy < 1.14);
+the project's pinned environment moved to Python 3.12 / scipy 1.18.1 in
+v1.5.0 (board item 40c), so this test always skips there and in CI today --
+left in place as a dormant regression guard, not deleted, since the port it
+verifies (item 14) is permanent and a future downgrade or a different
+environment could still exercise it.
 """
 import numpy as np
 import pytest
