@@ -13,3 +13,6 @@ docs/user-site/
 docs/dev/notes/*_scripts/
 docs/dev/notes/*_figs/
 docs/dev/notes/*_measurement/
+# root-layout template (item 39): standard scratch/output dirs, untracked
+runs/
+scratch/

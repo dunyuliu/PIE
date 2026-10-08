@@ -1,9 +1,0 @@
-• V1.0.5; 20250707; merge scripts under ./1.0.4.dev development folder to main folder ./src, ready for publication.
-• V1.0.4; 20230127; local copy D:\3.Krista_Soderlund\GitHub\working_directory_mercury_present_evolution\Mercury_present_evolution_v1.0.4_20230127
-	○ Run on Donny. Under /home/staff/dliu/3.Krista/Mercury_present_evolution_v1.0.4_20230127.
-	○ Major changes? 
-		1. explore CMR2 and CmC parameter space.
-		2. Add scheduler.py to run models over the CMR2, CMC, liquidus equation,  light element, and Si%wt parameter space.
-		3. Generate as many models as possible and discard models negative light element weight ones at the end. 
-
-* v1.0.3 committed on 20221026 and zipped under D:\3.Krista_Soderlund\GitHub\Committed_Mercury_present_evolution\Mercury_present_evolution_v1.0.3_committed_20221026
