@@ -203,6 +203,33 @@ def test_x0_box_check_default_off_then_opt_in(shootp, globalvar):
         shootp.PIE_BOX_CHECK_FINAL = False
 
 
+def test_box_check_final_reraises_si_above_liquidus_max_as_is(shootp, globalvar):
+    # Lars-Eriksson audit finding (PR #128 review): _box_check_or_fail
+    # must not swallow the by-design SI_ABOVE_LIQUIDUS_MAX stop condition
+    # and rewrap it as a box rejection -- it must propagate unchanged,
+    # same contract test_trial_solvererror_is_a_rejection_except_by_design_si_stop
+    # already locks for the line-search path.
+    def jf(x, varargin):
+        return np.array([[1.0]]), np.array([x[0] - 1.0])
+    shootp.toy_lin_box36_si = jf
+
+    def trial_si(x):
+        raise shootp.SolverError(globalvar.ErrorCode.SI_ABOVE_LIQUIDUS_MAX, "by design")
+    box = lambda x, f, fout: (True, None, "")
+
+    shootp.PIE_BOX_CHECK_FINAL = True
+    try:
+        with pytest.raises(shootp.SolverError) as ei:
+            shootp.mynewtonSys("toy_lin_box36_si", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+                               trial_fun=trial_si, box_fun=box)
+        assert ei.value.error_code == globalvar.ErrorCode.SI_ABOVE_LIQUIDUS_MAX
+        # must be the ORIGINAL exception, not one wrapped by _box_check_or_fail
+        assert ei.value.message == "by design"
+        assert "box_check_final" not in ei.value.context
+    finally:
+        shootp.PIE_BOX_CHECK_FINAL = False
+
+
 # ---------------------------------------------------------------------
 # Singular-Jacobian test: cond(J) > COND_MAX, not det(J) == 0.0 exactly
 # ---------------------------------------------------------------------
