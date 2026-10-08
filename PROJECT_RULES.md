@@ -34,7 +34,7 @@ Smallest edit that solves the problem; fold content into the file it belongs
 to; never refactor unrelated code in the same change.
 
 The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
-`PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a), `update_log` (frozen, see 1a),
+`PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a),
 `pyproject.toml` (board item 28e: packaging + the pinned deps that must
 agree with `requirements.txt`, rule 3b), plus
 `pie/` (the installable package; renamed from `src/` by board item 28e —
@@ -42,10 +42,10 @@ same role, same rules below that still say `src/` in older prose), `scripts/`
 (operational scripts split out of `src/` by the Layout PR,
 board item 28 — `scripts/plot/`, `scripts/run/`; renamed from `util/` by
 board item 39; relocation of existing scripts, not
-new scope, and no physics code), `historical_versions/` (frozen zips/tars of prior versions, read-only —
-see rule 7), `testsys/` and `.github/` (in scope for this project like `pie/`
-— CI config and the test suite, maintained by whoever is doing the current
-campaign work; no separate team owns them), `.githooks/` (board item 33's
+new scope, and no physics code), `tests/` (the test suite; renamed from
+`testsys/` by board item 39) and `.github/` (in scope for this project like
+`pie/` — CI config and the test suite, maintained by whoever is doing the
+current campaign work; no separate team owns them), `.githooks/` (board item 33's
 opt-in pre-commit path-hygiene hook; `core.hooksPath` is not a tracked git
 setting, so this directory is how the hook ships in the repo at all). `results/`
 is a run artifact, not tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
@@ -69,18 +69,25 @@ release). `CHANGELOG.md` at the root carries the per-release change list, and
 `CITATION.cff` `version:` is bumped in the same release PR. There is no
 version file inside `src/`: release bookkeeping must never touch the physics
 code tree, so `src/` can be compared byte-for-byte with an archived release
-(e.g. Zenodo 10.5281/zenodo.16929504). `update_log` is the pre-v1.0.5
-development log, frozen: kept for history, never deleted, no new entries.
+(e.g. Zenodo 10.5281/zenodo.16929504). Pre-v1.0.5 development history lives in
+`CHANGELOG.md`'s own pre-v1.0.5 entries and the `v1.0.0` git tag:
+`historical_versions/` (a single frozen zip, byte-identical to `v1.0.0`) and
+`update_log` (the pre-v1.0.5 dev log, already folded verbatim into
+`CHANGELOG.md`) were both removed from the tree as redundant with git history
+(board item 39) — still retrievable via the `v1.0.0` tag or earlier commits,
+not from the working tree.
 
 **Incident**: `src/VERSION` (removed in v1.1.0, history moved to
-`CHANGELOG.md`) disagreed with `update_log` on the v1.0.5 entry, and editing it
-for a release tripped the `src/`-unmodified contract test and blurred the
-"src/ == published code" check. v1.0.2 and v1.0.3 were never tagged (only
-zipped externally, `historical_versions/`); don't tag them retroactively.
+`CHANGELOG.md`) disagreed with the pre-v1.0.5 dev log (then `update_log`) on
+the v1.0.5 entry, and editing it for a release tripped the `src/`-unmodified
+contract test and blurred the "src/ == published code" check. v1.0.2 and
+v1.0.3 were never tagged (only zipped externally, outside this repository);
+don't tag them retroactively.
 
 **How to apply**: each release PR adds a dated `CHANGELOG.md` entry and bumps
 `CITATION.cff` `version:`; the tag is created after merge (rule 13).
-`update_log` gets no entries dated after 20250708.
+`CHANGELOG.md`'s pre-v1.0.5 section is append-only history: no new entries,
+and nothing dated after 20250708.
 
 ---
 
@@ -141,10 +148,9 @@ same pattern rule 1b used for `docs/`. Three checks:
    `git ls-files | cut -d/ -f1 | sort -u` equal exactly: `CHANGELOG.md`,
    `CITATION.cff`, `CLAUDE.md`, `LICENSE`, `PATHWAY_FORWARD.md`,
    `PROJECT_RULES.md`, `README.md`, `pyproject.toml`, `requirements.txt`,
-   `update_log`, `.githooks`, `.github`, `docs`, `historical_versions`,
-   `pie`, `testsys`, `util` — no more, no less. An addition is a
-   reviewable one-line diff to this list, not a silent `git add` at the
-   root.
+   `.githooks`, `.github`, `.gitignore`, `docs`, `pie`, `scripts`, `tests`
+   — no more, no less. An addition is a reviewable one-line diff to this
+   list, not a silent `git add` at the root.
 2. **File size**: no file tracked by git exceeds 5 MB
    (`git ls-files -z | xargs -0 du -b | awk '$1>5242880'` is empty).
 3. **Tidy (report-only, never a gate failure, never auto-fixing)**: lists,
@@ -166,9 +172,14 @@ is also how this sub-rule surfaced that `requirements.txt` — named in rule
 3b's prose ("must agree with `requirements.txt`") and tracked at the root
 since v1.2.0 — was never added to rule 1's own enumerated bullet list; it is
 included in check 1's list above so the gate does not immediately fail on a
-file the project has always kept at the root.
+file the project has always kept at the root. The same gap existed for
+`.gitignore` — tracked at the root since this repo's first commit, named
+nowhere in rule 1's prose or the original version of this list — surfaced
+the same way while rewriting this list for board item 39's root-layout moves
+(`testsys/`->`tests/`, `util/`->`scripts/`, `historical_versions/`+
+`update_log` removed); it is included above for the same reason.
 
-**How to apply**: a contract-tier test (`testsys/contract/`, not yet
+**How to apply**: a contract-tier test (`tests/contract/`, not yet
 written) implements checks 1 and 2 as hard assertions and check 3 as a
 printed, non-asserting report. Until that test exists, this rule's checks
 1 and 2 are run by hand before a release (rule 13) and check 3 is run
@@ -359,15 +370,21 @@ report or plot caption.
 
 ## 7. Reference data is read-only
 
-`historical_versions/` and the external oracle trees this project cites
-(`~/3.Krista_Soderlund/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`,
+The `v1.0.0` git tag (the historical record `historical_versions/`'s single
+zip used to duplicate, byte-identical, before board item 39 removed the
+directory as redundant with git history) and the external oracle trees this
+project cites (`~/3.Krista_Soderlund/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`,
 `~/3.Krista_Soderlund/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`)
 are ground truth for regression comparison only (rule 5) — nothing writes
 through them, ever, including "just to patch the known pi bug for a cleaner
-comparison." If a comparison needs the bug fixed, fix it in a copy.
+comparison." A git tag is read-only by convention (never force-moved); an
+external oracle tree is read-only on disk. If a comparison needs the bug
+fixed, fix it in a copy.
 
 **How to apply**: run regression anchors by invoking those trees' own
-interpreters/scripts read-only; never edit them in place.
+interpreters/scripts read-only, or `git archive v1.0.0`/`git show
+v1.0.0:path` for the pre-v1.0.5 code snapshot; never edit them in place,
+never force-move the tag.
 
 ---
 
