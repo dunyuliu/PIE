@@ -1,6 +1,6 @@
 """PATHWAY_FORWARD.md item 23(c): is PIE's Fe-Si disagreement with the
 vendored Steinbruegge et al. (2020, doi:10.1029/2020GL089895) code at
-`ricb > 10 m` fully explained by `docs/notes/steinbruegge_anchor_
+`ricb > 10 m` fully explained by `docs/dev/notes/steinbruegge_anchor_
 2026-09-30.md` physics-diff item 1 (the published code uses pure
 fcc-Fe in its inner-core ODE / r0-density call, but its OWN FeSi
 density in the moment-of-inertia polynomial 30 lines later -- an
@@ -219,7 +219,7 @@ def test_fe_si_patch_explains_the_unpatched_disagreement(ricb_m, sign, lo, hi, t
     documented sign (PIE's rcmb below the unpublished code's, i.e.
     PIE's consistently-FeSi inner core is slightly less dense than the
     published code's inconsistent one at the same ricb -- see
-    docs/notes/steinbruegge_anchor_2026-09-30.md "Fe-Si as published
+    docs/dev/notes/steinbruegge_anchor_2026-09-30.md "Fe-Si as published
     vs PIE" line) and (b) fall in the measured range at each ricb. If
     this test starts FAILING because the gap shrank or vanished, that
     is NOT evidence the patch stopped mattering -- investigate before
@@ -232,13 +232,13 @@ def test_fe_si_patch_explains_the_unpatched_disagreement(ricb_m, sign, lo, hi, t
 
     assert not (diff * sign < 0), (
         "%srcmb diff=%r does not have the expected sign (sign=%r) -- "
-        "see docs/notes/steinbruegge_anchor_2026-09-30.md" %
+        "see docs/dev/notes/steinbruegge_anchor_2026-09-30.md" %
         (context, diff, sign)
     )
     mag = abs(diff)
     assert not (mag < lo) and not (mag > hi), (
         "%s|rcmb diff|=%r m outside expected range [%r, %r] m -- if this "
-        "shrank, the attribution in docs/notes/steinbruegge_anchor_2026-"
+        "shrank, the attribution in docs/dev/notes/steinbruegge_anchor_2026-"
         "09-30.md needs re-checking before loosening this bound (rule 2: "
         "a moved metric isn't evidence of a fixed problem)" %
         (context, mag, lo, hi)

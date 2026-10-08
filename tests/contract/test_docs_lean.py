@@ -17,7 +17,7 @@ dev/history docs -- not an open-ended dumping ground. Three checks:
    matches `*_scripts`, `*_figs`, or `*_measurement` -- the exact shape of
    the run-artifact trees rule 1b's incident removed -- except the one
    documented, load-bearing exception:
-   `docs/notes/item18b_paper_filter_recompute_2026-10-04_scripts/`, read
+   `docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/`, read
    at runtime by `tests/contract/test_item18b_isnow_filter.py`.
 """
 import pathlib
@@ -32,27 +32,27 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 # Named one at a time per rule 1b. Paths are relative to the repo root,
 # forward-slash, as returned by `git ls-files`.
 ALLOWED_DOCS_FILES = frozenset({
-    "docs/notes/evolution_design.md",
-    "docs/notes/failure_analysis_2026-09-28.md",
-    "docs/notes/failure_analysis_fig1_cmr2_by_endstate.png",
-    "docs/notes/failure_analysis_fig2_death_radius.png",
-    "docs/notes/failure_analysis_fig3_zero_rows_vs_chiSi.png",
-    "docs/notes/item18b_paper_filter_recompute_2026-10-04.md",
-    "docs/notes/item18_quantify_2026-10-01.md",
-    "docs/notes/perf_v1.3.2.md",
-    "docs/notes/perf_v1.3.3.md",
-    "docs/notes/perf_v1.3.4.md",
-    "docs/notes/solver_v1.3.0.md",
-    "docs/notes/steinbruegge_anchor_2026-09-30.md",
-    "docs/audits/AUDIT_2026-09-29_buglist.md",
-    "docs/audits/AUDIT_2026-09-29_solver-failures.md",
+    "docs/dev/notes/evolution_design.md",
+    "docs/dev/notes/failure_analysis_2026-09-28.md",
+    "docs/dev/notes/failure_analysis_fig1_cmr2_by_endstate.png",
+    "docs/dev/notes/failure_analysis_fig2_death_radius.png",
+    "docs/dev/notes/failure_analysis_fig3_zero_rows_vs_chiSi.png",
+    "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04.md",
+    "docs/dev/notes/item18_quantify_2026-10-01.md",
+    "docs/dev/notes/perf_v1.3.2.md",
+    "docs/dev/notes/perf_v1.3.3.md",
+    "docs/dev/notes/perf_v1.3.4.md",
+    "docs/dev/notes/solver_v1.3.0.md",
+    "docs/dev/notes/steinbruegge_anchor_2026-09-30.md",
+    "docs/dev/audits/AUDIT_2026-09-29_buglist.md",
+    "docs/dev/audits/AUDIT_2026-09-29_solver-failures.md",
 })
 
 # The one documented exception to the no-artifact-tree rule: this directory
 # is load-bearing (read at runtime by test_item18b_isnow_filter.py), so any
 # file tracked under it is allowed without being named individually above.
 ALLOWED_ARTIFACT_TREE_PREFIX = (
-    "docs/notes/item18b_paper_filter_recompute_2026-10-04_scripts/"
+    "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/"
 )
 
 # Rule 1b: "the count ... stays under a fixed cap, so the allowlist can grow

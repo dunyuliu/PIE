@@ -1,5 +1,5 @@
 """Integration tier: the v1.3.0 solver invariant against v1.2.0 (PATHWAY_FORWARD.md
-item 17; docs/notes/solver_v1.3.0.md).
+item 17; docs/dev/notes/solver_v1.3.0.md).
 
 Fixed sample: tests/reference/v1_2_0_sweeps/sample.json (14 published Monte
 Carlo draws, one per failure class: 6 "identity" cases that converged for
@@ -41,7 +41,7 @@ Gates
 Runtime is bounded by --extra-radii 2: each case runs (v1.2.0 rows + 2)
 radii, so the identity rows and two continuation radii are exercised
 (~4-6 min wall on 8 workers). The full-grid recovery statistics live in
-docs/notes/solver_v1.3.0.md, not here.
+docs/dev/notes/solver_v1.3.0.md, not here.
 """
 import json
 import os

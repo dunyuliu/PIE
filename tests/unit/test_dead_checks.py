@@ -1,5 +1,5 @@
 """Regression tests for the three dead/no-op checks named in
-PATHWAY_FORWARD.md item 16 (docs/audits/AUDIT_2026-09-29_buglist.md B1/B3):
+PATHWAY_FORWARD.md item 16 (docs/dev/audits/AUDIT_2026-09-29_buglist.md B1/B3):
 
   - src/driverp.py:38  `if v is None: break`        (v is never None)
   - src/driverp.py:111 `chi_li.any()<0`              (bool compared to
@@ -144,7 +144,7 @@ def test_libcore_no_longer_calls_bare_sys_exit():
 
 def test_libcore_getpotvsr_wraps_the_superlu_inversion():
     # v1.3.2: the single-rhs solve is spsolve(A, rhs), not inv(A)*rhs
-    # (perf fix, docs/notes/perf_v1.3.2.md) -- same SuperLU machinery,
+    # (perf fix, docs/dev/notes/perf_v1.3.2.md) -- same SuperLU machinery,
     # same try/except; the line text changed, so this check follows it.
     text = (SRC / "libCore.py").read_text()
     idx = text.index("b = spsolve(A, rhs)")

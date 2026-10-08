@@ -49,8 +49,8 @@ campaign work; no separate team owns them), `.githooks/` (board item 33's
 opt-in pre-commit path-hygiene hook; `core.hooksPath` is not a tracked git
 setting, so this directory is how the hook ships in the repo at all). `results/`
 is a run artifact, not tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
-a session's own working notes go in `docs/notes/` (create the directory only
-when the first note needs it).
+a session's own working notes go in `docs/dev/notes/` (create the directory
+only when the first note needs it).
 
 **Rationale**: this project has no root-structure rule today and no `docs/`
 directory; this proposes the boundary before the root accumulates
@@ -58,7 +58,7 @@ directory; this proposes the boundary before the root accumulates
 they had one.
 
 **How to apply**: before adding any new root-level file, ask whether it
-belongs in `pie/`, `docs/notes/`, or one of the four named documents instead.
+belongs in `pie/`, `docs/dev/notes/`, or one of the four named documents instead.
 
 ---
 

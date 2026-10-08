@@ -1,10 +1,10 @@
 """Regression test for PATHWAY_FORWARD.md item 18's measure36 counts
-(docs/notes/item18_quantify_2026-10-01.md), derived fresh from the raw
+(docs/dev/notes/item18_quantify_2026-10-01.md), derived fresh from the raw
 fixture `tests/reference/v1_2_0_sweeps/v130_measure36.json` instead of
 trusting any hand-rolled table.
 
-Context: `docs/notes/item18_quantify_2026-10-01.md` and
-`docs/notes/solver_v1.3.0_measurement/measure36_results_2026-10-01.md`
+Context: `docs/dev/notes/item18_quantify_2026-10-01.md` and
+`docs/dev/notes/solver_v1.3.0_measurement/measure36_results_2026-10-01.md`
 both quote a set of headline counts off this JSON (37 affected-composition
 cases, continue-policy Newton-solve sweeps beyond each case's published
 v1.2.0 stop radius). A priya-nair audit (2026-10-02) found a real

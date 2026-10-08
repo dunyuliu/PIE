@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fixed-sample radius sweeps for tests/integration/test_v1_2_0_invariant.py
-and for the v1.3.0 recovery measurements (docs/notes/solver_v1.3.0.md).
+and for the v1.3.0 recovery measurements (docs/dev/notes/solver_v1.3.0.md).
 
     /usr/bin/python3 generate_sweeps.py --src /path/to/src --out sweeps.json
                      [--policy stop|continue] [--adaptive] [--extra-radii N] [--workers 8] [--partial-dir DIR]

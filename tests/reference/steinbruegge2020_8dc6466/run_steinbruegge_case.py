@@ -76,7 +76,7 @@ def solve_one_case(li_el, ricb_m):
 
     xtol=ftol=1e-5, maxit=6 and v0=[0.8,1,0.8,0.7,0.05] are
     run_models.py's own published values (not loosened/tightened here)
-    -- see docs/notes/steinbruegge_anchor_2026-09-30.md Newton line.
+    -- see docs/dev/notes/steinbruegge_anchor_2026-09-30.md Newton line.
     """
     param = build_param(li_el)
     M = param['GM'] / G

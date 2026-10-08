@@ -2,7 +2,7 @@
 missing-test gap: "no regression test locks the isnow in {1,3} predicate
 or the stratified totals -- routed to iris-vermeulen, not yet dispatched."
 
-Source of truth: `docs/notes/item18b_paper_filter_recompute_2026-10-04_scripts/
+Source of truth: `docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/
 analyze.py` (the live predicate, parsed from its own source -- not a
 hand-copied reimplementation that could independently drift) and its
 committed output `item18b_results.json` (the stratified population
@@ -38,10 +38,10 @@ import pytest
 pytestmark = pytest.mark.contract
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-SCRIPTS_DIR = ROOT / "docs/notes/item18b_paper_filter_recompute_2026-10-04_scripts"
+SCRIPTS_DIR = ROOT / "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts"
 ANALYZE_PY = SCRIPTS_DIR / "analyze.py"
 RESULTS_JSON = SCRIPTS_DIR / "item18b_results.json"
-NOTE_MD = ROOT / "docs/notes/item18b_paper_filter_recompute_2026-10-04.md"
+NOTE_MD = ROOT / "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04.md"
 
 CATS = ["all", "sl", "goodTCMB", "goodTCMB_sl", "goodTCMB_goodchiS"]
 

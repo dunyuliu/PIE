@@ -369,11 +369,11 @@ def getpotvsr(nr,bigGnd,rnd,rhond,gnd):
     #print(A)
     # SuperLU raises RuntimeError("Factor is exactly singular") on a
     # singular A instead of returning a value -- previously uncaught
-    # (docs/audits/AUDIT_2026-09-29_buglist.md B2), which crashed the
+    # (docs/dev/audits/AUDIT_2026-09-29_buglist.md B2), which crashed the
     # whole process. Caught here and re-raised as a SolverError so
     # src/driverp.py's per-radius try/except can record it and move on.
     try:
-        # v1.3.2 perf fix (docs/notes/perf_v1.3.2.md): inv(A) solved for
+        # v1.3.2 perf fix (docs/dev/notes/perf_v1.3.2.md): inv(A) solved for
         # A's FULL dense inverse (ndim unit-rhs back-substitutions) just
         # to multiply it by ONE rhs. spsolve(A, rhs) is the same SuperLU
         # factorization, one back-substitution, same b, ~40x faster here.

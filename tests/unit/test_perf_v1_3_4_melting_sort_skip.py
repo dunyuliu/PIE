@@ -1,4 +1,4 @@
-"""Differential test for the board item 27 perf slice (docs/notes/perf_v1.3.4.md):
+"""Differential test for the board item 27 perf slice (docs/dev/notes/perf_v1.3.4.md):
 `pie/coreEos.py`'s `meltingDataFromFile.__call__` skips `np.sort()` when the
 (already-built) p/x arrays have length <= 1, instead of calling `np.sort()`
 and discarding an identical result.
@@ -11,7 +11,7 @@ proves that construction empirically against:
   1. A reference re-implementation of the EXACT pre-fix algorithm
      (unconditional np.sort), run on REAL (x, p) pairs captured from a
      real present-day solve (the canonical Margot-fit case, same as
-     docs/notes/perf_v1.3.2.md/perf_v1.3.3.md).
+     docs/dev/notes/perf_v1.3.2.md/perf_v1.3.3.md).
   2. Synthetic length>1 arrays, proving the branch still calls real
      np.sort (and therefore still reorders) whenever length > 1 -- i.e.
      the fix narrows WHEN sort is skipped, it does not remove sorting

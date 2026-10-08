@@ -1,5 +1,5 @@
 """Differential tests for the v1.3.2 performance port (PATHWAY_FORWARD.md
-perf item, docs/notes/perf_v1.3.2.md): two dense-inverse-for-a-single-rhs
+perf item, docs/dev/notes/perf_v1.3.2.md): two dense-inverse-for-a-single-rhs
 call sites replaced with a direct linear solve, no algorithm/matrix change.
 
 Profiling (cProfile, one Newton solve at the canonical Margot-fit radius,
@@ -23,7 +23,7 @@ CMR2=0.346/CMC=0.424, S, Edmund, ricb=500010 m) found:
     loop over independent grid points -- not a "straightforward,
     behaviour-preserving" vectorization target, and it is now the
     dominant remaining cost (~7.9s of 9.6s, 82%); see the Numba proposal
-    in docs/notes/perf_v1.3.2.md.
+    in docs/dev/notes/perf_v1.3.2.md.
 
 This file is the parity gate for the two solves that WERE changed: both
 the optimized (current src/) and a reference re-implementation of the

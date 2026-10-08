@@ -281,7 +281,7 @@ def driverp(param, rs):
         isnow = vis.plot_isnow(ricb[k]*scale['a'],r,rh*scale['a'],rm,T1,P1,chi_li,rho1,chi_li_in,moi,cmc,mass,k,param, isnow)
          
         # `chi_li.any()<0` compared a bool (.any()'s return) to 0, always
-        # False (docs/audits/AUDIT_2026-09-29_buglist.md B3); this is the
+        # False (docs/dev/audits/AUDIT_2026-09-29_buglist.md B3); this is the
         # element-wise check it was named for.
         if (chi_li<0).any():
             error_code[k] = ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX # Final light element %wt negative.

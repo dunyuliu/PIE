@@ -10,6 +10,6 @@ docs/user-site/
 # docs-lean (PATHWAY_FORWARD.md item 37): no run-artifact trees under docs/
 # from here on -- safety net only, not the enforcement gate (that's a
 # separate contract test, item 37's docs-lean plan).
-docs/notes/*_scripts/
-docs/notes/*_figs/
-docs/notes/*_measurement/
+docs/dev/notes/*_scripts/
+docs/dev/notes/*_figs/
+docs/dev/notes/*_measurement/

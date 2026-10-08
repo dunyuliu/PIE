@@ -112,7 +112,7 @@ radius-independent, by design) ends a composition, with a single row.
 falling back to the real `scipy.integrate.quad` per call whenever
 QUADPACK's own single-panel accept test (replicated from `dqagse.f`) would
 reject it -- measured ~4x faster per call on the pinned environment (see
-`docs/notes/perf_v1.3.3.md` for the full timing table).
+`docs/dev/notes/perf_v1.3.3.md` for the full timing table).
 
 `PIE_FAST_QUAD=0` (env var) is the explicit escape hatch back to the
 unconditional `scipy.integrate.quad` call -- identical to the pre-GK21

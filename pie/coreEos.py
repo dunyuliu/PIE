@@ -58,7 +58,7 @@ from scipy import optimize
 
 # --- v1.3.3 perf: vectorised GK21 fast path for eosAndersonGrueneisen.Gibbs's
 # integrate.quad call (PATHWAY_FORWARD.md perf item; see
-# docs/notes/perf_v1.3.3.md). Profiling (cProfile, canonical Margot-fit
+# docs/dev/notes/perf_v1.3.3.md). Profiling (cProfile, canonical Margot-fit
 # radius) found integrate.quad at ~6.4s of a 9.6s single-radius solve:
 # 26124 calls / 548604 total integrand evaluations = exactly 21 evals/call,
 # i.e. QUADPACK's QAGSE never subdivides past its first 21-point
@@ -126,7 +126,7 @@ _GK21_WGK = (
 # values for a vectorised array call vs one-scalar-call-per-point
 # (floating-point non-associativity in CubicSpline's own vectorized-vs-
 # scalar code path, not a bug in this port's GK21 logic -- see
-# docs/notes/perf_v1.3.3.md). That divergence is bounded, not eliminated,
+# docs/dev/notes/perf_v1.3.3.md). That divergence is bounded, not eliminated,
 # by GK21_PORTABLE_RTOL=1e-14 below. Only an EXPLICIT PIE_FAST_QUAD=0 is
 # the escape hatch back to the unconditional real scipy.integrate.quad
 # call. Read once at import time -- a test that needs the opposite path
