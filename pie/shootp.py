@@ -11,6 +11,7 @@ Modified by dliu since 03/31/2022.dliu.
 """
 
 import numpy as np
+import os
 import time
 import scipy
 from . import coreEos as eos
@@ -302,6 +303,34 @@ ALPHA_MIN   = 1.e-3    # line search: smallest step fraction tried before giving
 GROWTH_MAX  = 100.0    # line search: reject a trial whose |f| grows by more than this factor
 COND_MAX    = 1.e12    # robust singular-Jacobian test replacing the exact det(J)==0 float compare
 
+# Opt-in box-check on x0 and on the final returned iterate: box_fun runs on
+# every line-search trial but not on x0 or on the converged_now fast-path
+# return. Default off (unset/"0") is the exact pre-fix code path; measured
+# NOT bit-identical when enabled, so it stays opt-in -- see board item 36.
+PIE_BOX_CHECK_FINAL = os.environ.get("PIE_BOX_CHECK_FINAL", "0") not in ("0", "", "false", "False")
+
+
+def _box_check_or_fail(label, xv, trial_fun, box_fun, fail_fn, log_fn):
+    """Evaluate trial_fun/box_fun at xv and raise via fail_fn if rejected.
+    Shared by the opt-in x0 and final-iterate checks below -- same
+    semantics as a line-search trial rejection, just outside the loop.
+    log_fn is the caller's _flush_log closure, needed to match the
+    line-search path's by-design re-raise-as-is handling of
+    SI_ABOVE_LIQUIDUS_MAX (see mynewtonSys's docstring)."""
+    try:
+        fv, foutv = trial_fun(xv)
+        fv = np.asarray(fv, dtype=float)
+        ok, code, detail = box_fun(xv, fv, foutv)
+    except SolverError as e:
+        if e.error_code == ErrorCode.SI_ABOVE_LIQUIDUS_MAX:
+            log_fn(e.error_code)
+            raise
+        ok, code, detail = False, e.error_code, '%s trial raised %r' % (label, e)
+    if not ok:
+        fail_fn(code if code is not None else ErrorCode.NONFINITE_SHOOT,
+                '%s is outside the admissible box (%s)' % (label, detail),
+                box_check_final=True)
+
 
 def mercmodel_trial(x, args):
     """Residual and diagnostics at a trial iterate for the Mercury model:
@@ -478,6 +507,9 @@ def mynewtonSys(Jfun,x0,varargin,
         ctx.update({'k': k, 'v': np.asarray(x).tolist(), 'newton_history': history})
         raise SolverError(code, msg, context=ctx)
 
+    if PIE_BOX_CHECK_FINAL and box_fun is not None and trial_fun is not None:
+        _box_check_or_fail('x0', x0, trial_fun, box_fun, _fail, _flush_log)
+
     while k <= maxit:
       start = time.time()
       k = k + 1
@@ -555,6 +587,8 @@ def mynewtonSys(Jfun,x0,varargin,
           end = time.time()
           print(k,normf,normdx,alpha,end-start)
       if converged_now:
+          if PIE_BOX_CHECK_FINAL and box_fun is not None and trial_fun is not None:
+              _box_check_or_fail('converged iterate', x, trial_fun, box_fun, _fail, _flush_log)
           _flush_log(ErrorCode.CONVERGED)
           return x
 
