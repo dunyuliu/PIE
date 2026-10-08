@@ -49,15 +49,16 @@ def test_testsys_test_files_never_open_a_path_under_src_for_writing():
 def test_no_machine_local_paths_in_tracked_files():
     """The repo is public: no absolute home/scratch paths from a dev box in
     tracked files (they leak local layout and break for anyone else).
-    `update_log` is frozen history (PROJECT_RULES.md rule 1a) and exempt."""
+    (Previously exempted `update_log` here, since its frozen pre-v1.0.5 dev
+    log could contain a stray dev-box path; that file was removed in board
+    item 39 as redundant with git history, so no replacement exemption is
+    needed -- every remaining tracked file is held to this check.)"""
     import re
     files = subprocess.run(["git", "ls-files"], cwd=ROOT, stdout=subprocess.PIPE,
                            text=True, check=True).stdout.split()
     pat = re.compile(r"/home/(utig5|staff)/|/tmp/claude-\d")
     offenders = []
     for rel in files:
-        if rel == "update_log":
-            continue
         try:
             text = (ROOT / rel).read_text(errors="ignore")
         except (IsADirectoryError, FileNotFoundError):
