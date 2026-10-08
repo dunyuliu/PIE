@@ -36,7 +36,9 @@ to; never refactor unrelated code in the same change.
 The root is a whitelist: `README.md`, `CLAUDE.md`, `PATHWAY_FORWARD.md`,
 `PROJECT_RULES.md`, `LICENSE`, `CITATION.cff` (see rule 14), `CHANGELOG.md` (rule 1a),
 `pyproject.toml` (board item 28e: packaging + the pinned deps that must
-agree with `requirements.txt`, rule 3b), plus
+agree with `requirements.txt`, rule 3b), `requirements.txt` (the single
+source of truth for pins, tracked at the root since v1.2.0, rule 3b),
+`.gitignore` (tracked at the root since this repo's first commit), plus
 `pie/` (the installable package; renamed from `src/` by board item 28e —
 same role, same rules below that still say `src/` in older prose), `scripts/`
 (operational scripts split out of `src/` by the Layout PR,
@@ -51,6 +53,10 @@ setting, so this directory is how the hook ships in the repo at all). `results/`
 is a run artifact, not tracked (README's `mkdir results` step). No new top-level `.md`/notes files —
 a session's own working notes go in `docs/dev/notes/` (create the directory
 only when the first note needs it).
+
+(`requirements.txt` and `.gitignore` were both already enumerated in rule
+1c's mechanical gate list below — backfilled here into this prose list to
+match, per owner decision on board item 39a(b).)
 
 **Rationale**: this project has no root-structure rule today and no `docs/`
 directory; this proposes the boundary before the root accumulates
