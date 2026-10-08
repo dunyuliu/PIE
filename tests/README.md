@@ -75,13 +75,11 @@ published run had zero rows is accepted only if the recovered model passes
 rho > 0, finite) and is printed as "recovered".
 
 Fast-tier total (unit+contract+integration, what CI runs on every
-push/PR): **201 passed, 3 xfailed** as of v1.3.0 (was 106/1 at v1.1.0);
-measured ~1110 s on this shared box under load 40-60 (v1.3.0 adds the
-14-case v1.2.0-identity re-run, ~15 min contended, and the 10-m
-fresh-process determinism test, ~1.5 min) -- was 194-307 s at v1.1.0 depending on
-this shared box's other load at the time (multiple ProcessPoolExecutor-
-parallelized solves compete with other users' jobs on this 64-core
-machine) -- CI's own (dedicated) runner should land nearer the low end.
+push/PR): **312 passed, 15 skipped, 3 xfailed** as of board item 40c
+(2026-10-07) -- was 201 passed/3 xfailed at v1.3.0, 106/1 at v1.1.0;
+measured ~147 s on a `uv`-managed Python 3.12 venv with `-n 6` xdist
+(this shared box's load varies; CI's own dedicated runner should land
+near this).
 
 ### Coverage breadth (2026-09-28 follow-up)
 

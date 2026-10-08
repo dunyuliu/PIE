@@ -18,7 +18,7 @@ from scipy.constants import R as RGas
 # planet_input is used here at all. Binding semantics are identical to
 # the star-import (a name copied into this module's namespace at
 # import time), so this changes no behaviour -- see
-# testsys/unit/test_libcore.py. Two call sites (`solver.py`,
+# tests/unit/test_libcore.py. Two call sites (`solver.py`,
 # `planet_input.py`) previously got additional globalvar names
 # transitively through libCore's own `import *`; planet_input.py now
 # imports globalvar directly instead of relying on that (see its own
@@ -67,13 +67,13 @@ class SolverError(SystemExit):
         # (message,) (set by the `super().__init__(message)` above) --
         # that drops error_code/context and makes __init__ raise
         # "missing required positional argument" on unpickling.
-        # testsys/e2e/test_wide_full_sweep.py and
-        # testsys/integration/test_wide_self_consistency.py send a
+        # tests/e2e/test_wide_full_sweep.py and
+        # tests/integration/test_wide_self_consistency.py send a
         # caught SolverError back across a ProcessPoolExecutor
         # boundary (`except BaseException as e: return e`), which
         # pickles it -- this failed with a BrokenProcessPool until
         # this override; a regression test lives in
-        # testsys/unit/test_error_codes.py.
+        # tests/unit/test_error_codes.py.
         return (self.__class__, (self.error_code, self.message, self.context))
 
 
@@ -85,7 +85,7 @@ def write_solver_log(log_path, record):
     yet), this raises -- it does not swallow the error and continue as
     if logging had happened. Passing log_path=None is the explicit
     opt-out (used by callers/tests that have no run directory, e.g. the
-    toy Jacobians in testsys/unit/test_solver.py).
+    toy Jacobians in tests/unit/test_solver.py).
     """
     if log_path is None:
         return

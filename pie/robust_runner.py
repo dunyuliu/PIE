@@ -32,8 +32,8 @@ liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
    `RunnerStatus` (PROCESS_CRASHED / INCOMPLETE_OUTPUT) instead.
 
 4. Parallelism: `PIE_WORKERS` cap, same formula as
-   testsys/pielib.py:pie_workers() (copied, since production must not
-   import testsys; a unit test pins the two together); every job runs
+   tests/pielib.py:pie_workers() (copied, since production must not
+   import tests; a unit test pins the two together); every job runs
    under `nice -n 10` with one BLAS thread (PROJECT_RULES.md rule 15).
 
 5. Provenance, per job (not per run, so TACC jobs on many hosts are each
@@ -84,14 +84,14 @@ def _load_error_code():
 
     `globalvar.py` does not parse `sys.argv` as an import-time side
     effect (eager parsing would crash this runner's own CLI argv -- `run
-    m.csv --workers 2 ...` -- on `float(sys.argv[2])`; `testsys/pielib.py`
+    m.csv --workers 2 ...` -- on `float(sys.argv[2])`; `tests/pielib.py`
     worked around the same landmine with a placeholder argv). ErrorCode
     doesn't depend on argv-parsed state at all, so a plain import is
     enough; no `sys.argv` substitution needed.
 
     `importlib.import_module("pie.globalvar")`, not a package-relative
     `from . import globalvar`: this module is deliberately runnable as a
-    bare script (both the TACC launcher and testsys/integration's
+    bare script (both the TACC launcher and tests/integration's
     crash/restart tests invoke it by file path, `python
     .../robust_runner.py ...`, not `python -m pie.robust_runner`), and a
     relative import fails with no `__package__` when a module is executed
@@ -120,9 +120,9 @@ class RunnerStatus(str, enum.Enum):
 
 
 def pie_workers():
-    """Same cap formula as `testsys/pielib.py:pie_workers()`
+    """Same cap formula as `tests/pielib.py:pie_workers()`
     (PROJECT_RULES.md rule 15) -- duplicated rather than imported, since
-    this module runs standalone in production (no `testsys/` on a TACC
+    this module runs standalone in production (no `tests/` on a TACC
     compute node). Keep these two in sync; a contract test diffs them.
     """
     env = os.environ.get("PIE_WORKERS")
@@ -391,7 +391,7 @@ def _acquire_lock(path, payload):
     SIGKILLed mid-job leaves its lock behind (no `finally` runs), and
     without reclaiming it a restart would wrongly report SKIPPED_LOCKED
     forever instead of redoing the missing work (caught by
-    testsys/integration/test_robust_runner_crash_restart.py). `--force`
+    tests/integration/test_robust_runner_crash_restart.py). `--force`
     also removes a (possibly non-stale) lock before re-running, same as
     it already bypasses the done-check.
 
@@ -673,7 +673,7 @@ def run_one_job(job, src_dir=SRC_DIR, status_log=None, run_id=None,
         # as a bare script. `python -m pie` resolves "pie" the installed
         # package regardless of `cwd` -- EXCEPT when `cwd` itself contains a
         # `pie/` subdirectory, which takes priority on `sys.path` (Python
-        # prepends the invocation cwd for `-m`); testsys/integration's
+        # prepends the invocation cwd for `-m`); tests/integration's
         # crash/restart tests rely on exactly that to shadow the real package
         # with a fake stand-in, see that test module's `fake_src` fixture.
         cmd = ["nice", "-n", "10", python_exe, "-m", "pie"] + job.argv()[1:]
