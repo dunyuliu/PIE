@@ -144,6 +144,66 @@ def test_converging_final_step_is_returned_before_any_trial(shootp):
 
 
 # ---------------------------------------------------------------------
+# Board item 36: opt-in box-check on the returned iterate and on x0
+# (PIE_BOX_CHECK_FINAL, default off -- see shootp.py's module docstring
+# next to the flag for the measured 2026-10-07 count: 1,502/474,075
+# published converged rows, all Si-only, would be newly rejected).
+# ---------------------------------------------------------------------
+def test_final_iterate_box_check_default_off_then_opt_in(shootp, globalvar):
+    def jf(x, varargin):
+        return np.array([[1.0]]), np.array([x[0] - 1.0])
+    shootp.toy_lin_box36 = jf
+
+    def trial(x):
+        return np.array([x[0] - 1.0]), []
+    box = lambda x, f, fout: (False, globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX, "always rejects")
+
+    assert shootp.PIE_BOX_CHECK_FINAL is False
+    # default: a box that rejects everything still lets the converged
+    # iterate through unchanged -- bit-identical to pre-item-36 behaviour.
+    x = shootp.mynewtonSys("toy_lin_box36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+                           trial_fun=trial, box_fun=box)
+    assert x[0] == pytest.approx(1.0, abs=1e-15)
+
+    shootp.PIE_BOX_CHECK_FINAL = True
+    try:
+        with pytest.raises(shootp.SolverError) as ei:
+            shootp.mynewtonSys("toy_lin_box36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+                               trial_fun=trial, box_fun=box)
+        assert ei.value.error_code == globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+        assert ei.value.context.get("box_check_final") is True
+    finally:
+        shootp.PIE_BOX_CHECK_FINAL = False
+
+
+def test_x0_box_check_default_off_then_opt_in(shootp, globalvar):
+    def jf(x, varargin):
+        return np.array([[1.0]]), np.array([x[0] - 1.0])
+    shootp.toy_lin_x0_36 = jf
+
+    def trial(x):
+        return np.array([x[0] - 1.0]), []
+    box = lambda x, f, fout: (False, globalvar.ErrorCode.RICB_GE_RCMB, "x0 outside box")
+
+    assert shootp.PIE_BOX_CHECK_FINAL is False
+    # default: x0 is never box-checked -- the solve proceeds and converges
+    # normally even though box_fun would reject x0 itself.
+    x = shootp.mynewtonSys("toy_lin_x0_36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+                           trial_fun=trial, box_fun=box)
+    assert x[0] == pytest.approx(1.0, abs=1e-15)
+
+    shootp.PIE_BOX_CHECK_FINAL = True
+    try:
+        with pytest.raises(shootp.SolverError) as ei:
+            shootp.mynewtonSys("toy_lin_x0_36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+                               trial_fun=trial, box_fun=box)
+        assert ei.value.error_code == globalvar.ErrorCode.RICB_GE_RCMB
+        assert ei.value.context.get("box_check_final") is True
+    finally:
+        shootp.PIE_BOX_CHECK_FINAL = False
+
+
+# ---------------------------------------------------------------------
 # Singular-Jacobian test: cond(J) > COND_MAX, not det(J) == 0.0 exactly
 # ---------------------------------------------------------------------
 def test_near_singular_jacobian_is_caught_by_condition_number(shootp, globalvar):
