@@ -1,6 +1,6 @@
 # Changelog
 
-Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes: `update_log` (frozen).
+Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes are folded into this file's own v1.0.4-and-earlier entries below (the former `update_log` file was removed from the tree, board item 39; still retrievable via the `v1.0.0` git tag).
 
 * v1.6.3; 20261007; patch, same-day user-facing bugfix plus completion of
   item 9's star-import narrowing (`pie/driverp.py`, `pie/planet_input.py`,

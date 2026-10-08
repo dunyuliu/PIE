@@ -173,11 +173,13 @@ live on the user-facing site (`docs/user/outputs.md`,
   the same way but kept — `pie/drivere.py` imports it, so it is not dead,
   just part of the evolution branch parked under item 11; do not extend or
   delete it.
-- `historical_versions/` — frozen zip/tar snapshots of prior versions.
-  Read-only (`PROJECT_RULES.md` rule 7).
 - `CHANGELOG.md` — per-release change list; git tags are the version source of truth
-  (`PROJECT_RULES.md` rule 1a). `update_log` is the frozen pre-v1.0.5 dev log;
-  it gets no new entries.
+  (`PROJECT_RULES.md` rule 1a). Pre-v1.0.5 development history lives in
+  CHANGELOG.md's own pre-v1.0.5 entries (v1.0.4 and earlier) and the `v1.0.0`
+  git tag; both `historical_versions/` (frozen zip/tar snapshots) and
+  `update_log` (the pre-v1.0.5 dev log) were removed from the tree as
+  redundant with git history (board item 39) -- still retrievable via the
+  `v1.0.0` tag or earlier commits, not from the working tree.
 
 ## Version state (as of 2026-10-03)
 
