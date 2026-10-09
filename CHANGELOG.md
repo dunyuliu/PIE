@@ -2,6 +2,39 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes are folded into this file's own v1.0.4-and-earlier entries below (the former `update_log` file was removed from the tree, board item 39; still retrievable via the `v1.0.0` git tag).
 
+* v1.8.0; 20261009; minor, default-output-changing (owner decision,
+  `PATHWAY_FORWARD.md` item 44): `pie/shootp.py`'s `PIE_BOX_CHECK_FINAL`
+  env var (opt-in, default off, v1.7.1) renamed to
+  `PIE_CHECK_SOLUTION_BOUNDS` and flipped to default ON --
+  `PIE_CHECK_SOLUTION_BOUNDS=0`/`false`/`no`/`off` restores the exact
+  v1.7.1 default (off) path bit-for-bit. The old name is kept as a
+  deprecated alias (`DeprecationWarning`, honoured only when the new name
+  is unset; if both are set, the new name wins). New
+  `check_solution_bounds_enabled` results-csv column records the resolved
+  per-row setting (item 40c). Real-world impact measured as a same-commit
+  ON-vs-OFF isolation, not against the stale v1.0.5 published dataset
+  (unrelated item-31 drift): Si-only sweep, 168 compositions / 6,720 rows
+  -- 0 newly rejected, 0 changed values on a still-converged row; S/S+Si
+  control, 40 compositions / 1,597 rows -- 0 diffs. Both counts
+  independently re-derived from raw per-run csv/provenance data (separate
+  comparison script) -- confirmed, exact match. The paper's figure
+  population (Dunnigan et al. 2026, S+Si) contains none of the 1,502
+  published Si-only rows that fail the bounds (item 36, audited); the
+  40-composition S/S+Si control showed 0 diffs. A code-diff audit of the
+  rename found no reachable
+  defects (7/7 alias-precedence branches verified, csv column confirmed
+  non-tautological, the by-design `SI_ABOVE_LIQUIDUS_MAX` stop condition
+  confirmed still re-raised as-is, not mis-wrapped as a box rejection).
+  `docs/user/outputs.md`, `docs/user/troubleshooting.md`, and this
+  project's `CLAUDE.md` solver section updated. Breaking: default output
+  changes for any run that previously relied on the opt-in flag's absence
+  (an impossible converged model is now recorded as a failure instead of
+  saved); not breaking for any run already setting the flag explicitly
+  under either name. No such case was observed on either measured sample
+  (Si-only or S/S+Si control) -- the breaking risk is on untested
+  compositions, not a demonstrated output change. Gate: fresh
+  `tests/run.py` (fast tiers) on the PR head SHA -- 320 passed, 15
+  skipped, 3 xfailed, 0 failed.
 * v1.7.1; 20261008; patch, held-back fixes from the v1.7.0 release split
   (`PATHWAY_FORWARD.md` item 41, owner "Go" 2026-10-07): item 36 (PR #128,
   squash `b5c7131`) -- opt-in `PIE_BOX_CHECK_FINAL` env var (default

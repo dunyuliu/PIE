@@ -124,11 +124,12 @@ differs from current `main` for reasons unrelated to this flag (item 31's
 line-search/Newton changes since v1.0.5). The flag's own isolated effect
 -- same commit, same input, `PIE_CHECK_SOLUTION_BOUNDS=1` vs `=0`, diffed
 row for row -- is 0 changed rows on both the 168 originally Si-flagged
-compositions and a 40-composition S/S+Si control sample (item 40c;
-UNAUDITED pending independent re-derivation): on current `main`, the
-pre-existing per-trial line-search box check already intercepts every
-case the x0/converged-iterate check would have caught, so the default
-flip changes nothing further on either sample measured so far.
+compositions (6,720 rows) and a 40-composition S/S+Si control sample
+(1,597 rows); both counts independently re-derived and confirmed (item 40c,
+board item 44). Default flipped OFF->ON in v1.8.0 on this evidence: on
+current `main`, the pre-existing per-trial line-search box check already
+intercepts every case the x0/converged-iterate check would have caught, so
+the flip changes nothing further on either sample measured so far.
 
 ## Performance options
 
