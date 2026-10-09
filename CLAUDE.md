@@ -108,14 +108,13 @@ radius-independent, by design) ends a composition, with a single row.
 The admissible-box test (`box_fun`) runs on every line-search trial, but the
 `converged_now` fast path returns the final iterate without re-checking it,
 and `x0` itself is never box-checked either (PATHWAY_FORWARD.md item 36).
-`PIE_BOX_CHECK_FINAL=1` (env var, default off/unset) adds both checks,
-raising the box's own error code if the converged iterate or `x0` is
-outside it. Default off is bit-identical to pre-item-36 behaviour; turning
-it on is NOT bit-identical (measured: 1,502/474,075 converged rows, 0.317%,
-fail the box in the full published v1.0.5 Zenodo dataset, all `chi_li_icb`
-above the Edmund Si cap by up to 0.102 -- UNAUDITED, see PATHWAY_FORWARD.md
-item 36 -- so the check does not default on per the owner's
-opt-in-or-bit-identical rule).
+`PIE_BOX_CHECK_FINAL=1` (env var; also `true`/`yes`/`on`; default unset
+= off) adds both checks, raising the box's own error code if the converged
+iterate or `x0` is outside it. Off is bit-identical to pre-item-36
+behaviour. On is not: 1,502 of 474,075 converged rows (0.317%) in the
+published v1.0.5 Zenodo dataset fail the box, all Si-only with `chi_li_icb`
+above the 0.12 Si cap (audited, board item 36; none is in the paper's
+S+Si figure population). So it stays opt-in.
 
 ## Performance options
 
@@ -129,11 +128,11 @@ reject it -- measured ~4x faster per call on the pinned environment (see
 `PIE_FAST_QUAD=0` (env var) is the explicit escape hatch back to the
 unconditional `scipy.integrate.quad` call -- identical to the pre-GK21
 behaviour on every environment. `PIE_FAST_QUAD` unset, or set to any other
-value (e.g. `1`), means GK21-on. On the pinned environment
-(`numpy==1.21.5`, `scipy==1.8.0`, `tests/requirements.txt`), GK21 is
+value (e.g. `1`), means GK21-on. On the environment it was measured on in v1.3.3
+(`numpy==1.21.5`, `scipy==1.8.0`), GK21 is
 bit-identical to `scipy.integrate.quad` (max diff 0.0, measured over 237057
 real captured solver (p, T) calls,
-`tests/unit/test_perf_v1_3_3_gk21_quad.py`). Off the pinned environment
+`tests/unit/test_perf_v1_3_3_gk21_quad.py`). Off that environment
 (e.g. CI's informational `fast-latest` canary, current numpy/scipy),
 `eosAndersonGrueneisen.volume`'s `CubicSpline` does not return exactly the
 same values for a vectorised array call vs one-scalar-call-per-point
@@ -193,46 +192,23 @@ live on the user-facing site (`docs/user/outputs.md`,
   redundant with git history (board item 39) -- still retrievable via the
   `v1.0.0` tag or earlier commits, not from the working tree.
 
-## Version state (as of 2026-10-03)
+## Version state
 
-- v1.0.5 (tag on `683a51d`): the code archived with Dunnigan et al. 2026
-  (Zenodo 10.5281/zenodo.16929504). v1.1.0: first tested baseline (tests,
-  CI, rules, citation) with `src/` byte-identical to v1.0.5.
-- v1.0.2/v1.0.3 were zipped externally but never tagged; don't tag them.
-- v1.1.1 (2026-09-29): scipy interp2d port to RectBivariateSpline.
-- v1.2.0 (2026-09-30): error codes, clean exits, solver log, dependency manifest.
-- v1.3.0 (2026-09-30): bounded line-search Newton, getk2 nrs=0 fix, 
-  continue-after-failure sweeps, failure rows in csv (PATHWAY_FORWARD.md item 17).
-- v1.3.1 (2026-10-01): pytest-xdist parallelism, no physics change (patch).
-- v1.3.2 (2026-10-01): linear-solve performance (spsolve over inv), no algorithm change (patch).
-- v1.3.3 (2026-10-01): opt-in vectorised GK21 quadrature (PIE_FAST_QUAD, default off, patch).
-- v1.4.0 (2026-10-02): robust-runner feature, src/ import narrowing (items 9, 22), 
-  test-coverage/doc hardening (items 23, 18, 25).
-- v1.5.0 (2026-10-02): Python 3.10 -> 3.12 + current dependency pins (major dep bump), `uv`-managed venv the one supported environment.
-- v1.5.1 (2026-10-03): `PIE_FAST_QUAD` (GK21 quadrature) defaults ON.
-- v1.6.0 (2026-10-03, this release): `src/` renamed to the installable `pie/`
-  package (item 28e, Breaking on setup/import-path/run-recipe axes but shipped
-  as a minor bump under the standing owner grant for v1.x releases); `util/`
-  split (`util/plot/`, `util/run/`, item 28) closed out; `summaryPlot.py`
-  NameError/typo bugs and `robust_runner.py` lock-race/silent-fallback fixes
-  (items 24, 26); `meltingDataFromFile` no-op `np.sort` skip (item 27 partial).
-  Collapses what were drafted across PRs #52-#59 as three separate entries
-  (v1.6.0/v1.6.1/v1.6.2) into this one tag, the only one actually cut — see
-  CHANGELOG.md for the per-change breakdown (Breaking/Fixed/Performance).
-- v1.6.1 (2026-10-04): patch, full release ceremony (owner-requested, not the
-  lighter patch cadence). Board item 30 (`pie/shootp.py` non-finite ICB
-  density now raises `SolverError` code 7 instead of an uncaught `ValueError`
-  that killed the whole sweep; `pie/robust_runner.py::run_one_job` counts csv
-  rows whenever the file exists, not only on `returncode == 0`) plus item 29a
-  (stale-lock reclaim race fix, landed after v1.6.0 but not yet changelogged).
-  No API/behaviour-breaking change, no numerical-output change.
+Git tags are the version source of truth, `CHANGELOG.md` the per-release
+change list (`PROJECT_RULES.md` rule 1a). Fixed points worth knowing:
+v1.0.5 (`683a51d`) is the code archived with Dunnigan et al. 2026 (Zenodo
+10.5281/zenodo.16929504); v1.1.0 is the first tested baseline with `src/`
+byte-identical to v1.0.5; v1.0.2/v1.0.3 were zipped externally but never
+tagged, so don't tag them. Breaking path changes shipped as minor bumps
+under the standing owner grant for v1.x (v1.6.0 `src/`->`pie/`, v1.7.0
+root layout).
 
 ## Known correctness caveats
 
 - `pie/coreEos.py`'s `get_mass_core` was missing a factor of `pi` until fixed
   at `bb37b0a` (v1.0.5, then `src/coreEos.py`) — a reminder that nothing in
-  this codebase has been tested against an independent check until `tests/`
-  lands.
+  this codebase was tested against an independent check before the test
+  suite landed (v1.1.0).
 - The S+Si (two-light-element) case now has a regression anchor: the Zenodo
   dataset (10.5281/zenodo.16459292) for Dunnigan et al. 2026 JGR Planets
   (doi:10.1029/2025JE009368), produced by this same v1.0.5 code (published

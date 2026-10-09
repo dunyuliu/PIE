@@ -135,7 +135,7 @@ tag/SHA, target end-state `docs/user/` plus a handful of files.
 **How to apply**: before adding a file under `docs/` outside `docs/user/`,
 name it in the allowlist test's own list first, or don't add it — put run
 output in `results/` (gitignored, rule 1) and cite the run by its SHA/tag
-instead. The allowlist test (board item, not yet written) must assert:
+instead. The allowlist test (`tests/contract/test_docs_lean.py`) asserts:
 (1) every tracked path under `docs/` is either under `docs/user/**` or
 matches one of a named, explicit set of filenames/patterns kept in the
 test itself, so an addition is a reviewable one-line diff to that list,
@@ -185,15 +185,12 @@ the same way while rewriting this list for board item 39's root-layout moves
 (`testsys/`->`tests/`, `util/`->`scripts/`, `historical_versions/`+
 `update_log` removed); it is included above for the same reason.
 
-**How to apply**: a contract-tier test (`tests/contract/`, not yet
-written) implements checks 1 and 2 as hard assertions and check 3 as a
-printed, non-asserting report. Until that test exists, this rule's checks
-1 and 2 are run by hand before a release (rule 13) and check 3 is run
-whenever the board's tidy item is re-checked.
+**How to apply**: `tests/contract/test_root_layout_whitelist.py` implements
+checks 1 and 2 as hard assertions. Check 3 has no test; run it by hand
+(the three commands above) whenever the board's tidy item is re-checked.
 
-**Tier**: checks 1 and 2 are mechanical once the test lands; check 3 is
-mechanical-but-advisory by design (no pass/fail, only a list). No test
-exists yet — see `PATHWAY_FORWARD.md`'s root-layout item.
+**Tier**: checks 1 and 2 are mechanical; check 3 is mechanical-but-advisory
+by design (no pass/fail, only a list).
 
 ---
 
