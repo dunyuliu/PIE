@@ -17,9 +17,11 @@ Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff`
   -- 0 newly rejected, 0 changed values on a still-converged row; S/S+Si
   control, 40 compositions / 1,597 rows -- 0 diffs. Both counts
   independently re-derived from raw per-run csv/provenance data (separate
-  comparison script) -- confirmed, exact match; none of the S/S+Si control
-  rows changed, so the paper's figure population (Dunnigan et al. 2026)
-  is unaffected. A code-diff audit of the rename found no reachable
+  comparison script) -- confirmed, exact match. The paper's figure
+  population (Dunnigan et al. 2026, S+Si) contains none of the 1,502
+  published Si-only rows that fail the bounds (item 36, audited); the
+  40-composition S/S+Si control showed 0 diffs. A code-diff audit of the
+  rename found no reachable
   defects (7/7 alias-precedence branches verified, csv column confirmed
   non-tautological, the by-design `SI_ABOVE_LIQUIDUS_MAX` stop condition
   confirmed still re-raised as-is, not mis-wrapped as a box rejection).
@@ -28,8 +30,11 @@ Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff`
   changes for any run that previously relied on the opt-in flag's absence
   (an impossible converged model is now recorded as a failure instead of
   saved); not breaking for any run already setting the flag explicitly
-  under either name. Gate: fresh `tests/run.py` (fast tiers) on the PR
-  head SHA -- 320 passed, 15 skipped, 3 xfailed, 0 failed.
+  under either name. No such case was observed on either measured sample
+  (Si-only or S/S+Si control) -- the breaking risk is on untested
+  compositions, not a demonstrated output change. Gate: fresh
+  `tests/run.py` (fast tiers) on the PR head SHA -- 320 passed, 15
+  skipped, 3 xfailed, 0 failed.
 * v1.7.1; 20261008; patch, held-back fixes from the v1.7.0 release split
   (`PATHWAY_FORWARD.md` item 41, owner "Go" 2026-10-07): item 36 (PR #128,
   squash `b5c7131`) -- opt-in `PIE_BOX_CHECK_FINAL` env var (default
