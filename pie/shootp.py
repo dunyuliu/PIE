@@ -13,6 +13,7 @@ Modified by dliu since 03/31/2022.dliu.
 import numpy as np
 import os
 import time
+import warnings
 import scipy
 from . import coreEos as eos
 from scipy.sparse import csc_matrix
@@ -303,14 +304,63 @@ ALPHA_MIN   = 1.e-3    # line search: smallest step fraction tried before giving
 GROWTH_MAX  = 100.0    # line search: reject a trial whose |f| grows by more than this factor
 COND_MAX    = 1.e12    # robust singular-Jacobian test replacing the exact det(J)==0 float compare
 
-# Opt-in box-check on x0 and on the final returned iterate: box_fun runs on
-# every line-search trial but not on x0 or on the converged_now fast-path
-# return. Default off (unset/"0") is the exact pre-fix code path; measured
-# NOT bit-identical when enabled, so it stays opt-in -- see board item 36.
-# Whitelist, not blacklist (item 40c): only a recognised truthy spelling
-# turns the check on, so an unrecognised value (a typo, e.g. "Ture") is
-# treated the same as unset -- off -- rather than silently enabling it.
-PIE_BOX_CHECK_FINAL = os.environ.get("PIE_BOX_CHECK_FINAL", "0").strip().lower() in ("1", "true", "yes", "on")
+# Box-check on x0 and on the final returned iterate: box_fun runs on every
+# line-search trial but not on x0 or on the converged_now fast-path return
+# unless this is enabled. Default ON since v1.8.0 (board item 36/40c/owner
+# decision 2026-10-09): a converged iterate outside the admissible box
+# (Mercury model: non-finite residual, rcmb <= ricb, chi_li_icb above the
+# eutectic/Si cap) is now recorded as a failure instead of saved. Measured
+# NOT bit-identical with the check on (board item 36: 1,502/474,075
+# published converged rows, all Si-only, newly rejected on a read-only
+# column check -- see board item 40c's follow-on re-solve measurement for
+# the real, cascading knock-on count across whole sweeps).
+#
+# Env var: PIE_CHECK_SOLUTION_BOUNDS (new name). PIE_BOX_CHECK_FINAL (old
+# name, v1.7.1) is a deprecated alias, kept for exact backward
+# compatibility with anyone still setting only the old var.
+#
+# Precedence, in order:
+#   1. PIE_CHECK_SOLUTION_BOUNDS set (any value, including both set):
+#      whitelist-FALSY (item 40c's whitelist-not-blacklist convention,
+#      inverted for the new default-ON direction): effective = NOT(value
+#      in {"0","false","no","off"}). Only a recognised falsy spelling turns
+#      it off; an unrecognised value (e.g. a typo) stays ON -- safe-by-
+#      default, matching the physical intent (an unparseable override
+#      should not silently disable the check). PIE_CHECK_SOLUTION_BOUNDS=0
+#      restores the exact v1.7.1 default (off) code path bit-identically.
+#   2. Else PIE_BOX_CHECK_FINAL set (old name, new name absent): a
+#      DeprecationWarning fires once, and the OLD truthy-whitelist
+#      semantics apply unchanged ({"1","true","yes","on"} -> on, else
+#      off) -- exact v1.7.1 opt-in behaviour for anyone still using only
+#      the old var.
+#   3. Neither set: default ON.
+# Choice made (not in the literal brief, documented here per instructions):
+# the deprecation warning fires ONLY in branch 2, i.e. when the new var is
+# ABSENT and the old var is overridden by it when both are set, the old
+# var's mere presence is not warned about -- its value is irrelevant to
+# the outcome in that case (new name always wins), so a warning there
+# would flag a no-op rather than something the caller needs to fix.
+_PIE_CHECK_SOLUTION_BOUNDS_FALSY  = ("0", "false", "no", "off")
+_PIE_BOX_CHECK_FINAL_TRUTHY       = ("1", "true", "yes", "on")
+
+
+def _resolve_check_solution_bounds():
+    new_val = os.environ.get("PIE_CHECK_SOLUTION_BOUNDS")
+    if new_val is not None:
+        return new_val.strip().lower() not in _PIE_CHECK_SOLUTION_BOUNDS_FALSY
+    old_val = os.environ.get("PIE_BOX_CHECK_FINAL")
+    if old_val is not None:
+        warnings.warn(
+            "PIE_BOX_CHECK_FINAL is deprecated; set PIE_CHECK_SOLUTION_BOUNDS "
+            "instead (same opt-out value '0' now restores the pre-v1.8.0 "
+            "default-off behaviour; PIE_CHECK_SOLUTION_BOUNDS now defaults "
+            "ON when neither var is set).",
+            DeprecationWarning, stacklevel=2)
+        return old_val.strip().lower() in _PIE_BOX_CHECK_FINAL_TRUTHY
+    return True
+
+
+PIE_CHECK_SOLUTION_BOUNDS = _resolve_check_solution_bounds()
 
 
 def _box_check_or_fail(label, xv, trial_fun, box_fun, fail_fn, log_fn):
@@ -510,7 +560,7 @@ def mynewtonSys(Jfun,x0,varargin,
         ctx.update({'k': k, 'v': np.asarray(x).tolist(), 'newton_history': history})
         raise SolverError(code, msg, context=ctx)
 
-    if PIE_BOX_CHECK_FINAL and box_fun is not None and trial_fun is not None:
+    if PIE_CHECK_SOLUTION_BOUNDS and box_fun is not None and trial_fun is not None:
         _box_check_or_fail('x0', x0, trial_fun, box_fun, _fail, _flush_log)
 
     while k <= maxit:
@@ -590,7 +640,7 @@ def mynewtonSys(Jfun,x0,varargin,
           end = time.time()
           print(k,normf,normdx,alpha,end-start)
       if converged_now:
-          if PIE_BOX_CHECK_FINAL and box_fun is not None and trial_fun is not None:
+          if PIE_CHECK_SOLUTION_BOUNDS and box_fun is not None and trial_fun is not None:
               _box_check_or_fail('converged iterate', x, trial_fun, box_fun, _fail, _flush_log)
           _flush_log(ErrorCode.CONVERGED)
           return x

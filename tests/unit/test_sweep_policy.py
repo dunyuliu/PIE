@@ -127,10 +127,33 @@ def test_failure_row_has_nan_physics_and_new_columns(sys_argv_p, tmp_path):
     assert float(r["ricb"]) == 50010.0 and float(r["error_code"]) == 1.0
     assert r["start"] == "cold" and int(float(r["newton_iters"])) == 13 and float(r["resid_norm"]) == 0.0123
     for c in driverp.presentday_columns:
-        if c in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm"):
+        if c in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm", "check_solution_bounds_enabled"):
             continue
         assert math.isnan(float(r[c])), f"{c} should be NaN on a failed radius, got {r[c]!r}"
     assert not list(tmp_path.glob("*.h5"))
+
+
+def test_failure_row_check_solution_bounds_enabled_reflects_actual_flag(sys_argv_p, tmp_path, monkeypatch):
+    """item 40c: check_solution_bounds_enabled must be read off the module
+    attribute the solver actually consumes (driverp.lc.PIE_CHECK_SOLUTION_BOUNDS,
+    i.e. shootp.PIE_CHECK_SOLUTION_BOUNDS) at write time, not a literal baked
+    into write_failure_row -- flip the attribute both ways in the same test
+    process and assert the csv column follows it, so a hardcoded True/False
+    (the item-23a tautology-bug class) would fail this test either way."""
+    driverp = import_src("driverp")
+    _redirect_outputs(driverp, tmp_path)
+    driverp.lc.last_solve_info.clear()
+    driverp.lc.last_solve_info.update({"status": 1, "n_iterations": 1, "normf_last": 1.0})
+
+    monkeypatch.setattr(driverp.lc, "PIE_CHECK_SOLUTION_BOUNDS", True)
+    driverp.write_failure_row(1.0, driverp.ErrorCode.NEWTON_MAXIT, "cold")
+    monkeypatch.setattr(driverp.lc, "PIE_CHECK_SOLUTION_BOUNDS", False)
+    driverp.write_failure_row(2.0, driverp.ErrorCode.NEWTON_MAXIT, "cold")
+
+    rows = list(csv.DictReader(open(tmp_path / driverp.pMetaDataFileName)))
+    assert len(rows) == 2
+    assert rows[0]["check_solution_bounds_enabled"] == "True"
+    assert rows[1]["check_solution_bounds_enabled"] == "False"
 
 
 def test_sweep_continues_after_failure_and_never_starts_from_a_failed_radius(sys_argv_p, tmp_path, monkeypatch):

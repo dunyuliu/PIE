@@ -113,8 +113,17 @@ def test_trial_solvererror_is_a_rejection_except_by_design_si_stop(shootp, globa
             raise shootp.SolverError(globalvar.ErrorCode.NONFINITE_SHOOT, "nan in shoot")
         return np.array([x[0] - 0.3]), []
     box = lambda x, f, fout: (True, None, "")
-    x = shootp.mynewtonSys("toy_overshoot", [0.0], [], xtol=1e-12, ftol=1e-12, maxit=20,
-                           trial_fun=trial, box_fun=box)
+    # This test is about the line-search trial/rejection contract, not the
+    # x0/final-iterate box check (board items 36/40c) -- isolate from it
+    # (default ON since v1.8.0) so `calls` records only line-search trials,
+    # not an extra x0 probe.
+    saved = shootp.PIE_CHECK_SOLUTION_BOUNDS
+    shootp.PIE_CHECK_SOLUTION_BOUNDS = False
+    try:
+        x = shootp.mynewtonSys("toy_overshoot", [0.0], [], xtol=1e-12, ftol=1e-12, maxit=20,
+                               trial_fun=trial, box_fun=box)
+    finally:
+        shootp.PIE_CHECK_SOLUTION_BOUNDS = saved
     assert x[0] == pytest.approx(0.3, abs=1e-12)
     assert calls[:3] == pytest.approx([1.2, 0.6, 0.3])
 
@@ -137,19 +146,32 @@ def test_converging_final_step_is_returned_before_any_trial(shootp):
     def trial(x):
         called.append(x[0]); return np.array([x[0] - 1.0]), []
     box = lambda x, f, fout: (False, None, "would reject everything")
-    x = shootp.mynewtonSys("toy_lin1", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
-                           trial_fun=trial, box_fun=box)
+    # Isolate from the x0/final-iterate box check (default ON since v1.8.0,
+    # board items 36/40c): `box` here rejects everything by design, which
+    # would otherwise reject x0 itself before the Newton loop even starts --
+    # this test is about the converged-fast-path/trial-evaluation order
+    # invariant, not that feature.
+    saved = shootp.PIE_CHECK_SOLUTION_BOUNDS
+    shootp.PIE_CHECK_SOLUTION_BOUNDS = False
+    try:
+        x = shootp.mynewtonSys("toy_lin1", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+                               trial_fun=trial, box_fun=box)
+    finally:
+        shootp.PIE_CHECK_SOLUTION_BOUNDS = saved
     assert x[0] == pytest.approx(1.0, abs=1e-15)
     assert called == []
 
 
 # ---------------------------------------------------------------------
-# Board item 36: opt-in box-check on the returned iterate and on x0
-# (PIE_BOX_CHECK_FINAL, default off -- see shootp.py's module docstring
-# next to the flag for the measured 2026-10-07 count: 1,502/474,075
-# published converged rows, all Si-only, would be newly rejected).
+# Board items 36/40c: box-check on the returned iterate and on x0.
+# PIE_CHECK_SOLUTION_BOUNDS defaults ON since v1.8.0 (owner decision
+# 2026-10-09); PIE_BOX_CHECK_FINAL is the deprecated v1.7.1 alias, kept
+# for exact backward compatibility. See shootp.py's module docstring next
+# to shootp._resolve_check_solution_bounds for the full precedence rules
+# and the measured 2026-10-07 count (1,502/474,075 published converged
+# rows, all Si-only, newly rejected by a read-only column check).
 # ---------------------------------------------------------------------
-def test_final_iterate_box_check_default_off_then_opt_in(shootp, globalvar):
+def test_final_iterate_box_check_default_on_then_opt_out(shootp, globalvar):
     def jf(x, varargin):
         return np.array([[1.0]]), np.array([x[0] - 1.0])
     shootp.toy_lin_box36 = jf
@@ -158,25 +180,27 @@ def test_final_iterate_box_check_default_off_then_opt_in(shootp, globalvar):
         return np.array([x[0] - 1.0]), []
     box = lambda x, f, fout: (False, globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX, "always rejects")
 
-    assert shootp.PIE_BOX_CHECK_FINAL is False
-    # default: a box that rejects everything still lets the converged
-    # iterate through unchanged -- bit-identical to pre-item-36 behaviour.
-    x = shootp.mynewtonSys("toy_lin_box36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+    assert shootp.PIE_CHECK_SOLUTION_BOUNDS is True
+    # default (v1.8.0): a box that rejects everything rejects the converged
+    # iterate too -- it is no longer waved through unchecked.
+    with pytest.raises(shootp.SolverError) as ei:
+        shootp.mynewtonSys("toy_lin_box36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
                            trial_fun=trial, box_fun=box)
-    assert x[0] == pytest.approx(1.0, abs=1e-15)
+    assert ei.value.error_code == globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
+    assert ei.value.context.get("box_check_final") is True
 
-    shootp.PIE_BOX_CHECK_FINAL = True
+    # opt-out (exact pre-v1.8.0 default-off code path): the converged
+    # iterate is returned unchecked again, bit-identical to v1.7.1 default.
+    shootp.PIE_CHECK_SOLUTION_BOUNDS = False
     try:
-        with pytest.raises(shootp.SolverError) as ei:
-            shootp.mynewtonSys("toy_lin_box36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+        x = shootp.mynewtonSys("toy_lin_box36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
                                trial_fun=trial, box_fun=box)
-        assert ei.value.error_code == globalvar.ErrorCode.CHI_OUTSIDE_ADMISSIBLE_BOX
-        assert ei.value.context.get("box_check_final") is True
+        assert x[0] == pytest.approx(1.0, abs=1e-15)
     finally:
-        shootp.PIE_BOX_CHECK_FINAL = False
+        shootp.PIE_CHECK_SOLUTION_BOUNDS = True
 
 
-def test_x0_box_check_default_off_then_opt_in(shootp, globalvar):
+def test_x0_box_check_default_on_then_opt_out(shootp, globalvar):
     def jf(x, varargin):
         return np.array([[1.0]]), np.array([x[0] - 1.0])
     shootp.toy_lin_x0_36 = jf
@@ -185,22 +209,25 @@ def test_x0_box_check_default_off_then_opt_in(shootp, globalvar):
         return np.array([x[0] - 1.0]), []
     box = lambda x, f, fout: (False, globalvar.ErrorCode.RICB_GE_RCMB, "x0 outside box")
 
-    assert shootp.PIE_BOX_CHECK_FINAL is False
-    # default: x0 is never box-checked -- the solve proceeds and converges
-    # normally even though box_fun would reject x0 itself.
-    x = shootp.mynewtonSys("toy_lin_x0_36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+    assert shootp.PIE_CHECK_SOLUTION_BOUNDS is True
+    # default (v1.8.0): x0 is box-checked and rejected before the Newton
+    # loop ever starts.
+    with pytest.raises(shootp.SolverError) as ei:
+        shootp.mynewtonSys("toy_lin_x0_36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
                            trial_fun=trial, box_fun=box)
-    assert x[0] == pytest.approx(1.0, abs=1e-15)
+    assert ei.value.error_code == globalvar.ErrorCode.RICB_GE_RCMB
+    assert ei.value.context.get("box_check_final") is True
 
-    shootp.PIE_BOX_CHECK_FINAL = True
+    # opt-out: x0 is never box-checked -- the solve proceeds and converges
+    # normally even though box_fun would reject x0 itself (exact pre-v1.8.0
+    # default-off code path).
+    shootp.PIE_CHECK_SOLUTION_BOUNDS = False
     try:
-        with pytest.raises(shootp.SolverError) as ei:
-            shootp.mynewtonSys("toy_lin_x0_36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
+        x = shootp.mynewtonSys("toy_lin_x0_36", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
                                trial_fun=trial, box_fun=box)
-        assert ei.value.error_code == globalvar.ErrorCode.RICB_GE_RCMB
-        assert ei.value.context.get("box_check_final") is True
+        assert x[0] == pytest.approx(1.0, abs=1e-15)
     finally:
-        shootp.PIE_BOX_CHECK_FINAL = False
+        shootp.PIE_CHECK_SOLUTION_BOUNDS = True
 
 
 def test_box_check_final_reraises_si_above_liquidus_max_as_is(shootp, globalvar):
@@ -208,7 +235,9 @@ def test_box_check_final_reraises_si_above_liquidus_max_as_is(shootp, globalvar)
     # must not swallow the by-design SI_ABOVE_LIQUIDUS_MAX stop condition
     # and rewrap it as a box rejection -- it must propagate unchanged,
     # same contract test_trial_solvererror_is_a_rejection_except_by_design_si_stop
-    # already locks for the line-search path.
+    # already locks for the line-search path. Default is already ON
+    # (v1.8.0); exercised explicitly anyway so this test does not silently
+    # depend on the module default.
     def jf(x, varargin):
         return np.array([[1.0]]), np.array([x[0] - 1.0])
     shootp.toy_lin_box36_si = jf
@@ -217,7 +246,8 @@ def test_box_check_final_reraises_si_above_liquidus_max_as_is(shootp, globalvar)
         raise shootp.SolverError(globalvar.ErrorCode.SI_ABOVE_LIQUIDUS_MAX, "by design")
     box = lambda x, f, fout: (True, None, "")
 
-    shootp.PIE_BOX_CHECK_FINAL = True
+    saved = shootp.PIE_CHECK_SOLUTION_BOUNDS
+    shootp.PIE_CHECK_SOLUTION_BOUNDS = True
     try:
         with pytest.raises(shootp.SolverError) as ei:
             shootp.mynewtonSys("toy_lin_box36_si", [1.0 + 1e-9], [], xtol=1e-12, ftol=1e-6, maxit=5,
@@ -227,7 +257,85 @@ def test_box_check_final_reraises_si_above_liquidus_max_as_is(shootp, globalvar)
         assert ei.value.message == "by design"
         assert "box_check_final" not in ei.value.context
     finally:
-        shootp.PIE_BOX_CHECK_FINAL = False
+        shootp.PIE_CHECK_SOLUTION_BOUNDS = saved
+
+
+# ---------------------------------------------------------------------
+# Board item 40c: PIE_CHECK_SOLUTION_BOUNDS / PIE_BOX_CHECK_FINAL env-var
+# resolution -- new name, precedence, deprecated-alias semantics. Mirrors
+# shootp._resolve_check_solution_bounds via a subprocess (the module-level
+# constant is resolved once at import time, so changing os.environ on an
+# already-imported module has no effect on it -- unlike the two tests
+# above, which legitimately monkeypatch the post-resolution module
+# attribute to test the *consumption* of the flag, not its *resolution*).
+# ---------------------------------------------------------------------
+import subprocess
+import sys as _sys
+
+_RESOLVE_SNIPPET = (
+    "import warnings as _w\n"
+    "with _w.catch_warnings(record=True) as caught:\n"
+    "    _w.simplefilter('always')\n"
+    "    import pie.globalvar as gv\n"
+    "    gv.parse_argv(['main.py', 'p', '0.346', '0.424', 'S', 'Edmund'])\n"
+    "    import pie.shootp as sp\n"
+    "val = sp.PIE_CHECK_SOLUTION_BOUNDS\n"
+    "kinds = [str(x.category.__name__) for x in caught if issubclass(x.category, DeprecationWarning)]\n"
+    "print(repr((val, kinds)))"
+)
+
+
+def _resolve_in_subprocess(env_overrides):
+    import os as _os
+    env = dict(_os.environ)
+    for k in ("PIE_CHECK_SOLUTION_BOUNDS", "PIE_BOX_CHECK_FINAL"):
+        env.pop(k, None)
+    env.update(env_overrides)
+    out = subprocess.run([_sys.executable, "-c", _RESOLVE_SNIPPET], env=env,
+                          capture_output=True, text=True, check=True)
+    return eval(out.stdout.strip())
+
+
+def test_env_neither_set_defaults_on():
+    val, warns = _resolve_in_subprocess({})
+    assert val is True and warns == []
+
+
+def test_env_new_var_zero_is_off_bit_identical_to_v1_7_1_default():
+    val, warns = _resolve_in_subprocess({"PIE_CHECK_SOLUTION_BOUNDS": "0"})
+    assert val is False and warns == []
+
+
+def test_env_new_var_truthy_or_garbage_stays_on():
+    for spelling in ("1", "true", "YES", "on", "Ture", "garbage", ""):
+        val, warns = _resolve_in_subprocess({"PIE_CHECK_SOLUTION_BOUNDS": spelling})
+        assert val is True and warns == [], f"spelling={spelling!r}"
+
+
+def test_env_old_var_alone_truthy_is_on_and_warns():
+    val, warns = _resolve_in_subprocess({"PIE_BOX_CHECK_FINAL": "1"})
+    assert val is True and warns == ["DeprecationWarning"]
+
+
+def test_env_old_var_alone_falsy_is_off_and_warns():
+    val, warns = _resolve_in_subprocess({"PIE_BOX_CHECK_FINAL": "0"})
+    assert val is False and warns == ["DeprecationWarning"]
+
+
+def test_env_old_var_alone_garbage_is_off_old_semantics_and_warns():
+    # Old truthy-whitelist semantics (v1.7.1): only a recognised truthy
+    # spelling turns it ON; anything else, including a typo, is OFF --
+    # the OPPOSITE direction from the new var's whitelist-falsy default-ON
+    # semantics. Preserved unchanged for exact backward compatibility.
+    val, warns = _resolve_in_subprocess({"PIE_BOX_CHECK_FINAL": "Ture"})
+    assert val is False and warns == ["DeprecationWarning"]
+
+
+def test_env_both_set_new_wins_regardless_of_old_value():
+    val, warns = _resolve_in_subprocess({"PIE_CHECK_SOLUTION_BOUNDS": "1", "PIE_BOX_CHECK_FINAL": "0"})
+    assert val is True and warns == []
+    val, warns = _resolve_in_subprocess({"PIE_CHECK_SOLUTION_BOUNDS": "0", "PIE_BOX_CHECK_FINAL": "1"})
+    assert val is False and warns == []
 
 
 # ---------------------------------------------------------------------

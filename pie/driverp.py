@@ -96,6 +96,7 @@ def write_failure_row(rs_k, code, start):
     row['start'] = start if start is not None else ''
     row['newton_iters'] = int(lc.last_solve_info.get('n_iterations', -1))
     row['resid_norm'] = float(lc.last_solve_info.get('normf_last', np.nan))
+    row['check_solution_bounds_enabled'] = bool(lc.PIE_CHECK_SOLUTION_BOUNDS)
     with open(csvfiles_path + pMetaDataFileName, 'a') as csvMetaData:
         csv.writer(csvMetaData).writerow([row[c] for c in presentday_columns])
 
@@ -330,7 +331,13 @@ def driverp(param, rs):
                            'core_mass': [core_mass], 'chi_li_icb': [chi_li_icb], 'error_code':error_code[k],
                            # v1.3.0 columns: which start converged, Newton iterations, final ||f|| at the returned v
                            'start': [start], 'newton_iters': [int(lc.last_solve_info.get('n_iterations', -1))],
-                           'resid_norm': [float(np.linalg.norm(f))]})
+                           'resid_norm': [float(np.linalg.norm(f))],
+                           # v1.8.0 (item 40c): effective PIE_CHECK_SOLUTION_BOUNDS/
+                           # PIE_BOX_CHECK_FINAL setting this run resolved to --
+                           # read from shootp's own env resolution (lc.PIE_CHECK_SOLUTION_BOUNDS),
+                           # never a literal, so the column can't go stale if the
+                           # resolution logic changes.
+                           'check_solution_bounds_enabled': [bool(lc.PIE_CHECK_SOLUTION_BOUNDS)]})
         # append dataframe to csv containing present day model data for contour plot -- added 6/30/2022
         csvMetaData = open(csvfiles_path + pMetaDataFileName, 'a')
         writer = csv.writer(csvMetaData)

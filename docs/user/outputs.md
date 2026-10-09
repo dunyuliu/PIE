@@ -12,17 +12,23 @@ Columns (`pie/globalvar.py`'s `presentday_columns`):
 
 `chi_Si_icb, rhom, mass, moi, cmc, Picb, Tcmb, isnow, isnowcmb, chi_li_in,
 chi_S_bulk, Pcmb, chi_li_eut_icb, chi_li_eut_cmb, ricb, rcmb, core_mass,
-chi_li_icb, error_code, start, newton_iters, resid_norm`
+chi_li_icb, error_code, start, newton_iters, resid_norm,
+check_solution_bounds_enabled`
 
 A **converged** row (`error_code == 0`) has every physical column filled
 and a corresponding `.h5` profile file (below). A **failed** row has
-`ricb`, `chi_Si_icb`, `error_code`, `start`, `newton_iters`, and
-`resid_norm` set, every physical column `NaN`, and no `.h5` file. Consumers
-must filter to converged rows before using the physical columns, e.g.
-`df[df.error_code == 0]` -- the project's own plotting scripts do this.
-`start` records which initial guess converged (or was last tried):
-`warm` (from the previous converged radius) or `cold` (the generic
-initial guess, tried once if the warm start fails).
+`ricb`, `chi_Si_icb`, `error_code`, `start`, `newton_iters`,
+`resid_norm`, and `check_solution_bounds_enabled` set, every physical
+column `NaN`, and no `.h5` file. Consumers must filter to converged rows
+before using the physical columns, e.g. `df[df.error_code == 0]` -- the
+project's own plotting scripts do this. `start` records which initial
+guess converged (or was last tried): `warm` (from the previous converged
+radius) or `cold` (the generic initial guess, tried once if the warm
+start fails). `check_solution_bounds_enabled` records whether this run
+had the starting-guess/converged-answer bounds check on (see
+[Troubleshooting](troubleshooting.md#the-solver-rejects-a-converged-iterate-outside-its-physical-bounds)) --
+every row in one run carries the same value, since the setting is
+resolved once per process from the environment, not per radius.
 
 See [Troubleshooting](troubleshooting.md) for what each `error_code` means.
 

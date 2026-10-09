@@ -105,16 +105,30 @@ warm start fails and differs from the generic initial guess, one cold start
 from that guess is tried. Only code 6 (Si above the liquidus cap,
 radius-independent, by design) ends a composition, with a single row.
 
-The admissible-box test (`box_fun`) runs on every line-search trial, but the
-`converged_now` fast path returns the final iterate without re-checking it,
-and `x0` itself is never box-checked either (PATHWAY_FORWARD.md item 36).
-`PIE_BOX_CHECK_FINAL=1` (env var; also `true`/`yes`/`on`; default unset
-= off) adds both checks, raising the box's own error code if the converged
-iterate or `x0` is outside it. Off is bit-identical to pre-item-36
-behaviour. On is not: 1,502 of 474,075 converged rows (0.317%) in the
-published v1.0.5 Zenodo dataset fail the box, all Si-only with `chi_li_icb`
-above the 0.12 Si cap (audited, board item 36; none is in the paper's
-S+Si figure population). So it stays opt-in.
+The admissible-box test (`box_fun`) runs on every line-search trial, and
+(PATHWAY_FORWARD.md items 36/40c), by default, also on `x0` and on the
+`converged_now` fast path's final iterate, raising the box's own error
+code if either is outside it -- so an impossible converged model (e.g.
+`chi_li_icb` above the Si cap) is recorded as a failed row instead of
+saved as if it were physically admissible. This is
+`PIE_CHECK_SOLUTION_BOUNDS` (env var): unset, or anything other than
+`0`/`false`/`no`/`off`, means the check runs; one of those four falsy
+spellings restores the pre-item-36 behaviour (`x0`/final iterate never
+re-checked). The older name, `PIE_BOX_CHECK_FINAL`, is a deprecated
+alias honoured (with a `DeprecationWarning`) only when the new name is
+unset. 1,502 of 474,075 converged rows (0.317%) in the published v1.0.5
+Zenodo dataset fail the box, all Si-only with `chi_li_icb` above the
+0.12 Si cap (audited, board item 36; none is in the paper's S+Si figure
+population) -- that count is against the *published* csv, which already
+differs from current `main` for reasons unrelated to this flag (item 31's
+line-search/Newton changes since v1.0.5). The flag's own isolated effect
+-- same commit, same input, `PIE_CHECK_SOLUTION_BOUNDS=1` vs `=0`, diffed
+row for row -- is 0 changed rows on both the 168 originally Si-flagged
+compositions and a 40-composition S/S+Si control sample (item 40c;
+UNAUDITED pending independent re-derivation): on current `main`, the
+pre-existing per-trial line-search box check already intercepts every
+case the x0/converged-iterate check would have caught, so the default
+flip changes nothing further on either sample measured so far.
 
 ## Performance options
 
