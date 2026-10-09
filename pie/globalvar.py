@@ -17,7 +17,8 @@ max_Si_Edmund2022       = 0.12 # Maximum Si%wt for calculating liquidus temperat
 ice                     = 300 # inner core extension for plots in km.
 
 presentday_columns          = ['chi_Si_icb', 'rhom', 'mass', 'moi', 'cmc', 'Picb', 'Tcmb', 'isnow', 'isnowcmb', 'chi_li_in', 'chi_S_bulk', 'Pcmb', 'chi_li_eut_icb', 'chi_li_eut_cmb', 'ricb', 'rcmb', 'core_mass', 'chi_li_icb', 'error_code',
-                               'start', 'newton_iters', 'resid_norm']  # v1.3.0: appended (format change; see README 'Outputs and error codes')
+                               'start', 'newton_iters', 'resid_norm',
+                               'check_solution_bounds_enabled']  # v1.3.0: appended start/newton_iters/resid_norm (format change; see README 'Outputs and error codes'). v1.8.0: appended check_solution_bounds_enabled (item 40c) -- the effective PIE_CHECK_SOLUTION_BOUNDS/PIE_BOX_CHECK_FINAL setting this run resolved to, so the box-check-on-final-iterate provenance travels with the csv instead of being invisible in the output.
 contourcond                 = 'isnow'
 
 columns_radvtemp            = ['chi_Si_icb', 'present day icr', 'cmb temp', 'inner core radius', 'lb radius sz1', 'ub radius sz1', 'lb radius sz2', 'ub radius sz2', 'lb radius sz3', 'ub radius sz3', 'cmb radius']

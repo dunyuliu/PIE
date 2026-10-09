@@ -115,7 +115,7 @@ def test_nonfinite_icb_density_mid_sweep_does_not_crash_the_whole_job(sys_argv_p
         "a failed radius (error_code != 0), not CONVERGED"
     )
     for c in driverp.presentday_columns:
-        if c in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm"):
+        if c in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm", "check_solution_bounds_enabled"):
             continue
         assert math.isnan(float(first[c])), f"{c} should be NaN on the failed first radius, got {first[c]!r}"
 

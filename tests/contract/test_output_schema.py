@@ -36,7 +36,12 @@ def test_presentday_columns_matches_written_csv_header(sys_argv_p):
 
 def test_v1_3_0_columns_are_appended_not_inserted(sys_argv_p):
     globalvar = import_src("globalvar")
-    assert globalvar.presentday_columns[-3:] == ["start", "newton_iters", "resid_norm"]
+    # v1.3.0 appended start/newton_iters/resid_norm; v1.8.0 (item 40c)
+    # appended check_solution_bounds_enabled after those -- each release's
+    # new columns go on the end, never inserted earlier, so every prior
+    # column index is stable across releases.
+    assert globalvar.presentday_columns[-4:] == [
+        "start", "newton_iters", "resid_norm", "check_solution_bounds_enabled"]
     assert globalvar.presentday_columns[:19] == [
         "chi_Si_icb", "rhom", "mass", "moi", "cmc", "Picb", "Tcmb", "isnow", "isnowcmb",
         "chi_li_in", "chi_S_bulk", "Pcmb", "chi_li_eut_icb", "chi_li_eut_cmb", "ricb", "rcmb",
