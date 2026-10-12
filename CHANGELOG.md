@@ -2,6 +2,22 @@
 
 Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff` `version:` is bumped in each release PR. This file holds the per-release change list (moved from `src/VERSION` in v1.1.0; history unchanged below). Pre-v1.0.5 development notes are folded into this file's own v1.0.4-and-earlier entries below (the former `update_log` file was removed from the tree, board item 39; still retrievable via the `v1.0.0` git tag).
 
+* v1.8.1; 20261012; patch, no numerical-output change (owner decision
+  2026-10-12, "both as recommended"; `PATHWAY_FORWARD.md` items 45, 47,
+  48). Fixed: the `PIE_BOX_CHECK_FINAL` deprecated-alias warning is now a
+  `FutureWarning` -- v1.8.0 raised a `DeprecationWarning`, which Python
+  hides by default outside `__main__`, so `pie p ...` users never saw it
+  (new test runs under default warning filters; fails on the v1.8.0
+  category). Fixed: `docs/user/troubleshooting.md` now lists the
+  bounds-check failure codes as `error_code` 3, 4, 5 or 7 (was 4 or 5);
+  stale `pie/shootp.py` comments rewritten to the measured v1.8.0 result.
+  Removed: `pie/miscellaneous.py`, a self-described unused module with
+  zero references anywhere in the tree (still in `v1.8.0`). Changed:
+  personal and agent-persona names in tracked docs, tests and the board
+  replaced with roles; new `tests/contract/test_no_personal_names.py`
+  guards it (literature citations, `CITATION.cff` authorship and LICENSE
+  are exempt). Records the v1.8.0 post-release code audit (4 findings,
+  none blocking; item 47).
 * v1.8.0; 20261009; minor, default-output-changing (owner decision,
   `PATHWAY_FORWARD.md` item 44): `pie/shootp.py`'s `PIE_BOX_CHECK_FINAL`
   env var (opt-in, default off, v1.7.1) renamed to
