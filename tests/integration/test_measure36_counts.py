@@ -7,7 +7,7 @@ Context: `docs/dev/notes/item18_quantify_2026-10-01.md` and
 `docs/dev/notes/solver_v1.3.0_measurement/measure36_results_2026-10-01.md`
 both quote a set of headline counts off this JSON (37 affected-composition
 cases, continue-policy Newton-solve sweeps beyond each case's published
-v1.2.0 stop radius). A priya-nair audit (2026-10-02) found a real
+v1.2.0 stop radius). An independent re-derivation (2026-10-02) found a real
 arithmetic error in the doc's hand-rolled per-composition admissible-row
 table (one case undercounted) that nothing mechanical had caught -- the
 doc's numbers were typed by hand from eyeballing the JSON, not computed by

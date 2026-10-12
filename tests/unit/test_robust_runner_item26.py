@@ -1,5 +1,5 @@
 """Regression tests for PATHWAY_FORWARD.md item 26's three findings in
-pie/robust_runner.py (lars-eriksson diagnosis, fixed here):
+pie/robust_runner.py (code audit diagnosis, fixed here):
 
   (a) done-check/job-run race: two overlapping runs could both pass
       `already_done` (sentinel not written yet) and both launch

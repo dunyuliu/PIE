@@ -1,5 +1,5 @@
 """Regression tests for scripts/plot/summaryPlot.py (PATHWAY_FORWARD.md item 24,
-diagnosed by lars-eriksson, fixed here): three bugs that raised/would raise
+diagnosed by a code audit, fixed here): three bugs that raised/would raise
 NameError the moment the relevant code path ran, because this file is a
 flat top-level script (no functions), so every line executes unconditionally
 (or on whichever branch contourcond takes) the moment it is imported/run:

@@ -14,7 +14,7 @@ would just be re-testing scipy's own LSODA implementation, not PIE's
 code. `odeRK4_snow`'s step count (`nc`, hard-coded to 51 inside
 `src/shootp.py::shoot_mercmodel`, not exposed as a parameter anywhere
 upstream -- PATHWAY_FORWARD.md gap, flagged in this session's report for
-kai-fischer/refactor, NOT fixed here per the no-src-edits constraint) IS
+a refactor pass, NOT fixed here per the no-src-edits constraint) IS
 a parameter of `odeRK4_snow` itself (`h`, hence `nc` via
 `h=(rcmb-ricb)/(nc-1)`), so this test calls that PRODUCTION function
 directly at nc in {51, 101, 201} (h, h/2, h/4) with REAL boundary
@@ -33,7 +33,7 @@ this case) does an internal `scipy.optimize.root(..., tol=1e-6)` nonlinear
 solve, which caps the ACHIEVABLE precision of every RK stage's
 density/Gruneisen feedback at ~1e-6-2e-6 regardless of h (a hard-coded
 tolerance, not tied to the RK step size -- flagged as a blocker for
-kai-fischer/lars-eriksson: a textbook order-4 regression gate at the
+a refactor pass/code audit: a textbook order-4 regression gate at the
 production resolution (nc>=51) is not possible without exposing/tightening
 that tolerance, which is a src/ edit, out of this session's scope). At
 nc=51 the true RK4 truncation error is ALREADY below that floor (measured:

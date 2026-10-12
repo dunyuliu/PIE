@@ -48,7 +48,7 @@ def test_planet_edmund_vs_steinbruegge_select_different_liquidus(sys_argv_p):
         "code_mode == 'p':` branch above it at line 62) -- calling "
         "planet('e', ...) always raises NameError, so the evolution-model "
         "branch of planet() is unreachable dead code. Report: "
-        "lars-eriksson/kai-fischer."
+        "code audit/refactor pass."
     ))
 def test_planet_evolution_mode_would_ideally_work(sys_argv_p):
     planet_input = import_src("planet_input", CMR2=0.346, CMC=0.424,

@@ -247,8 +247,8 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    MC cases and ~1/18 sampled published-wide cases. Not a bug in the
    sense of giving a wrong physical answer (both "2" and "3" describe
    the same deep-snow state, with or without an additional marginal
-   layers flag) but IS a fragile classification boundary -- worth
-   `lars-eriksson` knowing the `1e-8` epsilon is not attainable-in-practice
+   layers flag) but IS a fragile classification boundary -- worth the
+   code audit knowing the `1e-8` epsilon is not attainable-in-practice
    precision for a value computed via `xtol=ftol=1e-6`. Handled in
    `test_mc_wide_parity.py`/`test_published_wide_sweep.py` by accepting
    `{2, 3}` as equivalent ONLY for `isnow`, ONLY when comparing a
@@ -316,7 +316,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    (`tests/integration/test_wide_self_consistency.py` and
    `tests/e2e/test_wide_full_sweep.py` assert it keeps failing to
    converge, so a change in that behaviour either way is visible), not
-   silently absorbed. Worth a human/`lars-eriksson` look to determine
+   silently absorbed. Worth a human/code-audit look to determine
    which (physical non-solution vs. solvable-with-a-better-guess).
 7. **Two conflicting matplotlib installs** on `/usr/bin/python3`'s
    default `sys.path` (see "Environment" above) make `main.py`,
@@ -338,7 +338,7 @@ ricb); the committed `recovered_rows_v1_3_0.json` is reproduced.
    harmless**: every real call site starts integration at `r[0] =
    0.0001/a` (a few tens of microns), so this term is ~1e-12 relative to
    the total and vanishes in any tolerance this suite uses. Flagged for
-   `lars-eriksson`/`kai-fischer`; not made into a failing regression test
+   a code audit/refactor pass; not made into a failing regression test
    because it flags zero cases in the real corpus (every actual call
    site has `r[0]≈0`) -- see the audit principle in this suite's design
    brief: a check that fires on a scenario absent from real data is not

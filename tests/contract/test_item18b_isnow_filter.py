@@ -1,6 +1,6 @@
 """Regression lock for PATHWAY_FORWARD.md item 32 / item 18(b)'s
 missing-test gap: "no regression test locks the isnow in {1,3} predicate
-or the stratified totals -- routed to iris-vermeulen, not yet dispatched."
+or the stratified totals -- routed to the test architect, not yet dispatched."
 
 Source of truth: `docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/
 analyze.py` (the live predicate, parsed from its own source -- not a
@@ -58,8 +58,8 @@ PUBLISHED_TOTALS = {
 
 # Stratified Horvitz-Thompson point estimate ("A") of the recovered-row
 # addition, full ricb range -- note section 2 table's "+recovered (full
-# range)" column, cross-checked exact (to float precision) against
-# marta-silva's independently-computed population totals per the board
+# range)" column, cross-checked exact (to float precision) against the
+# figure-comparison audit's independently-computed population totals per the board
 # row (+7,357 / +9,349 for the "all" category).
 RECOVERED_FULL_A = {
     ("margot", "all"): 7357.197094949665, ("genova", "all"): 9349.24623928014,

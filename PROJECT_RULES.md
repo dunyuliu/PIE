@@ -551,8 +551,8 @@ the wrong thing; verifying its arithmetic gives false confidence that the
 headline is right.
 
 **Incident (2026-10-04)**: item 31's pilot (PR #79) verifier omitted
-`pie/driverp.py:287-288`'s post-convergence `chi>=0` check; lars-eriksson's
-and priya-nair's audits passed the verifier's fidelity and count arithmetic
+`pie/driverp.py:287-288`'s post-convergence `chi>=0` check; the code audit's
+and independent re-derivation's audits passed the verifier's fidelity and count arithmetic
 without noticing it was missing a production check entirely — the headline
 reversed from "HEAD-over-constrains" to "undetermined" once caught. Days
 later, item 31c (PR #85) ran its `sort_models` filter check against HEAD's
