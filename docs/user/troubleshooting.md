@@ -54,7 +54,7 @@ ricb`, `chi_li_icb` at or below the eutectic/Si cap -- via the bounded
 line search. By default, it now also checks its *starting guess* and its
 *converged answer* against those same limits, so an impossible converged
 model (e.g. `chi_li_icb` above the Edmund Si cap of 0.12) is recorded as
-a failed row (`error_code` 4 or 5, see above) instead of being silently
+a failed row (`error_code` 3, 4, 5 or 7, see above) instead of being silently
 saved as if it were physically admissible.
 
 This is controlled by `PIE_CHECK_SOLUTION_BOUNDS` (env var): unset, or
@@ -64,7 +64,7 @@ restore the pre-v1.8.0 behaviour (no check on `x0` or the converged
 iterate). The older name, `PIE_BOX_CHECK_FINAL`, is a deprecated alias:
 if `PIE_CHECK_SOLUTION_BOUNDS` is unset but `PIE_BOX_CHECK_FINAL` is set,
 PIE honours the old variable's own truthy/falsy spellings (`1`/`true`/
-`yes`/`on` vs. anything else) and emits a `DeprecationWarning` -- set the
+`yes`/`on` vs. anything else) and prints a `FutureWarning` -- set the
 new name instead. Every run's `pMetaData_<chi_Si>.csv` records which way
 this resolved in its `check_solution_bounds_enabled` column (see
 [Output Files](outputs.md)), so the setting travels with the csv rather

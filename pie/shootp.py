@@ -309,11 +309,10 @@ COND_MAX    = 1.e12    # robust singular-Jacobian test replacing the exact det(J
 # unless this is enabled. Default ON since v1.8.0 (board item 36/40c/owner
 # decision 2026-10-09): a converged iterate outside the admissible box
 # (Mercury model: non-finite residual, rcmb <= ricb, chi_li_icb above the
-# eutectic/Si cap) is now recorded as a failure instead of saved. Measured
-# NOT bit-identical with the check on (board item 36: 1,502/474,075
-# published converged rows, all Si-only, newly rejected on a read-only
-# column check -- see board item 40c's follow-on re-solve measurement for
-# the real, cascading knock-on count across whole sweeps).
+# eutectic/Si cap) is now recorded as a failure instead of saved.
+# Measured same-commit ON vs OFF (board item 44): 0 of 6,720 Si-only rows
+# and 0 of 1,597 S/S+Si rows changed. (Board item 36's 1,502 rows were a
+# column check against the published v1.0.5 csv, not a re-solve.)
 #
 # Env var: PIE_CHECK_SOLUTION_BOUNDS (new name). PIE_BOX_CHECK_FINAL (old
 # name, v1.7.1) is a deprecated alias, kept for exact backward
@@ -329,17 +328,16 @@ COND_MAX    = 1.e12    # robust singular-Jacobian test replacing the exact det(J
 #      should not silently disable the check). PIE_CHECK_SOLUTION_BOUNDS=0
 #      restores the exact v1.7.1 default (off) code path bit-identically.
 #   2. Else PIE_BOX_CHECK_FINAL set (old name, new name absent): a
-#      DeprecationWarning fires once, and the OLD truthy-whitelist
+#      FutureWarning fires once (FutureWarning, not DeprecationWarning:
+#      Python hides the latter by default outside __main__, so users
+#      running `pie p ...` would never see it), and the OLD truthy-whitelist
 #      semantics apply unchanged ({"1","true","yes","on"} -> on, else
 #      off) -- exact v1.7.1 opt-in behaviour for anyone still using only
 #      the old var.
 #   3. Neither set: default ON.
-# Choice made (not in the literal brief, documented here per instructions):
-# the deprecation warning fires ONLY in branch 2, i.e. when the new var is
-# ABSENT and the old var is overridden by it when both are set, the old
-# var's mere presence is not warned about -- its value is irrelevant to
-# the outcome in that case (new name always wins), so a warning there
-# would flag a no-op rather than something the caller needs to fix.
+# The warning fires only in branch 2. When both are set the old var's
+# value cannot change the outcome (the new name wins), so it is not warned
+# about.
 _PIE_CHECK_SOLUTION_BOUNDS_FALSY  = ("0", "false", "no", "off")
 _PIE_BOX_CHECK_FINAL_TRUTHY       = ("1", "true", "yes", "on")
 
@@ -355,7 +353,7 @@ def _resolve_check_solution_bounds():
             "instead (same opt-out value '0' now restores the pre-v1.8.0 "
             "default-off behaviour; PIE_CHECK_SOLUTION_BOUNDS now defaults "
             "ON when neither var is set).",
-            DeprecationWarning, stacklevel=2)
+            FutureWarning, stacklevel=2)
         return old_val.strip().lower() in _PIE_BOX_CHECK_FINAL_TRUTHY
     return True
 
@@ -365,7 +363,7 @@ PIE_CHECK_SOLUTION_BOUNDS = _resolve_check_solution_bounds()
 
 def _box_check_or_fail(label, xv, trial_fun, box_fun, fail_fn, log_fn):
     """Evaluate trial_fun/box_fun at xv and raise via fail_fn if rejected.
-    Shared by the opt-in x0 and final-iterate checks below -- same
+    Shared by the x0 and final-iterate checks below -- same
     semantics as a line-search trial rejection, just outside the loop.
     log_fn is the caller's _flush_log closure, needed to match the
     line-search path's by-design re-raise-as-is handling of
