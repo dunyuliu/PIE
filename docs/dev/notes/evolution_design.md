@@ -1,6 +1,6 @@
 # Evolution-mode design (item 11) — design pass only, no code
 
-Date: 2026-10-01. Author: Dunyu Liu (design pass per owner's 2026-10-01 unpark).
+Date: 2026-10-01. Author: the owner (design pass per owner's 2026-10-01 unpark).
 Status: **design only** — `src/drivere.py`, `src/shoote.py`, and the `'e'`
 branch of `src/planet_input.py` are untouched; this doc does not implement
 anything. No `src/*.py` file is modified by this change.
@@ -231,7 +231,7 @@ systems (6 unknowns/3-plus-mass-chi constraints vs. 5 unknowns/2-plus-mass-chi
 constraints). Nothing in today's code checks that the last `r_icb>0` step's
 `T_cmb` and the first `r_icb<=0` step's `T_cmb` are close; they may not be.
 This is a real physics risk, not just a code-cleanliness one — route to
-rafael-santos if the Stage 1 implementation surfaces a visible jump, since
+the physics review if the Stage 1 implementation surfaces a visible jump, since
 that is a question about whether the no-inner-core parameterization is
 itself matched to the with-inner-core one at the handoff, not a bug in
 either branch alone.
@@ -245,7 +245,7 @@ mid-Stage-2 that `debye3`'s truncated series (`maxdeg=7`, "truncated to save
 computation time") or `cheval`'s Chebyshev evaluation has never been checked
 against an independent value.
 
-**5.4 — Sequencing risk against item 9.** Item 9 (kai-fischer, in flight,
+**5.4 — Sequencing risk against item 9.** Item 9 (refactor pass, in flight,
 branch `item9-refactor-libcore`, PR #24) is refactoring `libCore.py` and
 `globalvar.py` concurrently. Stage 1's implementation touches exactly those
 modules (plus `planet_input.py`, to fix the `mod_type`→`code_mode` bug that
@@ -263,7 +263,7 @@ once Stage 2 adds mass loss/gain terms** (e.g., does the core's light
 element content stay perfectly conserved across real geologic time, or does
 light-element partitioning at a growing ICB change the total slowly?). Not
 a Stage 1 blocker (Stage 1 inherits the constraint from `shoote.py` as-is)
-but worth flagging now so Stage 2's physics review (rafael-santos) checks
+but worth flagging now so Stage 2's physics review checks
 whether "total `chi_li_in` fixed across all time" is itself a Stage-1-only
 simplification that Stage 2 must relax.
 
@@ -285,7 +285,7 @@ simplification that Stage 2 must relax.
   Debye/Grüneisen helpers before relying on them): **roughly 10-15 working
   sessions**, with high uncertainty — this is new physics-modeling work (the
   energy-balance closure itself needs a physics review before
-  implementation, likely routed to rafael-santos first), not a port, and the
+  implementation, likely routed to the physics review first), not a port, and the
   estimate should be treated as a rough order of magnitude pending that
   review, not a plan.
 

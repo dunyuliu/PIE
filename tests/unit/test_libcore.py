@@ -71,7 +71,7 @@ def test_get_mass_core_scales_with_pi_not_without_it(libcore):
 
 
 def test_get_mass_core_distinguishes_old_normalized_bug_at_finite_r0(libcore):
-    # item 25 (zofia-kaminska milestone audit finding on PR #24/216d322):
+    # item 25 (rules audit's milestone finding on PR #24/216d322):
     # both tests above use r[0]~1e-3, the PR's own "harmless" case where
     # r[0]**3 is tiny under EITHER formula, so they can't actually tell
     # the fixed first term apart from the pre-fix one

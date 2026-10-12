@@ -1,11 +1,11 @@
 # Item 18(b) -- paper filter recompute (sort_models.py / paper_figures.py) -- 2026-10-04
 
-**UNAUDITED -- pending priya-nair, not for coauthor communication.**
+**UNAUDITED -- pending independent re-derivation, not for coauthor communication.**
 Regression-class analysis only (PROJECT_RULES rule 5): same-code-family
 comparison (published Zenodo data vs the item 18(a) v1.6.0 re-run), not an
-independent truth oracle. No coauthor numbers; owner (dunyu-liu) only.
+independent truth oracle. No coauthor numbers; owner only.
 
-Author: jordan-kim (data-integrity audit). Scripts and raw outputs:
+Author: data-integrity audit. Scripts and raw outputs:
 `item18b_paper_filter_recompute_2026-10-04_scripts/` (`analyze.py`,
 `trace.py`, `item18b_results.json`). Zenodo tree read-only throughout;
 item 18(a)'s worktree `pie/results/` (`.claude/worktrees/agent-a7d2fd536939b904f`)
@@ -223,7 +223,7 @@ agree on all five category flags and the heat-map-eligibility flag).
   fine for attributing the flip to one specific physical draw.
 - `paper_figures.py`'s S9/S10 mislabeling (section 0) is a pre-existing
   published-code bug, reported but not fixed (read-only Zenodo tree); if
-  marta-silva regenerates panels, decide whether to reproduce the bug
+  the figure-comparison audit regenerates panels, decide whether to reproduce the bug
   faithfully or flag the discrepancy in the regenerated figure.
 - This note does not re-derive the published CSVs from raw `pMetaData`
   (point 4 of the course-correction message) beyond the two single-row
@@ -245,5 +245,5 @@ agree on all five category flags and the heat-map-eligibility flag).
 
 ## Final note
 
-Sign-off rests with priya-nair (pending) and the owner. Fixes/figure
-regeneration are marta-silva's and a separate agent's job, not this note's.
+Sign-off rests with the independent re-derivation (pending) and the owner. Fixes/figure
+regeneration are the figure-comparison audit's and a separate agent's job, not this note's.

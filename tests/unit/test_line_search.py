@@ -231,7 +231,7 @@ def test_x0_box_check_default_on_then_opt_out(shootp, globalvar):
 
 
 def test_box_check_final_reraises_si_above_liquidus_max_as_is(shootp, globalvar):
-    # Lars-Eriksson audit finding (PR #128 review): _box_check_or_fail
+    # Code audit finding (PR #128 review): _box_check_or_fail
     # must not swallow the by-design SI_ABOVE_LIQUIDUS_MAX stop condition
     # and rewrap it as a box rejection -- it must propagate unchanged,
     # same contract test_trial_solvererror_is_a_rejection_except_by_design_si_stop
