@@ -11,6 +11,10 @@ Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff`
   category). Fixed: `docs/user/troubleshooting.md` now lists the
   bounds-check failure codes as `error_code` 3, 4, 5 or 7 (was 4 or 5);
   stale `pie/shootp.py` comments rewritten to the measured v1.8.0 result.
+  Fixed (test only): `tests/e2e/test_full_composition_sweep.py` crashed
+  reading v1.8.0's boolean `check_solution_bounds_enabled` column as a
+  number; it now skips that column like its sibling tests. v1.8.0 was gated
+  on the fast tiers only, so the e2e tier did not run before that tag.
   Removed: `pie/miscellaneous.py`, a self-described unused module with
   zero references anywhere in the tree (still in `v1.8.0`). Changed:
   personal and agent-persona names in tracked docs, tests and the board

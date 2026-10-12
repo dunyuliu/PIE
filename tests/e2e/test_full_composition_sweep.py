@@ -53,7 +53,7 @@ def test_failed_radii_have_nan_physics_and_no_h5(full_run):
     failed = [r for r in rows if float(r["error_code"]) != 0.0]
     ok = [r for r in rows if float(r["error_code"]) == 0.0]
     assert len(list(full_run.glob("*.h5"))) == len(ok), "one .h5 per CONVERGED radius, none for failures"
-    physical = [c for c in rows[0] if c not in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm")]
+    physical = [c for c in rows[0] if c not in ("chi_Si_icb", "ricb", "error_code", "start", "newton_iters", "resid_norm", "check_solution_bounds_enabled")]
     for r in failed:
         assert all(r[c] == "nan" or r[c] == "" or r[c] != r[c] or float(r[c]) != float(r[c]) for c in physical), (
             f"failed radius ricb={r['ricb']} carries non-NaN physics: "
