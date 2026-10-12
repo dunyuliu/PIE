@@ -5,8 +5,9 @@ agent persona -- only role-descriptive phrases. This test fails CI if any
 tracked file (other than this one) reintroduces one of the persona names
 already purged from the tree.
 
-Exempt by the rule's own stated exceptions: literature citations
-(Author Year), LICENSE/copyright lines, and CITATION.cff authorship --
+The rule exempts literature citations (Author Year), LICENSE/copyright
+lines and CITATION.cff authorship. This test implements that by path only
+(it does not recognise an Author Year citation): CITATION.cff --
 extended here to docs/user/citing.md's real maintainer contact (the
 CITATION.cff-authorship equivalent for the human-readable citing page).
 docs/user/gen_params.py's `INTERNAL_MARKERS` regex is also exempt: those
