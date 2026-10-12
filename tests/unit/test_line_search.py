@@ -280,7 +280,7 @@ _RESOLVE_SNIPPET = (
     "    gv.parse_argv(['main.py', 'p', '0.346', '0.424', 'S', 'Edmund'])\n"
     "    import pie.shootp as sp\n"
     "val = sp.PIE_CHECK_SOLUTION_BOUNDS\n"
-    "kinds = [str(x.category.__name__) for x in caught if issubclass(x.category, DeprecationWarning)]\n"
+    "kinds = [str(x.category.__name__) for x in caught if issubclass(x.category, (DeprecationWarning, FutureWarning))]\n"
     "print(repr((val, kinds)))"
 )
 
@@ -314,12 +314,12 @@ def test_env_new_var_truthy_or_garbage_stays_on():
 
 def test_env_old_var_alone_truthy_is_on_and_warns():
     val, warns = _resolve_in_subprocess({"PIE_BOX_CHECK_FINAL": "1"})
-    assert val is True and warns == ["DeprecationWarning"]
+    assert val is True and warns == ["FutureWarning"]
 
 
 def test_env_old_var_alone_falsy_is_off_and_warns():
     val, warns = _resolve_in_subprocess({"PIE_BOX_CHECK_FINAL": "0"})
-    assert val is False and warns == ["DeprecationWarning"]
+    assert val is False and warns == ["FutureWarning"]
 
 
 def test_env_old_var_alone_garbage_is_off_old_semantics_and_warns():
@@ -328,7 +328,22 @@ def test_env_old_var_alone_garbage_is_off_old_semantics_and_warns():
     # the OPPOSITE direction from the new var's whitelist-falsy default-ON
     # semantics. Preserved unchanged for exact backward compatibility.
     val, warns = _resolve_in_subprocess({"PIE_BOX_CHECK_FINAL": "Ture"})
-    assert val is False and warns == ["DeprecationWarning"]
+    assert val is False and warns == ["FutureWarning"]
+
+
+def test_env_old_var_warning_visible_under_default_filters():
+    # No simplefilter: Python's default filters hide DeprecationWarning
+    # outside __main__, which made the v1.8.0 alias warning invisible.
+    import os as _os
+    env = {k: v for k, v in _os.environ.items()
+           if k not in ("PIE_CHECK_SOLUTION_BOUNDS", "PIE_BOX_CHECK_FINAL", "PYTHONWARNINGS")}
+    env["PIE_BOX_CHECK_FINAL"] = "1"
+    snippet = ("import pie.globalvar as gv\n"
+               "gv.parse_argv(['main.py', 'p', '0.346', '0.424', 'S', 'Edmund'])\n"
+               "import pie.shootp\n")
+    out = subprocess.run([_sys.executable, "-c", snippet], env=env,
+                         capture_output=True, text=True, check=True)
+    assert "PIE_BOX_CHECK_FINAL is deprecated" in out.stderr
 
 
 def test_env_both_set_new_wins_regardless_of_old_value():

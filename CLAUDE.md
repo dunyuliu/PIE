@@ -115,7 +115,7 @@ saved as if it were physically admissible. This is
 `0`/`false`/`no`/`off`, means the check runs; one of those four falsy
 spellings restores the pre-item-36 behaviour (`x0`/final iterate never
 re-checked). The older name, `PIE_BOX_CHECK_FINAL`, is a deprecated
-alias honoured (with a `DeprecationWarning`) only when the new name is
+alias honoured (with a `FutureWarning`) only when the new name is
 unset. 1,502 of 474,075 converged rows (0.317%) in the published v1.0.5
 Zenodo dataset fail the box, all Si-only with `chi_li_icb` above the
 0.12 Si cap (audited, board item 36; none is in the paper's S+Si figure
