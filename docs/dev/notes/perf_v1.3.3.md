@@ -2,7 +2,7 @@
 
 Canonical case: CMR2=0.346, CMC=0.424, light='S', liquidus='Edmund' (the
 Margot fit), same as `docs/notes/perf_v1.3.2.md`. Timings on this box
-(dliu, shared), pinned venv (`numpy==1.21.5`, `scipy==1.8.0`).
+(shared), pinned venv (`numpy==1.21.5`, `scipy==1.8.0`).
 
 ## Profile finding
 

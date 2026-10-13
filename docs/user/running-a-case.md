@@ -42,7 +42,7 @@ randomly around an assigned mean and standard deviation.
 
 ## Large, resumable ensembles: `robust_runner.py`
 
-For batches too large to babysit (knox or TACC Lonestar6), `pie/robust_runner.py`
+For batches too large to babysit (a shared workstation or TACC Lonestar6), `pie/robust_runner.py`
 runs any list of jobs from one manifest file, resumable and provenance-tracked:
 
 ```
@@ -52,12 +52,13 @@ runs any list of jobs from one manifest file, resumable and provenance-tracked:
 #    as scheduler.py: S+Si x 16 chi_Si_icb, S, Si):
 python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 
-# 2a. knox / any shared box: PIE_WORKERS-capped pool, nice 10, 1 BLAS thread/job
+# 2a. a shared workstation: PIE_WORKERS-capped pool, nice 10, 1 BLAS thread/job
 python3 pie/robust_runner.py run mc.csv
 
 # 2b. Lonestar6: writes a launcher of pending jobs only, then the
 #     project's own slurm script runs it under LAUNCHER
 python3 pie/robust_runner.py run mc.csv --backend tacc
+export SBATCH_ACCOUNT=<allocation> SBATCH_MAIL_USER=<address>   # not kept in the script
 PIE_WORKDIR=/path/to/run/dir sbatch scripts/run/TACC.LS6.parallel.run.slurm   # sbatch passes the env through
 ```
 
@@ -76,7 +77,7 @@ cores/2))`); check `uptime`/`who` first and set it explicitly on a loaded box.
 `scripts/run/TACC.LS6.create.parallel.launcher.py` (run with the working
 directory set to `scripts/run/`) writes a `commands_launcher` file of 1024
 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or a plain `xargs`
-pool on knox:
+pool on a shared workstation:
 
 ```
 cd scripts/run
