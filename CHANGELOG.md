@@ -507,4 +507,4 @@ Version source of truth: git tags (`vX.Y.Z`) and GitHub releases; `CITATION.cff`
 	2. Add scheduler.py to run models over the CMR2, CMC, liquidus equation,  light element, and Si%wt parameter space.
 	3. Generate as many models as possible and discard models negative light element weight ones at the end. 
 	
-* v1.0.3 committed on 20221026 and zipped under D:\3.Krista_Soderlund\GitHub\Committed_Mercury_present_evolution\Mercury_present_evolution_v1.0.3_committed_20221026
+* v1.0.3 committed on 20221026 and zipped externally as Mercury_present_evolution_v1.0.3_committed_20221026

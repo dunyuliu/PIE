@@ -2,7 +2,7 @@
 
 Source (outside this repo, not committed in full): a prior collaborator
 run stored at
-`3.Krista_Soderlund/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`
+`<predecessor-code dir>/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`
 on this machine, dated 2023-01-27, running an earlier `libCore.py`
 (`get_mass_core` = `rho[i]*(r[i]**3-r[i-1]**3)`, missing the ENTIRE
 `(4/3)*pi` volume prefactor -- not just the `pi` factor bb37b0a's
