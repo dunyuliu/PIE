@@ -35,7 +35,7 @@ python scripts/run/monteCarlo.run.py            # Monte Carlo ensemble around a 
 `pie p ...` (the console entry point, `pyproject.toml`'s `[project.scripts]`)
 is equivalent to `python -m pie p ...`.
 
-Batches and large ensembles (knox or TACC Lonestar6), resumable, one
+Batches and large ensembles (a shared workstation or TACC Lonestar6), resumable, one
 manifest -- `pie/robust_runner.py` (item 22; kept inside the `pie` package,
 not moved to `scripts/run/`, because three `tests/` files import it as
 `from pie import robust_runner` and it self-locates its results dir to the
@@ -43,7 +43,7 @@ package dir):
 
 ```bash
 python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
-python3 pie/robust_runner.py run mc.csv                    # knox, PIE_WORKERS-capped
+python3 pie/robust_runner.py run mc.csv                    # shared workstation, PIE_WORKERS-capped
 python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then PIE_WORKDIR=/path/to/run/dir sbatch scripts/run/TACC.LS6.parallel.run.slurm
 ```
 
@@ -53,7 +53,7 @@ python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then PIE_WORKD
 directory set to `scripts/run/`, where `monteCarlo.run.py` lives and where its
 `./results/` output lands) writes a `commands_launcher` of 1024
 `monteCarlo.run.py <seed>` lines, for LAUNCHER on LS6 or a plain `xargs`
-pool on knox:
+pool on a shared workstation:
 
 ```bash
 cd scripts/run
