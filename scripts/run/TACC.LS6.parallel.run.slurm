@@ -13,7 +13,7 @@
 
 module load launcher
 
-export LAUNCHER_WORKDIR=/scratch/07931/dunyuliu/3.Krista/MercuryInteriorMonteCarlo_fixISNOWIndex_20250707/PIE/work.margot
+export LAUNCHER_WORKDIR=${PIE_WORKDIR:?set PIE_WORKDIR to the run directory before sbatch}
 export LAUNCHER_JOB_FILE=commands_launcher 
 
 ${LAUNCHER_DIR}/paramrun

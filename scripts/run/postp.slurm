@@ -13,7 +13,7 @@
 
 #module load launcher
 
-#export LAUNCHER_WORKDIR=/work2/07931/dunyuliu/3.Krista/Mercury_present_evolution_v1.0.4_20230127
+#export LAUNCHER_WORKDIR=${PIE_WORKDIR:?set PIE_WORKDIR to the run directory before sbatch}
 #export LAUNCHER_JOB_FILE=commands_launcher 
 
 #${LAUNCHER_DIR}/paramrun

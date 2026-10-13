@@ -44,7 +44,7 @@ package dir):
 ```bash
 python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
 python3 pie/robust_runner.py run mc.csv                    # knox, PIE_WORKERS-capped
-python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then sbatch scripts/run/TACC.LS6.parallel.run.slurm
+python3 pie/robust_runner.py run mc.csv --backend tacc     # LS6: then PIE_WORKDIR=/path/to/run/dir sbatch scripts/run/TACC.LS6.parallel.run.slurm
 ```
 
 ### Legacy recipe
@@ -116,20 +116,16 @@ saved as if it were physically admissible. This is
 spellings restores the pre-item-36 behaviour (`x0`/final iterate never
 re-checked). The older name, `PIE_BOX_CHECK_FINAL`, is a deprecated
 alias honoured (with a `FutureWarning`) only when the new name is
-unset. 1,502 of 474,075 converged rows (0.317%) in the published v1.0.5
-Zenodo dataset fail the box, all Si-only with `chi_li_icb` above the
-0.12 Si cap (audited, board item 36; none is in the paper's S+Si figure
-population) -- that count is against the *published* csv, which already
-differs from current `main` for reasons unrelated to this flag (item 31's
-line-search/Newton changes since v1.0.5). The flag's own isolated effect
--- same commit, same input, `PIE_CHECK_SOLUTION_BOUNDS=1` vs `=0`, diffed
-row for row -- is 0 changed rows on both the 168 originally Si-flagged
-compositions (6,720 rows) and a 40-composition S/S+Si control sample
-(1,597 rows); both counts independently re-derived and confirmed (item 40c,
-board item 44). Default flipped OFF->ON in v1.8.0 on this evidence: on
-current `main`, the pre-existing per-trial line-search box check already
-intercepts every case the x0/converged-iterate check would have caught, so
-the flip changes nothing further on either sample measured so far.
+unset. Evidence, with the audited counts, lives on the board rather than
+here (`PROJECT_RULES.md` rule 11): item 36 for the published v1.0.5 rows
+that fail the box (all Si-only, `chi_li_icb` above the Si cap, none in the
+paper's S+Si figure population; counted against the *published* csv, which
+already differs from current `main` for reasons unrelated to this flag),
+and item 44 for the flag's own isolated effect (same commit, same input,
+ON vs OFF, diffed row for row: no row changed on either sample). Default
+flipped OFF->ON in v1.8.0 on that evidence: on current `main` the per-trial
+line-search box check already intercepts every case the x0/converged-iterate
+check would catch.
 
 ## Performance options
 
