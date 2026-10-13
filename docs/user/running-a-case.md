@@ -58,7 +58,7 @@ python3 pie/robust_runner.py run mc.csv
 # 2b. Lonestar6: writes a launcher of pending jobs only, then the
 #     project's own slurm script runs it under LAUNCHER
 python3 pie/robust_runner.py run mc.csv --backend tacc
-sbatch scripts/run/TACC.LS6.parallel.run.slurm
+PIE_WORKDIR=/path/to/run/dir sbatch scripts/run/TACC.LS6.parallel.run.slurm   # sbatch passes the env through
 ```
 
 A job counts as done only when its sentinel file exists, written after
