@@ -376,8 +376,10 @@ report or plot caption.
 The `v1.0.0` git tag (the historical record `historical_versions/`'s single
 zip used to duplicate, byte-identical, before board item 39 removed the
 directory as redundant with git history) and the external oracle trees this
-project cites (`~/3.Krista_Soderlund/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`,
-`~/3.Krista_Soderlund/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`)
+project cites (`<predecessor-code dir>` is the off-repo directory of
+predecessor-code snapshots on the owner's machine;
+`<predecessor-code dir>/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`,
+`<predecessor-code dir>/MercuryEvolution/Mercury_present_evolution_v1.0.4_20230127/`)
 are ground truth for regression comparison only (rule 5) — nothing writes
 through them, ever, including "just to patch the known pi bug for a cleaner
 comparison." A git tag is read-only by convention (never force-moved); an

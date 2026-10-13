@@ -12,7 +12,7 @@ verification.
 
 ## Source (read-only oracle, never modified in place -- rule 7)
 
-`~/3.Krista_Soderlund/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`
+`<predecessor-code dir>/MercuryInterior_MonteCarlo/dliu_20221021_v1.0.3/`
 (a fixed, dated snapshot on this machine). Its own committed
 `csvfiles/present_day_*.csv` outputs were HEADER-ONLY (0 data rows) for
 every present-day composition (`margot_S_Edmund`, `margot_Si_Edmund`,
@@ -25,7 +25,7 @@ read verbatim (rule 4: only fresh runs are evidence).
 Per rule 7 ("run regression anchors by invoking those trees' own
 interpreters/scripts read-only; never edit them in place"): the ENTIRE
 v1.0.3 source tree was copied verbatim to a scratch directory (never
-back into the `~/3.Krista_Soderlund/...` tree), then run with
+back into the `<predecessor-code dir>/...` tree), then run with
 `/usr/bin/python3 main.py p <CMR2_preset> <light_element> Edmund` from
 that scratch copy, with `PYTHONNOUSERSITE=1 MPLBACKEND=Agg` (same
 two-matplotlib-installs workaround `tests/conftest.py`/`run.py` use for
