@@ -198,8 +198,6 @@ def plot_isnow(ri,r,rh,rm,T,P,chi_li,rho,chi_liin,moi,cmc,mass,img,param, isnow)
     ax[1,1].legend(handles=patches, loc='lower right', bbox_to_anchor=(2.7, 0))
     #fig.suptitle("Original",fontsize=20)
     #plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    #plt.savefig('/Users/gregor/Projects/Evolution of Mercury/plots/paper/'+param['name']+'/plot'+"{:02d}".format(img)+'.pdf',
-    #            bbox_inches="tight")
     if not os.path.exists(model_path):
         os.mkdir(model_path)
     #if not os.path.exists(present_figure_path):

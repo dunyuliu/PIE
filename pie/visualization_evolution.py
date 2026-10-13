@@ -196,4 +196,3 @@ def gif_writer(directory):
             image =  np.array(img.getdata(),np.uint8).reshape(img.size[1], img.size[0], 3)
             #image = imageio.imread(filename)
             writer.append_data(image)
-#gif_writer('/Users/gregor/Projects/Evolution of Mercury/models/evolution/margot/440.0/')

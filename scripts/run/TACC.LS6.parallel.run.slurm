@@ -5,9 +5,10 @@
 #SBATCH -n 1024                  # total number of tasks to run in parallel
 #SBATCH -p normal                # queue (partition) 
 #SBATCH -t 3:00:00              # run time (hh:mm:ss) 
-#SBATCH -A EAR24017              # Allocation name to charge job against
 
-#SBATCH --mail-user=dliu@ig.utexas.edu
+# Account and notification address come from the environment, not this
+# file: export SBATCH_ACCOUNT=<allocation> SBATCH_MAIL_USER=<address>
+# before sbatch (sbatch reads both).
 #SBATCH --mail-type=begin   # email me when the job starts
 #SBATCH --mail-type=end     # email me when the job finishes
 

@@ -4,7 +4,7 @@ Canonical case used throughout: CMR2=0.346, CMC=0.424, light='S',
 liquidus='Edmund' (the Margot fit) -- same inputs as
 testsys/integration/test_present_day_solve.py (single radius,
 ricb=500010 m) and testsys/e2e/test_full_composition_sweep.py (full
-~40-radius sweep). All timings on this box (dliu, shared; load average
+~40-radius sweep). All timings on this box (shared; load average
 ~12-20 throughout this session).
 
 ## Profile findings (baseline, current main / v1.3.1, cProfile on one

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Robust batch runner for PIE present-day ('p') jobs.
 
-One runner for knox (local) and TACC Lonestar6, replacing the ad-hoc knox
+One runner for a shared workstation (local) and TACC Lonestar6, replacing the ad-hoc local
 `xargs` recipe and the TACC LAUNCHER recipe (README "Large ensemble Monte
 Carlo simulation"). A job is one `python -m pie p CMR2 CMC light_element
 liquidus_eq [chi_Si_icb]` call -- one pMetaData_<chi>.csv, one ricb sweep.
@@ -52,7 +52,7 @@ CLI (run from anywhere; results/ goes under --src-dir, default the
 installed `pie` package directory):
 
     python3 pie/robust_runner.py make-mc-manifest mc.csv --n 1024 --seed-base 20260930
-    python3 pie/robust_runner.py run mc.csv                       # knox
+    python3 pie/robust_runner.py run mc.csv                       # shared workstation
     python3 pie/robust_runner.py run mc.csv --backend tacc        # LS6: then
     (sbatch scripts/run/TACC.LS6.parallel.run.slurm)
 
@@ -355,7 +355,7 @@ def already_done(job, src_dir=SRC_DIR):
     """Resumability oracle: the job's completion sentinel exists.
 
     NOT "the pMetaData csv exists" (the oracle monteCarlo.run.py and the
-    README knox recipe use): src/main.py opens pMetaData_<chi>.csv with
+    README xargs recipe use): src/main.py opens pMetaData_<chi>.csv with
     'w' and writes its header row BEFORE the ricb sweep starts
     (main.py:146-149), so a job killed mid-sweep leaves the csv on disk
     and that check would skip it forever. The sentinel is written by

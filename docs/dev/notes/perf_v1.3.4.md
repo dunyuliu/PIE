@@ -10,7 +10,7 @@ Margot fit), same as perf_v1.3.2.md/perf_v1.3.3.md. Pinned environment:
 Python 3.12, numpy==2.5.3, scipy==1.18.1 (board item 28e's pie package,
 uv-managed venv) -- NOT the numpy==1.21.5/scipy==1.8.0 environment the
 earlier two perf notes used (the project migrated to py3.12/uv since,
-v1.5.0). All timings on this box (dliu, shared).
+v1.5.0). All timings on this box (shared).
 
 ## Re-profile finding
 

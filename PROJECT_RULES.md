@@ -524,7 +524,7 @@ worker); never signal, renice or kill a process PIE didn't start; long runs
 are resumable and stop cleanly; check `uptime`/`who` before a large run.
 
 **Rationale**: moving tests from serial to pytest-xdist + ProcessPoolExecutor
-pools on knox (a shared 64-core box also running other users' ML training
+pools on the shared workstation (a 64-core box also running other users' ML training
 jobs) first ran xdist at `-n` equal to the full `PIE_WORKERS` budget, which
 collapsed every in-test pool down to 1 worker — safe with respect to not
 overloading the shared box, but it silently erased the whole speedup. This is
@@ -534,7 +534,7 @@ rule.
 **How to apply**: `tests/pielib.py`'s `pie_workers()`/`pool_workers()`
 is the enforcement mechanism — it derives the single `PIE_WORKERS` cap that
 both xdist and every in-test process pool read, so the two never double up.
-The knox `xargs` launcher recipe in README's "Large ensemble Monte Carlo
+The shared-workstation `xargs` launcher recipe in README's "Large ensemble Monte Carlo
 simulation" section is the other consumer of the same knob.
 
 ---

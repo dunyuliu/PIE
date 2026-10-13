@@ -54,7 +54,7 @@ def test_load_manifest_rejects_bad_input_loudly(tmp_path, rows, header, match):
 
 
 def test_header_only_csv_is_not_done(tmp_path):
-    # Regression for the oracle monteCarlo.run.py / README knox recipe use:
+    # Regression for the oracle monteCarlo.run.py / README xargs recipe use:
     # src/main.py writes the pMetaData csv HEADER before the ricb sweep
     # starts, so "csv exists" is true for a job killed mid-sweep. Only the
     # runner's sentinel counts.
