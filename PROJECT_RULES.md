@@ -120,10 +120,10 @@ silently becomes the thing it was meant to document.
 before anyone asked "how many items under docs? That folder should be
 lean" — seven run-artifact trees (`*_scripts`/`*_figs`/`*_measurement`)
 accounted for ~537 files and ~128 MB on their own, all but one of them
-(`item18b_paper_filter_recompute_2026-10-04_scripts`, read at runtime by
-`testsys/contract/test_item18b_isnow_filter.py`) opened by nothing except
-comments and docstrings citing a path — a `git show <sha>:path` would have
-served those citations just as well without keeping the bytes in every
+(`item18b_paper_filter_recompute_2026-10-04_scripts`, at the time read at
+runtime by its own regression test) opened by nothing except comments and
+docstrings citing a path — a `git show <sha>:path` would have served those
+citations just as well without keeping the bytes in every
 future clone. Escalating owner instructions (relayed via the conductor,
 2026-10-07): "those should be removed from git" (the artifact trees); no
 history rewrite ("not harmful to leave there," confirmed); "from the next
