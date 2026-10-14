@@ -150,20 +150,17 @@ Not established either way. Some losses are demonstrably numerical, and the rest
   - The class is *not* uniformly unrecoverable. `runs/base/034.json` (genova S, det(J)==0 at 10 m) went 0 → 30 radii on a plain re-run, and genova S det(J)==0 at 10 m was recovered in 1/2 cases.
   - Whether to discard these cases is therefore open.
 - **10-m singular-LU crashes are partly numerical**:
-  - Best-of-7-variant selection (`bias_estimate.py:12-19`) recovered **13/22** sampled cases to 30–37 radii (`runs_recovered_vs_published.txt`):
-    - margot: S 2/3, S+Si 0.05 1/3, S+Si 0.10 2/3, Si 0/3;
-    - genova: S 3/3, S+Si 0.05 3/3, S+Si 0.10 2/3, Si 0/1.
-  - Backtracking line search alone, the single-method figure, recovered **12/22**.
+  - Best-of-7-variant selection (`bias_estimate.py:12-19`) and backtracking line search alone each recovered a minority of the sampled cases to full-length sweeps (`runs_recovered_vs_published.txt`), unevenly across MOI and composition.
   - The recovered rows pass the production tolerance (`probe.py:58-66`; spot-check |f| 1e-9 to 1e-11, smooth v(ricb)). But no script checks chi ∈ [0, eut], ricb < rcmb or ρ > 0 over the full recovered sweeps.
-  - The per-class population scaling in `runs_bias_estimate.txt` ("est.recoverable") is **withdrawn**. It applies a 1–3-case rate to a whole class.
+  - The per-class population scaling in `runs_bias_estimate.txt` ("est.recoverable") is **withdrawn**. It applies a small-sample per-class rate to a whole class.
 - **Bias — direction plausible, magnitude unknown.**
-  - What holds: the recovered models in the singular-LU (crash_stderr) classes are all no-snow, with smaller cores (rcmb 1.87–1.98 Mm vs published medians 1.96–2.03 Mm) and lower CMR2 than published survivors.
-  - The claim does not hold overall. Two snow-bearing recovered classes were left out of the estimate: margot S+Si 0.05 maxit at 10 m (recovered 2/3, snow fraction 0.35) and genova S det(J)==0 at 10 m (recovered 1/2, snow fraction 0.07). Leaving them out biases the estimate toward less snow.
+  - What holds: the recovered models in the singular-LU (crash_stderr) classes skew no-snow, with smaller cores and lower CMR2 than published survivors.
+  - The claim does not hold overall. At least two snow-bearing recovered classes were left out of the estimate, which biases it toward less snow.
   - Snow is confounded with CMR2. The crashes sit at the low-CMR2 edge, so a per-class rate applied to the whole class is really a CMR2 extrapolation.
-  - Each class has n = 1–3 cases per MOI. Clopper–Pearson 95% intervals: 0/3 → [0, 0.71]; 1/3 → [0.008, 0.91]; 1/2 → [0.013, 0.99]; 2/3 → [0.09, 0.99]; 3/3 → [0.29, 1.0].
-  - Rows are weighted by recovered sweeps of 30–37 radii against truncated published sweeps, and this weighting is undocumented.
-  - **The corrected snow percentages and the corrected CMR2 means previously given here are withdrawn.** The "corrected" columns of `runs_bias_estimate.txt` are kept only as a record of that withdrawn estimate and must not be quoted.
-  - **Next step:** settle the question with a full re-run of all 10-m zero-row compositions (margot 7,166, genova 6,413 zero-row runs) under one fixed solver, with bounds and validity checks (chi ∈ [0, eut], ricb < rcmb, ρ > 0, finite g/ρ) on every row.
+  - Each class has only a handful of cases per MOI, so the resulting confidence intervals are wide.
+  - Rows are weighted by recovered sweeps against truncated published sweeps, and this weighting is undocumented.
+  - **The corrected snow percentages and the corrected CMR2 means previously given here are withdrawn** — the bias estimate's magnitude is unknown. The "corrected" columns of `runs_bias_estimate.txt` are kept only as a record of that withdrawn estimate and must not be quoted.
+  - **Next step:** settle the question with a full re-run of all 10-m zero-row compositions under one fixed solver, with bounds and validity checks (chi ∈ [0, eut], ricb < rcmb, ρ > 0, finite g/ρ) on every row.
 
 ## 5. Recovery experiments (on the 108-case sample; "more/fewer/same" = rows vs published; full table `runs_bestof.txt`)
 

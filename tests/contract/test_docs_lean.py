@@ -7,7 +7,7 @@ dev/history docs -- not an open-ended dumping ground. Three checks:
    allowlist below, named one at a time (rule 1b: "name it in the
    allowlist test's own list first, or don't add it").
 2. The total count of tracked files under `docs/` outside `docs/user/`
-   stays under a fixed cap (currently 17; cap set to 20 -- enough
+   stays under a fixed cap (currently 12; cap set to 20 -- enough
    headroom to add a couple of genuinely new dated notes one at a time
    without raising this cap, but tight enough that a new run-artifact
    tree (dozens to hundreds of files, per the rule's incident writeup)
@@ -15,10 +15,12 @@ dev/history docs -- not an open-ended dumping ground. Three checks:
    allowlisted first).
 3. No directory or file anywhere under `docs/` (`docs/user/` included)
    matches `*_scripts`, `*_figs`, or `*_measurement` -- the exact shape of
-   the run-artifact trees rule 1b's incident removed -- except the one
-   documented, load-bearing exception:
-   `docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/`, read
-   at runtime by `tests/contract/test_item18b_isnow_filter.py`.
+   the run-artifact trees rule 1b's incident removed. The one documented
+   exception this rule used to carry
+   (`docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/`)
+   was itself removed 2026-10-14 along with the note and test that made
+   it load-bearing (numbers moved to a private record, owner decision),
+   so no exception remains.
 """
 import pathlib
 import subprocess
@@ -37,8 +39,6 @@ ALLOWED_DOCS_FILES = frozenset({
     "docs/dev/notes/failure_analysis_fig1_cmr2_by_endstate.png",
     "docs/dev/notes/failure_analysis_fig2_death_radius.png",
     "docs/dev/notes/failure_analysis_fig3_zero_rows_vs_chiSi.png",
-    "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04.md",
-    "docs/dev/notes/item18_quantify_2026-10-01.md",
     "docs/dev/notes/perf_v1.3.2.md",
     "docs/dev/notes/perf_v1.3.3.md",
     "docs/dev/notes/perf_v1.3.4.md",
@@ -48,18 +48,11 @@ ALLOWED_DOCS_FILES = frozenset({
     "docs/dev/audits/AUDIT_2026-09-29_solver-failures.md",
 })
 
-# The one documented exception to the no-artifact-tree rule: this directory
-# is load-bearing (read at runtime by test_item18b_isnow_filter.py), so any
-# file tracked under it is allowed without being named individually above.
-ALLOWED_ARTIFACT_TREE_PREFIX = (
-    "docs/dev/notes/item18b_paper_filter_recompute_2026-10-04_scripts/"
-)
-
 # Rule 1b: "the count ... stays under a fixed cap, so the allowlist can grow
 # one named file at a time but can't quietly regrow into a second pile."
-# Current count (ALLOWED_DOCS_FILES + the scripts-tree files) is 17; 20
-# gives headroom for a couple of ad hoc additions without a rule change,
-# while still being orders of magnitude below the ~537 the incident found.
+# Current count (ALLOWED_DOCS_FILES) is 12; 20 gives headroom for a couple
+# of ad hoc additions without a rule change, while still being orders of
+# magnitude below the ~537 the incident found.
 MAX_NON_USER_DOCS_FILES = 20
 
 ARTIFACT_TREE_PATTERNS = ("_scripts", "_figs", "_measurement")
@@ -80,11 +73,7 @@ def _is_under_docs_user(rel_path):
 def test_non_user_docs_files_are_all_on_the_named_allowlist():
     tracked = _tracked_docs_files()
     outside_user = [p for p in tracked if not _is_under_docs_user(p)]
-    offenders = [
-        p for p in outside_user
-        if p not in ALLOWED_DOCS_FILES
-        and not p.startswith(ALLOWED_ARTIFACT_TREE_PREFIX)
-    ]
+    offenders = [p for p in outside_user if p not in ALLOWED_DOCS_FILES]
     assert not offenders, (
         "file(s) tracked under docs/ outside docs/user/ are not on "
         "test_docs_lean.py's ALLOWED_DOCS_FILES allowlist (PROJECT_RULES.md "
@@ -104,12 +93,10 @@ def test_non_user_docs_file_count_stays_under_the_cap():
     )
 
 
-def test_no_run_artifact_trees_under_docs_except_the_documented_exception():
+def test_no_run_artifact_trees_under_docs():
     tracked = _tracked_docs_files()
     offenders = []
     for rel_path in tracked:
-        if rel_path.startswith(ALLOWED_ARTIFACT_TREE_PREFIX):
-            continue
         parts = pathlib.PurePosixPath(rel_path).parts
         for part in parts:
             stem = part[:-len(pathlib.PurePosixPath(part).suffix)] if "." in part else part
@@ -119,7 +106,7 @@ def test_no_run_artifact_trees_under_docs_except_the_documented_exception():
     assert not offenders, (
         "path component(s) under docs/ match a run-artifact-tree pattern "
         "(*_scripts / *_figs / *_measurement) that PROJECT_RULES.md rule 1b "
-        "forbids (the 2026-10-07 incident removed ~537 such files); the "
-        "only allowed exception is "
-        f"{ALLOWED_ARTIFACT_TREE_PREFIX!r}: {sorted(offenders)}"
+        "forbids (the 2026-10-07 incident removed ~537 such files; the one "
+        "documented exception this test used to carry was itself removed "
+        f"2026-10-14, numbers moved to a private record): {sorted(offenders)}"
     )
