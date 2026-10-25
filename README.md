@@ -14,14 +14,14 @@ what each error code means -- is at **https://dunyuliu.github.io/PIE/**.
 
 Requires Python 3.12 with the exact pins in `requirements.txt` -- the one
 supported environment (unpinned/"latest" packages are untested here).
-Install with [`uv`](https://docs.astral.sh/uv/) (absolute path shown
-because `uv` is not on default `PATH` on most hosts):
+Install with [`uv`](https://docs.astral.sh/uv/):
 
 ```
 git clone https://github.com/dunyuliu/PIE.git
 cd PIE
-~/.local/bin/uv venv --python 3.12 .venv
-~/.local/bin/uv pip install --python .venv/bin/python3.12 -e .
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python3.12 -e .
+source .venv/bin/activate        # csh/tcsh: source .venv/bin/activate.csh
 ```
 
 ## Run an example
