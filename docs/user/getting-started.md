@@ -18,12 +18,12 @@ cd PIE
 
 Install with [`uv`](https://docs.astral.sh/uv/) into a venv built against
 the pinned dependencies -- an editable install of the `pie` package, not a
-bare `pip install -r requirements.txt`. Absolute path shown because `uv`
-is not on default `PATH` on most hosts:
+bare `pip install -r requirements.txt`:
 
 ```
-~/.local/bin/uv venv --python 3.12 .venv
-~/.local/bin/uv pip install --python .venv/bin/python3.12 -e .
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python3.12 -e .
+source .venv/bin/activate        # csh/tcsh: source .venv/bin/activate.csh
 ```
 
 `pie` is an installed package: it runs as the `pie` console script, or via
@@ -65,7 +65,7 @@ runner) and [Output Files](outputs.md) for what each file contains.
 ## Check the install
 
 ```
-~/.local/bin/uv pip install --python .venv/bin/python3.12 -r tests/requirements.txt
+uv pip install --python .venv/bin/python3.12 -r tests/requirements.txt
 .venv/bin/python3.12 tests/run.py
 ```
 
